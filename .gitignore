@@ -1,0 +1,85 @@
+# ─────────────────────────────────────────────────────────────
+# Data (large / external) — NOT tracked
+#   46GB of preprocessed NIfTI images + external metadata live under data/.
+#   We ignore data/ wholesale, then re-include ONLY the small, reproducible
+#   split definitions (notebooks + CSVs + README) which are the paper's
+#   "single source of truth". To re-include a file under an ignored dir, every
+#   parent directory must be un-ignored first — hence the ladder below.
+# ─────────────────────────────────────────────────────────────
+/data/*
+!/data/preprocessed/
+/data/preprocessed/*
+!/data/preprocessed/v1.0.0/
+/data/preprocessed/v1.0.0/*
+!/data/preprocessed/v1.0.0/_global/
+/data/preprocessed/v1.0.0/_global/*
+!/data/preprocessed/v1.0.0/_global/splits/
+# inside splits/: keep notebooks, CSVs, README; ignore checkpoints/scratch
+/data/preprocessed/v1.0.0/_global/splits/.ipynb_checkpoints/
+
+# ─────────────────────────────────────────────────────────────
+# Model weights / checkpoints / large binary artifacts — NOT tracked
+# ─────────────────────────────────────────────────────────────
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.pb
+*.h5
+*.hdf5
+*.tflite
+*.bin
+*.npz
+*.npy
+*.pkl
+*.pickle
+*.joblib
+checkpoints/
+weights/
+runs/
+outputs/
+logs/
+wandb/
+mlruns/
+lightning_logs/
+*.log
+
+# ─────────────────────────────────────────────────────────────
+# Python / uv
+# ─────────────────────────────────────────────────────────────
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.python-version
+# uv.lock IS committed (reproducible env) — do not ignore it.
+
+# ─────────────────────────────────────────────────────────────
+# Secrets / certs (Tailscale node cert+key live at repo root) — NEVER track
+# ─────────────────────────────────────────────────────────────
+*.key
+*.crt
+*.pem
+spark-*.ts.net.*
+
+# ─────────────────────────────────────────────────────────────
+# Session / scratch — NOT tracked
+# ─────────────────────────────────────────────────────────────
+/scratchpad/
+.claude-memory/
+
+# ─────────────────────────────────────────────────────────────
+# OS / editor junk
+# ─────────────────────────────────────────────────────────────
+.DS_Store
+._*
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+.env
