@@ -1,0 +1,10 @@
+# Stage A (local) paths.
+# root = AUTO -> openidh_model.utils.paths auto-detects the repo root
+# (walks up to the dir containing data/metadata). Works on any local checkout
+# without editing this file. For the HPC run, paths.hpc.yaml uses an explicit root.
+root: AUTO
+data_dir: ${root}/data/preprocessed/v1.0.0
+metadata_dir: ${root}/data/metadata
+splits_dir: ${data_dir}/_global/splits
+weights_dir: ${root}/weights
+output_dir: ${root}/runs

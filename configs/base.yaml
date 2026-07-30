@@ -1,0 +1,7 @@
+# Common config shared by all runs. Paths come from paths.*.yaml (spec §1.2),
+# NOT from here. Modalities and data geometry live here.
+data:
+  modalities: [T1, T2, FLAIR, T1c]   # 4 sequences shared across all 3 sites
+  n_slices: 3                        # max-tumor-area axial slice +-1
+  image_size: 224                    # stored 256, resized on the fly
+  volume_label: whole_tumor          # (seg > 0), i.e. labels 1+2+4

@@ -1,0 +1,8 @@
+# Stage B (supercomputer) paths.
+# ★ On migration, edit ONLY the `root` line below. Nothing else in the repo changes.
+root: /path/to/scratch/openidh
+data_dir: ${root}/data/preprocessed/v1.0.0
+metadata_dir: ${root}/data/metadata
+splits_dir: ${data_dir}/_global/splits
+weights_dir: ${root}/weights
+output_dir: ${root}/runs
