@@ -1,0 +1,10 @@
+# Stage A smoke config (local). Diffs from train.yaml only (spec §11).
+train:
+  epochs: 2
+  batch_size: 4
+  device: cpu                    # or mps on a Mac
+  amp_dtype: null
+  early_stop_patience: 99        # don't early-stop in a 2-epoch smoke run
+
+data:
+  subset_n: 20                   # 20 subjects only

@@ -1,0 +1,29 @@
+# Production training config (spec §11). Paths come from paths.*.yaml, not here.
+fusion:
+  v_ref: 10000
+  gamma: 0.5
+  normalize_by_active: false     # ★ must stay false (spec §0 pitfall #2)
+
+loss:
+  lambda_aux: 0.4
+  lambda_reg_max: 0.1
+  t_anneal: 15                   # epochs to ramp lambda_reg to max
+  class_weight: null             # default: no class weighting (spec §3.6)
+
+train:
+  finetune: full
+  optimizer: adamw
+  lr: 1.0e-4
+  weight_decay: 0.05
+  warmup_epochs: 3
+  batch_size: 32
+  epochs: 200
+  early_stop_metric: nll         # NOT auc (spec §9, §3.4)
+  early_stop_patience: 20
+  modality_dropout_p: 0.2
+  device: cuda
+  amp_dtype: bfloat16
+
+data:
+  split_file: splits_loso_foldA.csv
+  subset_n: null                 # null = all subjects
