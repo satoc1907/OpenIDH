@@ -26,12 +26,16 @@ class GliomaDataset(Dataset):
         split_csv,
         paths,
         role: str | None = "train",
+        fold_id=None,
         image_size: int = IMAGE_SIZE,
         age_mean: float | None = None,
         age_std: float | None = None,
         skip_missing_dirs: bool = True,
     ):
         df = pd.read_csv(split_csv)
+        # random_5fold.csv holds 5 folds in one file; filter to one before role.
+        if fold_id is not None:
+            df = df[df["fold_id"].astype(str) == str(fold_id)]
         if role is not None:
             df = df[df["split_role"] == role]
         self.paths = paths

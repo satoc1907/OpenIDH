@@ -102,13 +102,13 @@ def _balanced_subset(rows, n):
     return (mut[:k] + wt[: n - min(k, len(mut))])[:n]
 
 
-def train_fold(paths, cfg, split_file, seed=0, log=print):
+def train_fold(paths, cfg, split_file, fold_id=None, seed=0, log=print):
     set_seed(seed)
     device = cfg["train"]["device"]
     subset_n = cfg["data"].get("subset_n")
 
-    train_ds = GliomaDataset(paths.splits_dir / split_file, paths, role="train")
-    val_ds = GliomaDataset(paths.splits_dir / split_file, paths, role="val")
+    train_ds = GliomaDataset(paths.splits_dir / split_file, paths, role="train", fold_id=fold_id)
+    val_ds = GliomaDataset(paths.splits_dir / split_file, paths, role="val", fold_id=fold_id)
     if subset_n:
         train_ds.rows = _balanced_subset(train_ds.rows, subset_n)
         val_ds.rows = _balanced_subset(val_ds.rows, max(4, subset_n // 2))
