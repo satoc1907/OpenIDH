@@ -1,0 +1,26 @@
+=== UTSW-Glioma Segmentation Source Summary ===
+Generated: 2026-06-28 12:06:33 +0000
+
+Total subjects processed: 625
+  - manual_refined:  362 (57.9%)
+  - fets_auto:       263 (42.1%)
+  - failed/missing:  0 (0.0%)
+
+QC results:
+  - passed:          622
+  - failed:          3
+
+IDH status x seg_source crosstab:
+              manual_refined       fets_auto    total
+         Mut             103              73      176
+          WT             256             190      446
+          NA               3               0        3
+       total             362             263      625
+
+WHO grade x seg_source crosstab:
+              manual_refined       fets_auto    total
+           2              61              40      101
+           3              63              34       97
+           4             236             184      420
+          NA               2               5        7
+       total             362             263      625

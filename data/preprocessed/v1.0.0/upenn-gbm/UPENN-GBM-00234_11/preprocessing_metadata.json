@@ -1,0 +1,87 @@
+{
+  "subject_id": "UPENN-GBM-00234_11",
+  "dataset": "upenn-gbm",
+  "preprocessing_version": "v1.0.0",
+  "tumor_seg_filename": "UPENN-GBM-00234_11_automated_approx_segm.nii.gz",
+  "tumor_seg_source": "automated",
+  "tumor_seg_voxel_count": 56510,
+  "tumor_seg_labels_present": [
+    1,
+    2,
+    4
+  ],
+  "volumes": {
+    "T1": {
+      "shape": [
+        256,
+        256,
+        140
+      ],
+      "voxel_size": [
+        1,
+        1,
+        1
+      ],
+      "z_score_mean": 296.03814697265625,
+      "z_score_std": 70.36480712890625,
+      "upper_clip_value": 412.46413879394527
+    },
+    "T1c": {
+      "shape": [
+        256,
+        256,
+        140
+      ],
+      "voxel_size": [
+        1,
+        1,
+        1
+      ],
+      "z_score_mean": 346.2130432128906,
+      "z_score_std": 114.07906341552734,
+      "upper_clip_value": 1121.9585821533194
+    },
+    "T2": {
+      "shape": [
+        256,
+        256,
+        140
+      ],
+      "voxel_size": [
+        1,
+        1,
+        1
+      ],
+      "z_score_mean": 499.2751770019531,
+      "z_score_std": 248.32627868652344,
+      "upper_clip_value": 1508.1342724609374
+    },
+    "FLAIR": {
+      "shape": [
+        256,
+        256,
+        140
+      ],
+      "voxel_size": [
+        1,
+        1,
+        1
+      ],
+      "z_score_mean": 224.80050659179688,
+      "z_score_std": 76.62236022949219,
+      "upper_clip_value": 569.0685797119135
+    }
+  },
+  "qc_metrics": {
+    "brain_mask_voxels": 1767202,
+    "clip_ratio": 0.005,
+    "clipped_voxels": 8836,
+    "z_score_mean": 1.0028709311882267e-06,
+    "z_score_std": 0.9999998211860657,
+    "tumor_seg_voxels": 56510,
+    "tumor_max_z": 71,
+    "tumor_max_z_frac": 0.507
+  },
+  "qc_passed": true,
+  "qc_fail_reason": null
+}

@@ -1,21 +1,11 @@
 # ─────────────────────────────────────────────────────────────
-# Data (large / external) — NOT tracked
-#   46GB of preprocessed NIfTI images + external metadata live under data/.
-#   We ignore data/ wholesale, then re-include ONLY the small, reproducible
-#   split definitions (notebooks + CSVs + README) which are the paper's
-#   "single source of truth". To re-include a file under an ignored dir, every
-#   parent directory must be un-ignored first — hence the ladder below.
+# Image data (large NIfTI volumes) — NOT tracked
+#   Only the actual image data is excluded. Everything else under data/
+#   (metadata CSVs, split definitions + notebooks, per-subject
+#   preprocessing_metadata.json, inventories) stays version-controlled so it
+#   remains referenceable.
 # ─────────────────────────────────────────────────────────────
-/data/*
-!/data/preprocessed/
-/data/preprocessed/*
-!/data/preprocessed/v1.0.0/
-/data/preprocessed/v1.0.0/*
-!/data/preprocessed/v1.0.0/_global/
-/data/preprocessed/v1.0.0/_global/*
-!/data/preprocessed/v1.0.0/_global/splits/
-# inside splits/: keep notebooks, CSVs, README; ignore checkpoints/scratch
-/data/preprocessed/v1.0.0/_global/splits/.ipynb_checkpoints/
+*.nii.gz
 
 # ─────────────────────────────────────────────────────────────
 # Model weights / checkpoints / large binary artifacts — NOT tracked

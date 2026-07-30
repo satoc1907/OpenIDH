@@ -1,0 +1,3 @@
+dataset,subject_id,reason
+utsw-glioma,BT0004,FileNotFoundError: T1 not found: /workspace/data/openidh/raw/utsw-glioma/BT0004/brain_t1_ants.nii.gz
+utsw-glioma,BT0001,"ValueError: T1c Z-score QC failed: ['Z-score std 0.9413 outside [0.95, 1.05]']"

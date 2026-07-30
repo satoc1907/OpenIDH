@@ -223,7 +223,7 @@ openidh/
 前処理済み NIfTI（`data/preprocessed/v1.0.0/{site}/{subject_id}/volumes/`）：
 
 ```
-T1.nii.gz, T2.nii.gz, FLAIR.nii.gz, T1GD.nii.gz, tumor_seg.nii.gz
+T1.nii.gz, T2.nii.gz, FLAIR.nii.gz, T1c.nii.gz, tumor_seg.nii.gz
 ```
 
 全て 256×256×N、1mm³ 等方、脳マスク内 z-score、脳外は厳密に 0。
@@ -249,7 +249,7 @@ def select_slices(seg: np.ndarray) -> list[int]:
 
 ```
 単独シーケンス: (3, 224, 224)      # 3 スライスを 3ch に
-統合:          (12, 224, 224)      # [T1×3, T2×3, FLAIR×3, T1GD×3] の順で連結
+統合:          (12, 224, 224)      # [T1×3, T2×3, FLAIR×3, T1c×3] の順で連結
 ```
 
 - 256×256 → 224×224 は on-the-fly リサイズ（bilinear）
@@ -295,7 +295,7 @@ class OpenIDH(nn.Module):
 
         # evidence ヘッド（シーケンスごとに独立）
         self.heads_single = nn.ModuleDict({
-            m: EvidenceHead(384) for m in ['T1', 'T2', 'FLAIR', 'T1GD']})
+            m: EvidenceHead(384) for m in ['T1', 'T2', 'FLAIR', 'T1c']})
         self.head_unified = EvidenceHead(384)
 
         # テーブル分類器
@@ -481,7 +481,7 @@ def apply_dropout(mask: dict, training: bool) -> dict:
     if not training:
         return mask
     out = {m: mask[m] and (random.random() > P_DROP)
-           for m in ['T1', 'T2', 'FLAIR', 'T1GD']}
+           for m in ['T1', 'T2', 'FLAIR', 'T1c']}
     if not any(out.values()):                  # 最低 1 つは残す
         out[random.choice([m for m in mask if mask[m]])] = True
     return out

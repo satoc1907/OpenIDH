@@ -1,0 +1,132 @@
+{
+  "subject_id": "UCSF-PDGM-0178_nifti",
+  "dataset": "ucsf-pdgm",
+  "preprocessing_version": "v1.0.0",
+  "tumor_seg_filename": "UCSF-PDGM-0178_tumor_segmentation.nii.gz",
+  "tumor_seg_source": "UCSF-PDGM-0178_tumor_segmentation.nii.gz",
+  "tumor_seg_voxel_count": 163802,
+  "tumor_seg_labels_present": [
+    1,
+    2,
+    4
+  ],
+  "volumes": {
+    "T1": {
+      "shape": [
+        256,
+        256,
+        138
+      ],
+      "voxel_size": [
+        1,
+        1,
+        1
+      ],
+      "z_score_mean": 2026.258544921875,
+      "z_score_std": 614.2379150390625,
+      "upper_clip_value": 3150.232286376955
+    },
+    "T1c": {
+      "shape": [
+        256,
+        256,
+        138
+      ],
+      "voxel_size": [
+        1,
+        1,
+        1
+      ],
+      "z_score_mean": 2590.237060546875,
+      "z_score_std": 972.6653442382812,
+      "upper_clip_value": 8405.060126953138
+    },
+    "T2": {
+      "shape": [
+        256,
+        256,
+        138
+      ],
+      "voxel_size": [
+        1,
+        1,
+        1
+      ],
+      "z_score_mean": 828.7320556640625,
+      "z_score_std": 455.5235290527344,
+      "upper_clip_value": 2574.8508825683593
+    },
+    "FLAIR": {
+      "shape": [
+        256,
+        256,
+        138
+      ],
+      "voxel_size": [
+        1,
+        1,
+        1
+      ],
+      "z_score_mean": 1210.02978515625,
+      "z_score_std": 458.9619445800781,
+      "upper_clip_value": 2477.4667114257823
+    },
+    "DWI": {
+      "shape": [
+        256,
+        256,
+        138
+      ],
+      "voxel_size": [
+        1,
+        1,
+        1
+      ],
+      "z_score_mean": 964.9743041992188,
+      "z_score_std": 322.8504638671875,
+      "upper_clip_value": 1674.9436315917976
+    },
+    "ASL": {
+      "shape": [
+        256,
+        256,
+        138
+      ],
+      "voxel_size": [
+        1,
+        1,
+        1
+      ],
+      "z_score_mean": 160.63694763183594,
+      "z_score_std": 71.18328857421875,
+      "upper_clip_value": 397.9233433532718
+    },
+    "SWI": {
+      "shape": [
+        256,
+        256,
+        138
+      ],
+      "voxel_size": [
+        1,
+        1,
+        1
+      ],
+      "z_score_mean": 3005.54248046875,
+      "z_score_std": 754.6243896484375,
+      "upper_clip_value": 4192.347441406251
+    }
+  },
+  "qc_metrics": {
+    "brain_mask_voxels": 1439218,
+    "clip_ratio": 0.005,
+    "clipped_voxels": 7197,
+    "z_score_mean": 3.033883047010022e-07,
+    "z_score_std": 0.9999998211860657,
+    "tumor_seg_voxels": 163802,
+    "tumor_max_z": 63,
+    "tumor_max_z_frac": 0.457
+  },
+  "qc_passed": true,
+  "qc_fail_reason": null
+}

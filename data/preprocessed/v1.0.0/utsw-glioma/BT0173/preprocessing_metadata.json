@@ -1,0 +1,88 @@
+{
+  "subject_id": "BT0173",
+  "dataset": "utsw-glioma",
+  "preprocessing_version": "v1.0.0",
+  "tumor_seg_filename": "rtumorseg_manual_correction.nii.gz",
+  "tumor_seg_source": "manual_refined",
+  "tumor_seg_voxel_count": 12270,
+  "tumor_seg_labels_present": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "volumes": {
+    "T1": {
+      "shape": [
+        256,
+        256,
+        146
+      ],
+      "voxel_size": [
+        1,
+        1,
+        1
+      ],
+      "z_score_mean": 572.8936767578125,
+      "z_score_std": 85.05087280273438,
+      "upper_clip_value": 689.0418457031252
+    },
+    "T1c": {
+      "shape": [
+        256,
+        256,
+        146
+      ],
+      "voxel_size": [
+        1,
+        1,
+        1
+      ],
+      "z_score_mean": 585.9842529296875,
+      "z_score_std": 74.74542236328125,
+      "upper_clip_value": 759.4026977539075
+    },
+    "T2": {
+      "shape": [
+        256,
+        256,
+        146
+      ],
+      "voxel_size": [
+        1,
+        1,
+        1
+      ],
+      "z_score_mean": 449.0736999511719,
+      "z_score_std": 167.07984924316406,
+      "upper_clip_value": 1171.0362182617191
+    },
+    "FLAIR": {
+      "shape": [
+        256,
+        256,
+        146
+      ],
+      "voxel_size": [
+        1,
+        1,
+        1
+      ],
+      "z_score_mean": 196.6131134033203,
+      "z_score_std": 44.27128982543945,
+      "upper_clip_value": 288.0127319335938
+    }
+  },
+  "qc_metrics": {
+    "brain_mask_voxels": 1401731,
+    "clip_ratio": 0.005,
+    "clipped_voxels": 7009,
+    "z_score_mean": -1.8594315633890801e-06,
+    "z_score_std": 0.9999998211860657,
+    "tumor_seg_voxels": 12270,
+    "tumor_max_z": 35,
+    "tumor_max_z_frac": 0.24
+  },
+  "qc_passed": true,
+  "qc_fail_reason": null
+}
