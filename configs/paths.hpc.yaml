@@ -1,8 +1,22 @@
-# Stage B (supercomputer) paths.
-# ★ On migration, edit ONLY the `root` line below. Nothing else in the repo changes.
-root: /path/to/scratch/openidh
-data_dir: ${root}/data/preprocessed/v1.0.0
+# Stage B (supercomputer: raiden.riken.jp) paths.
+# ★ On migration, edit ONLY the two `*_root` lines below. Nothing else in the repo changes.
+#
+# Layout on raiden (confirmed 2026-08-02) — the repo clone and the image data
+# live in separate trees, so two roots are needed:
+#   root      = git clone of this repo (/home/satoc/OpenIDH).
+#               Holds data/metadata/*.csv and the frozen splits — both are
+#               version-controlled, so they arrive with `git clone`.
+#   data_root = staged image tree (/home/satoc/data/OpenIDH).
+#               *.nii.gz volumes are gitignored and staged separately:
+#               preprocessed/v1.0.0/{ncc,ucsf-pdgm,upenn-gbm,utsw-glioma}/
+root: /home/satoc/OpenIDH
+data_root: /home/satoc/data/OpenIDH
+
+# Volumes (images) come from the staged data tree.
+data_dir: ${data_root}/preprocessed/v1.0.0
+# Metadata + splits come from the repo clone (git-tracked = single source of truth).
 metadata_dir: ${root}/data/metadata
-splits_dir: ${data_dir}/_global/splits
+splits_dir: ${root}/data/preprocessed/v1.0.0/_global/splits
+# weights/ is gitignored — stage the .safetensors here (see scripts/download_weights.py).
 weights_dir: ${root}/weights
 output_dir: ${root}/runs
