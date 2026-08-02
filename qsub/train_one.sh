@@ -72,7 +72,10 @@ else
   PM_ARGS=(-p split_file "${SPLIT_FILE}" -p seed "${SEED}" -p output_dir "${OUT}"
            -p train_yaml "${TRAIN_YAML}" -p device cuda -p paths_file "${OPENIDH_PATHS}")
   [ -n "${FOLD_ID}" ] && PM_ARGS+=(-p fold_id "${FOLD_ID}")
-  uv run --frozen papermill notebooks/03_train.ipynb "${OUT}/03_train_executed.ipynb" "${PM_ARGS[@]}"
+  # --log-output: without it papermill keeps cell stdout inside the notebook and
+  # writes it only at the end, so a 20h job shows zero progress in the qsub log.
+  uv run --frozen papermill --log-output --no-progress-bar \
+    notebooks/03_train.ipynb "${OUT}/03_train_executed.ipynb" "${PM_ARGS[@]}"
 fi
 
 echo "[qsub] done -> ${OUT}"
