@@ -47,6 +47,9 @@ cd "${REPO_DIR:-${HOME}/OpenIDH}"
 # stage weights/ beforehand with `bash qsub/prepare_env.sh` on the login node.
 export OPENIDH_PATHS="${OPENIDH_PATHS:-configs/paths.hpc.yaml}"
 export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
+# Without this, Python block-buffers stdout when it is a file, so per-epoch
+# progress only lands in the log at the very end — indistinguishable from a hang.
+export PYTHONUNBUFFERED=1
 
 : "${SPLIT_FILE:?set SPLIT_FILE (e.g. splits_loso_foldA.csv)}"
 SEED="${SEED:-0}"
