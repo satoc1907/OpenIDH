@@ -6,6 +6,7 @@ modality dropout -> fuse -> loss. Early stopping is on inner-val NLL (spec §9).
 from __future__ import annotations
 
 import random
+import time
 from dataclasses import dataclass
 
 import numpy as np
@@ -102,6 +103,28 @@ def _balanced_subset(rows, n):
     return (mut[:k] + wt[: n - min(k, len(mut))])[:n]
 
 
+def make_loader(ds, cfg, shuffle: bool):
+    """DataLoader with cfg-driven workers.
+
+    Each __getitem__ gunzips 5 NIfTI volumes, so loading — not the GPU — is the
+    bottleneck on the cluster; `train.num_workers` parallelises it. __getitem__ has
+    no RNG and shuffling stays in the main-process sampler, so the worker count does
+    not change the data order. 0 keeps the single-process path (local).
+
+    Measured on the smoke fold (nw=0 vs nw=4, seed 0): identical epoch-by-epoch, and
+    bitwise identical once OMP_NUM_THREADS is pinned. Unpinned, metrics differ by
+    ~1e-5 relative — worker processes shift the main process's OpenMP thread count,
+    which reorders float reductions. Nothing to do with the data pipeline.
+    """
+    nw = int(cfg["train"].get("num_workers", 0) or 0)
+    # NOT persistent_workers: a persistent iterator draws the worker base seed only
+    # once instead of once per epoch, which shifts the global RNG stream and changes
+    # the shuffle order from epoch 1 on (measured: smoke diverges at epoch 1).
+    extra = {"prefetch_factor": 4} if nw > 0 else {}
+    return DataLoader(ds, batch_size=cfg["train"]["batch_size"], shuffle=shuffle,
+                      num_workers=nw, **extra)
+
+
 def train_fold(paths, cfg, split_file, fold_id=None, seed=0, log=print):
     set_seed(seed)
     device = cfg["train"]["device"]
@@ -120,9 +143,8 @@ def train_fold(paths, cfg, split_file, fold_id=None, seed=0, log=print):
         ds.age_mean, ds.age_std = age_mean, age_std
     log(f"train={len(train_ds)} val={len(val_ds)} age_mean={age_mean:.1f} age_std={age_std:.1f}")
 
-    bs = cfg["train"]["batch_size"]
-    train_loader = DataLoader(train_ds, batch_size=bs, shuffle=True, num_workers=0)
-    val_loader = DataLoader(val_ds, batch_size=bs, shuffle=False, num_workers=0)
+    train_loader = make_loader(train_ds, cfg, shuffle=True)
+    val_loader = make_loader(val_ds, cfg, shuffle=False)
 
     model = OpenIDH(backbone=cfg["model"]["backbone"], weights_dir=paths.weights_dir).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=cfg["train"]["lr"],
@@ -134,6 +156,7 @@ def train_fold(paths, cfg, split_file, fold_id=None, seed=0, log=print):
     best = {"nll": float("inf"), "epoch": -1}; history = []; bad = 0
 
     for epoch in range(cfg["train"]["epochs"]):
+        t0 = time.perf_counter()
         model.train()
         lam_reg_t = lam_max * min(1.0, epoch / max(1, t_anneal))
         tr_loss = 0.0
@@ -146,9 +169,12 @@ def train_fold(paths, cfg, split_file, fold_id=None, seed=0, log=print):
         tr_loss /= max(1, len(train_ds))
 
         metrics, records = evaluate(model, val_loader, cfg, device)
-        history.append({"epoch": epoch, "train_loss": tr_loss, "lam_reg_t": lam_reg_t, **metrics})
+        secs = time.perf_counter() - t0
+        history.append({"epoch": epoch, "train_loss": tr_loss, "lam_reg_t": lam_reg_t,
+                        "secs": secs, **metrics})
         log(f"epoch {epoch}: train_loss={tr_loss:.4f} val_nll={metrics['nll']:.4f} "
-            f"val_auc={metrics['auc']:.3f} median_S={metrics['median_S']:.1f}")
+            f"val_auc={metrics['auc']:.3f} median_S={metrics['median_S']:.1f} "
+            f"({secs:.1f}s)")
 
         if metrics["nll"] < best["nll"]:
             best = {"nll": metrics["nll"], "epoch": epoch, "state": {k: v.cpu().clone()

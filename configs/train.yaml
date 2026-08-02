@@ -23,6 +23,9 @@ train:
   modality_dropout_p: 0.2
   device: cuda
   amp_dtype: bfloat16
+  num_workers: 8                 # dataloading (5 gunzipped NIfTI/subject) is the
+                                 # bottleneck on the cluster, not the GPU. Does not
+                                 # change data order; see make_loader(). 0 = single process.
 
 data:
   split_file: splits_loso_foldA.csv

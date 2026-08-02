@@ -50,6 +50,11 @@ export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
 # Without this, Python block-buffers stdout when it is a file, so per-epoch
 # progress only lands in the log at the very end — indistinguishable from a hang.
 export PYTHONUNBUFFERED=1
+# Pin the main process's thread count: left unpinned it varies with machine load
+# (dataloader workers compete for cores), which reorders float reductions and makes
+# reruns differ by ~1e-5. Fixed here so a rerun of the same seed reproduces exactly.
+export OMP_NUM_THREADS="${OMP_NUM_THREADS:-8}"
+export MKL_NUM_THREADS="${MKL_NUM_THREADS:-8}"
 
 : "${SPLIT_FILE:?set SPLIT_FILE (e.g. splits_loso_foldA.csv)}"
 SEED="${SEED:-0}"

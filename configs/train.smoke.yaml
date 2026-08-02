@@ -5,6 +5,8 @@ train:
   device: cpu                    # or mps on a Mac
   amp_dtype: null
   early_stop_patience: 99        # don't early-stop in a 2-epoch smoke run
+  num_workers: 0                 # single process locally (20 subjects; avoids
+                                 # worker startup cost and mps/fork issues)
 
 data:
   subset_n: 20                   # 20 subjects only

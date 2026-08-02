@@ -16,14 +16,13 @@ import sys
 from pathlib import Path
 
 import torch
-from torch.utils.data import DataLoader
 
 _ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_ROOT))
 
 from openidh_model.data.dataset import GliomaDataset  # noqa: E402
 from openidh_model.eval.metrics import compute_metrics  # noqa: E402
-from openidh_model.train.loop import evaluate, train_fold  # noqa: E402
+from openidh_model.train.loop import evaluate, make_loader, train_fold  # noqa: E402
 from openidh_model.train.monitor import summarize  # noqa: E402
 from openidh_model.utils.config import load_config  # noqa: E402
 from openidh_model.utils.paths import load_paths  # noqa: E402
@@ -57,7 +56,7 @@ def run(split_file, seed=0, output_dir="runs/default", train_yaml="train.yaml",
                             fold_id=fold_id, age_mean=res["age_mean"], age_std=res["age_std"])
     if cfg["data"].get("subset_n"):  # keep the local smoke fast
         test_ds.rows = _subset(test_ds.rows, cfg["data"]["subset_n"])
-    test_loader = DataLoader(test_ds, batch_size=cfg["train"]["batch_size"])
+    test_loader = make_loader(test_ds, cfg, shuffle=False)
     test_metrics, test_rec = evaluate(model, test_loader, cfg, dev)
     mon = summarize(test_rec)
     log(f"TEST metrics: { {k: round(v,4) for k,v in test_metrics.items()} }")
