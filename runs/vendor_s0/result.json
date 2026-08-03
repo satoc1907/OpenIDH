@@ -1,0 +1,39 @@
+{
+  "split_file": "splits_vendor_philips.csv",
+  "fold_id": null,
+  "seed": 0,
+  "train_yaml": "train.yaml",
+  "best_epoch": 5,
+  "best_val_nll": 0.401728383987745,
+  "age_mean": 55.44386422976501,
+  "age_std": 15.358768094853444,
+  "n_train": 383,
+  "n_val": 96,
+  "n_test": 140,
+  "test_metrics": {
+    "nll": 0.4055635738554071,
+    "brier": 0.12854565103063778,
+    "ece": 0.07220543669503274,
+    "mean_S": 21.150087325913564,
+    "median_S": 19.285646557807922,
+    "auc": 0.8892128279883382,
+    "auprc": 0.8285945525021599
+  },
+  "test_monitor": {
+    "median_S": 19.285648345947266,
+    "S_correct_median": 20.261859893798828,
+    "S_wrong_median": 17.07147979736328,
+    "evidence_balance": {
+      "T1": 2.309277296066284,
+      "T2": 1.6121388673782349,
+      "FLAIR": 2.4547877311706543,
+      "T1c": 9.440958023071289,
+      "unified": 1.9751478433609009,
+      "tabular": 1.3577778339385986
+    },
+    "fused_data": 0.1358570375612804,
+    "fused_reg": 0.6431433950151716,
+    "reg_over_data": 4.733971876319414,
+    "uncertainty_ok": true
+  }
+}

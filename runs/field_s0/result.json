@@ -1,0 +1,39 @@
+{
+  "split_file": "splits_field.csv",
+  "fold_id": null,
+  "seed": 0,
+  "train_yaml": "train.yaml",
+  "best_epoch": 19,
+  "best_val_nll": 0.3309194116922833,
+  "age_mean": 54.94395280235988,
+  "age_std": 15.68927024735464,
+  "n_train": 339,
+  "n_val": 85,
+  "n_test": 195,
+  "test_metrics": {
+    "nll": 0.4621646157496648,
+    "brier": 0.13601330840340806,
+    "ece": 0.09218884739404927,
+    "mean_S": 61.0315380579386,
+    "median_S": 60.906593322753906,
+    "auc": 0.8462662769067233,
+    "auprc": 0.6980086381374546
+  },
+  "test_monitor": {
+    "median_S": 60.906593322753906,
+    "S_correct_median": 63.85898208618164,
+    "S_wrong_median": 48.02361297607422,
+    "evidence_balance": {
+      "T1": 12.743036270141602,
+      "T2": 11.087149620056152,
+      "FLAIR": 11.920557022094727,
+      "T1c": 12.664413452148438,
+      "unified": 9.538599014282227,
+      "tabular": 1.0777812004089355
+    },
+    "fused_data": 0.137782855064441,
+    "fused_reg": 0.9779840377660898,
+    "reg_over_data": 7.098009671150209,
+    "uncertainty_ok": true
+  }
+}
