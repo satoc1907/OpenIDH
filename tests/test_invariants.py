@@ -144,3 +144,45 @@ def test_volume_not_in_forward_inputs():
     S_a = sum(fuse(_ev(), _active(flags), torch.tensor([100.0]))[:2])
     S_b = sum(fuse(_ev(), _active(flags), torch.tensor([100_000.0]))[:2])
     assert not torch.allclose(S_a, S_b)
+
+
+# ── post-hoc temperature scaling (spec §10) ──────────────────────────────────
+def _beta_from_logit(z, S=40.0):
+    import numpy as np
+    p = 1.0 / (1.0 + np.exp(-np.asarray(z, dtype=float)))
+    return p * S, S - p * S
+
+
+def test_temperature_preserves_ranking():
+    """Temperature is monotone in p_hat, so AUC/AUPRC must not move (spec §10)."""
+    import numpy as np
+    from openidh_model.train.calibrate import check_ranking_invariant
+    rng = np.random.default_rng(0)
+    y = rng.integers(0, 2, 400).astype(float)
+    a, b = _beta_from_logit(rng.normal(0, 2, 400) + 1.5 * y)
+    for T in (0.25, 1.0, 3.7):
+        d = check_ranking_invariant(a, b, y, T)   # raises if AUC/AUPRC move
+        assert all(abs(v) < 1e-9 for v in d.values())
+
+
+def test_temperature_recovers_known_scaling():
+    """Logits inflated by a known factor should be undone by fitting T on them."""
+    import numpy as np
+    from openidh_model.train.calibrate import apply_temperature, fit_temperature
+    rng = np.random.default_rng(1)
+    z = rng.normal(0, 1.5, 4000)
+    y = (rng.random(4000) < 1 / (1 + np.exp(-z))).astype(float)
+    a, b = _beta_from_logit(z * 3.0)              # over-confident by 3x
+    T = fit_temperature(a, b, y)
+    assert 2.4 < T < 3.6, T
+    from openidh_model.eval.metrics import compute_metrics
+    assert compute_metrics(*apply_temperature(a, b, T), y)["ece"] < compute_metrics(a, b, y)["ece"]
+
+
+def test_temperature_keeps_evidence_mass():
+    """S = alpha + beta carries evidence, not class split — temperature must not touch it."""
+    import numpy as np
+    from openidh_model.train.calibrate import apply_temperature
+    a, b = _beta_from_logit([-2.0, 0.0, 1.3], S=55.0)
+    a2, b2 = apply_temperature(a, b, 2.5)
+    assert np.allclose(np.asarray(a) + np.asarray(b), a2 + b2)
