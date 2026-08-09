@@ -4,7 +4,7 @@
   --plane:#eff2f3; --surface:#fbfcfc; --raised:#f5f7f8;
   --ink:#10161a; --ink2:#4d5b63; --muted:#7b8a92;
   --rule:#dbe1e4; --hair:#e6eaec; --grid:#e2e7e9;
-  --accent:#1c5cab; --ood:#eb6834; --ind:#2a78d6;
+  --accent:#1c5cab; --ood:#eb6834; --ind:#2a78d6; --ser3:#1baf7a;
   --good:#0ca30c; --warn:#fab219; --crit:#d03b3b;
   --unused:rgba(16,22,26,.045);
   color-scheme:light;
@@ -13,7 +13,7 @@
   --plane:#0c0f11; --surface:#15191c; --raised:#1b2024;
   --ink:#f2f5f6; --ink2:#b3c0c7; --muted:#8b979e;
   --rule:#283036; --hair:#222a2f; --grid:#232b30;
-  --accent:#7fb0ec; --ood:#d95926; --ind:#3987e5;
+  --accent:#7fb0ec; --ood:#d95926; --ind:#3987e5; --ser3:#199e70;
   --good:#0ca30c; --warn:#fab219; --crit:#e06a6a;
   --unused:rgba(255,255,255,.05);
   color-scheme:dark;
@@ -22,7 +22,7 @@
   --plane:#0c0f11; --surface:#15191c; --raised:#1b2024;
   --ink:#f2f5f6; --ink2:#b3c0c7; --muted:#8b979e;
   --rule:#283036; --hair:#222a2f; --grid:#232b30;
-  --accent:#7fb0ec; --ood:#d95926; --ind:#3987e5;
+  --accent:#7fb0ec; --ood:#d95926; --ind:#3987e5; --ser3:#199e70;
   --good:#0ca30c; --warn:#fab219; --crit:#e06a6a;
   --unused:rgba(255,255,255,.05);
   color-scheme:dark;
@@ -31,7 +31,7 @@
   --plane:#eff2f3; --surface:#fbfcfc; --raised:#f5f7f8;
   --ink:#10161a; --ink2:#4d5b63; --muted:#7b8a92;
   --rule:#dbe1e4; --hair:#e6eaec; --grid:#e2e7e9;
-  --accent:#1c5cab; --ood:#eb6834; --ind:#2a78d6;
+  --accent:#1c5cab; --ood:#eb6834; --ind:#2a78d6; --ser3:#1baf7a;
   --unused:rgba(16,22,26,.045);
   color-scheme:light;
 }
@@ -101,6 +101,14 @@ svg{display:block; min-width:640px}
 .whisk.ood,.conn.ood{stroke:var(--ood)} .whisk.ind,.conn.ind{stroke:var(--ind)}
 .whisk{stroke-width:2; opacity:.5} .conn{stroke-width:2; opacity:.42}
 .bar.ood{fill:var(--ood)} .bar.ind{fill:var(--ind)}
+.dot.acc{fill:var(--ser3)} .ring.acc{stroke:var(--ser3)}
+.diamond{stroke:var(--surface); stroke-width:2}
+.diamond.ood{fill:var(--ood)} .diamond.ind{fill:var(--ind)}
+.rel{fill:none; stroke-width:2; opacity:.85}
+.rel.ood{stroke:var(--ood)} .rel.ind{stroke:var(--ind)} .rel.acc{stroke:var(--ser3)}
+.ideal{stroke:var(--muted); stroke-width:1.5; stroke-dasharray:5 4}
+.dirlab{font-size:11.5px; font-family:inherit}
+.dirlab.ood{fill:var(--ood)} .dirlab.ind{fill:var(--ind)} .dirlab.acc{fill:var(--ser3)}
 .unused{fill:var(--unused)}
 .hit{fill:transparent}
 .mk{cursor:default}
@@ -151,7 +159,7 @@ footer code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; co
     <div><dt>構成</dt><dd>9 fold-unit × 3 seed = 27 ラン</dd></div>
     <div><dt>実行環境</dt><dd>A100-SXM4-40GB / 1 GPU per job</dd></div>
     <div><dt>不確実性チェック</dt><dd>27 / 27 合格</dd></div>
-    <div><dt>commit</dt><dd>85609ba</dd></div>
+    <div><dt>commit</dt><dd>893ad5f</dd></div>
   </dl>
 </header>
 
@@ -195,6 +203,41 @@ footer code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; co
     <svg viewBox="0 0 818 350" role="img" width="100%" aria-label="ユニット別の AUC と ECE（3 seed の平均±標準偏差）"><title>ユニット別 AUC / ECE</title><text class="pnl" x="172" y="16">AUC（判別）</text><line class="grid" x1="172.0" y1="34" x2="172.0" y2="320"/><text class="tick" x="172.0" y="336" text-anchor="middle">0.80</text><line class="grid" x1="242.0" y1="34" x2="242.0" y2="320"/><text class="tick" x="242.0" y="336" text-anchor="middle">0.85</text><line class="grid" x1="312.0" y1="34" x2="312.0" y2="320"/><text class="tick" x="312.0" y="336" text-anchor="middle">0.90</text><line class="grid" x1="382.0" y1="34" x2="382.0" y2="320"/><text class="tick" x="382.0" y="336" text-anchor="middle">0.95</text><text class="pnl" x="484" y="16">ECE（較正誤差）</text><line class="grid" x1="484.0" y1="34" x2="484.0" y2="320"/><text class="tick" x="484.0" y="336" text-anchor="middle">0.00</text><line class="grid" x1="536.5" y1="34" x2="536.5" y2="320"/><text class="tick" x="536.5" y="336" text-anchor="middle">0.05</text><line class="grid" x1="589.0" y1="34" x2="589.0" y2="320"/><text class="tick" x="589.0" y="336" text-anchor="middle">0.10</text><line class="grid" x1="641.5" y1="34" x2="641.5" y2="320"/><text class="tick" x="641.5" y="336" text-anchor="middle">0.15</text><line class="grid" x1="694.0" y1="34" x2="694.0" y2="320"/><text class="tick" x="694.0" y="336" text-anchor="middle">0.20</text><text class="rowlab" x="158" y="65.0" text-anchor="end">field（3T）</text><g class="mk" data-tip="field（3T） · AUC 0.861 ± 0.024（3 seed）"><line class="whisk ood" x1="223.4" y1="61.0" x2="291.8" y2="61.0"/><circle class="dot ood" cx="257.6" cy="61.0" r="5.5"/><rect class="hit" x="215.4" y="49.0" width="84.3" height="24"/></g><text class="val" x="390" y="65.0">0.861</text><g class="mk" data-tip="field（3T） · ECE 0.088 ± 0.004（3 seed）"><line class="whisk ood" x1="571.9" y1="61.0" x2="580.5" y2="61.0"/><circle class="dot ood" cx="576.2" cy="61.0" r="5.5"/><rect class="hit" x="563.9" y="49.0" width="24.6" height="24"/></g><text class="val" x="702" y="65.0">0.088</text><text class="rowlab" x="158" y="95.0" text-anchor="end">LOSO-A（施設）</text><g class="mk" data-tip="LOSO-A（施設） · AUC 0.856 ± 0.021（3 seed）"><line class="whisk ood" x1="221.1" y1="91.0" x2="278.6" y2="91.0"/><circle class="dot ood" cx="249.9" cy="91.0" r="5.5"/><rect class="hit" x="213.1" y="79.0" width="73.5" height="24"/></g><text class="val" x="390" y="95.0">0.856</text><g class="mk" data-tip="LOSO-A（施設） · ECE 0.082 ± 0.025（3 seed）"><line class="whisk ood" x1="543.9" y1="91.0" x2="595.7" y2="91.0"/><circle class="dot ood" cx="569.8" cy="91.0" r="5.5"/><rect class="hit" x="535.9" y="79.0" width="67.7" height="24"/></g><text class="val" x="702" y="95.0">0.082</text><text class="rowlab" x="158" y="125.0" text-anchor="end">LOSO-B（施設）</text><g class="mk" data-tip="LOSO-B（施設） · AUC 0.854 ± 0.019（3 seed）"><line class="whisk ood" x1="220.6" y1="121.0" x2="274.6" y2="121.0"/><circle class="dot ood" cx="247.6" cy="121.0" r="5.5"/><rect class="hit" x="212.6" y="109.0" width="70.1" height="24"/></g><text class="val" x="390" y="125.0">0.854</text><g class="mk" data-tip="LOSO-B（施設） · ECE 0.162 ± 0.018（3 seed）"><line class="whisk ood" x1="635.3" y1="121.0" x2="672.6" y2="121.0"/><circle class="dot ood" cx="653.9" cy="121.0" r="5.5"/><rect class="hit" x="627.3" y="109.0" width="53.4" height="24"/></g><text class="val" x="702" y="125.0">0.162</text><text class="rowlab" x="158" y="155.0" text-anchor="end">vendor（Philips）</text><g class="mk" data-tip="vendor（Philips） · AUC 0.867 ± 0.053（3 seed）"><line class="whisk ood" x1="192.4" y1="151.0" x2="340.3" y2="151.0"/><circle class="dot ood" cx="266.3" cy="151.0" r="5.5"/><rect class="hit" x="184.4" y="139.0" width="163.9" height="24"/></g><text class="val" x="390" y="155.0">0.867</text><g class="mk" data-tip="vendor（Philips） · ECE 0.085 ± 0.019（3 seed）"><line class="whisk ood" x1="552.6" y1="151.0" x2="593.1" y2="151.0"/><circle class="dot ood" cx="572.8" cy="151.0" r="5.5"/><rect class="hit" x="544.6" y="139.0" width="56.4" height="24"/></g><text class="val" x="702" y="155.0">0.085</text><line class="sep" x1="6" y1="166.0" x2="758" y2="166.0"/><text class="rowlab" x="158" y="185.0" text-anchor="end">random fold 0</text><g class="mk" data-tip="random fold 0 · AUC 0.917 ± 0.013（3 seed）"><line class="whisk ind" x1="318.4" y1="181.0" x2="354.1" y2="181.0"/><circle class="dot ind" cx="336.2" cy="181.0" r="5.5"/><rect class="hit" x="310.4" y="169.0" width="51.7" height="24"/></g><text class="val" x="390" y="185.0">0.917</text><g class="mk" data-tip="random fold 0 · ECE 0.046 ± 0.005（3 seed）"><line class="whisk ind" x1="526.2" y1="181.0" x2="537.6" y2="181.0"/><circle class="dot ind" cx="531.9" cy="181.0" r="5.5"/><rect class="hit" x="518.2" y="169.0" width="27.4" height="24"/></g><text class="val" x="702" y="185.0">0.046</text><text class="rowlab" x="158" y="215.0" text-anchor="end">random fold 1</text><g class="mk" data-tip="random fold 1 · AUC 0.898 ± 0.011（3 seed）"><line class="whisk ind" x1="292.8" y1="211.0" x2="324.2" y2="211.0"/><circle class="dot ind" cx="308.5" cy="211.0" r="5.5"/><rect class="hit" x="284.8" y="199.0" width="47.4" height="24"/></g><text class="val" x="390" y="215.0">0.898</text><g class="mk" data-tip="random fold 1 · ECE 0.035 ± 0.006（3 seed）"><line class="whisk ind" x1="514.3" y1="211.0" x2="527.7" y2="211.0"/><circle class="dot ind" cx="521.0" cy="211.0" r="5.5"/><rect class="hit" x="506.3" y="199.0" width="29.3" height="24"/></g><text class="val" x="702" y="215.0">0.035</text><text class="rowlab" x="158" y="245.0" text-anchor="end">random fold 2</text><g class="mk" data-tip="random fold 2 · AUC 0.900 ± 0.009（3 seed）"><line class="whisk ind" x1="300.4" y1="241.0" x2="324.3" y2="241.0"/><circle class="dot ind" cx="312.3" cy="241.0" r="5.5"/><rect class="hit" x="292.4" y="229.0" width="39.9" height="24"/></g><text class="val" x="390" y="245.0">0.900</text><g class="mk" data-tip="random fold 2 · ECE 0.047 ± 0.004（3 seed）"><line class="whisk ind" x1="528.9" y1="241.0" x2="536.9" y2="241.0"/><circle class="dot ind" cx="532.9" cy="241.0" r="5.5"/><rect class="hit" x="520.9" y="229.0" width="24.0" height="24"/></g><text class="val" x="702" y="245.0">0.047</text><text class="rowlab" x="158" y="275.0" text-anchor="end">random fold 3</text><g class="mk" data-tip="random fold 3 · AUC 0.907 ± 0.019（3 seed）"><line class="whisk ind" x1="295.7" y1="271.0" x2="347.6" y2="271.0"/><circle class="dot ind" cx="321.6" cy="271.0" r="5.5"/><rect class="hit" x="287.7" y="259.0" width="68.0" height="24"/></g><text class="val" x="390" y="275.0">0.907</text><g class="mk" data-tip="random fold 3 · ECE 0.046 ± 0.024（3 seed）"><line class="whisk ind" x1="507.2" y1="271.0" x2="557.6" y2="271.0"/><circle class="dot ind" cx="532.4" cy="271.0" r="5.5"/><rect class="hit" x="499.2" y="259.0" width="66.3" height="24"/></g><text class="val" x="702" y="275.0">0.046</text><text class="rowlab" x="158" y="305.0" text-anchor="end">random fold 4</text><g class="mk" data-tip="random fold 4 · AUC 0.907 ± 0.018（3 seed）"><line class="whisk ind" x1="296.8" y1="301.0" x2="347.0" y2="301.0"/><circle class="dot ind" cx="321.9" cy="301.0" r="5.5"/><rect class="hit" x="288.8" y="289.0" width="66.2" height="24"/></g><text class="val" x="390" y="305.0">0.907</text><g class="mk" data-tip="random fold 4 · ECE 0.047 ± 0.008（3 seed）"><line class="whisk ind" x1="525.0" y1="301.0" x2="542.4" y2="301.0"/><circle class="dot ind" cx="533.7" cy="301.0" r="5.5"/><rect class="hit" x="517.0" y="289.0" width="33.4" height="24"/></g><text class="val" x="702" y="305.0">0.047</text></svg>
     <figcaption>点は 3 seed の平均、横線は標準偏差。左パネルは高いほど良く、右パネルは低いほど良い。
     破線より上が分布外の 4 ユニット。</figcaption>
+  </figure>
+</section>
+
+
+<section class="finding">
+  <p class="eyebrow">所見 — 事後較正</p>
+  <h2 class="serif">temperature scaling は効かなかった。実装ではなく、道具が問題に合っていない</h2>
+  <p>仕様 §10 は inner-val で temperature をフィットして test に当てることを指定していた。
+  27ラン全てに適用した結果、<strong>分布外の ECE は 0.104 → 0.101 とほぼ動かず、
+  分布内はむしろ 0.044 → 0.047 と悪化した</strong>。
+  27ラン中 16 ランで ECE が悪化している。最も較正の悪い LOSO-B も 0.162 → 0.160 で、実質ゼロだった。</p>
+  <p>原因は <strong>T の平均が 0.992（範囲 0.66〜1.22）</strong>
+  だったことに尽きる。inner-val 上ではモデルは既にほぼ較正されており、temperature は
+  「補正すべきものが無い」と判断している。これは実装の失敗ではなく、
+  <strong>道具が問題に構造的に噛み合っていない</strong>ということである。</p>
+  <p>理由は2つある。第一に、§10 が問題視したのは <strong>base rate のシフト</strong>
+  （LOSO-B: inner-val 11.8% → test 28.4%）だが、<strong>temperature はロジットを定数倍するだけで切片を持たない</strong>。
+  base rate のずれは切片で吸収すべき量なので、原理的に補正できない。第二に、
+  <strong>T をフィットする inner-val は train と同分布である</strong>。
+  シフトした後に生じる較正ずれは、inner-val からは観測できない。</p>
+  <p>したがってこれは「較正手法の実装に失敗した」ではなく、
+  <strong>「事後較正では分布シフト下の較正ずれを吸収できない」という知見</strong>として読むべきである。
+  確率値そのものを信頼できない領域が残る以上、<strong>「この予測は信頼できるか」を確率とは別の量で持つ必要がある</strong>。
+  27ラン全てで成立していた evidential な不確実性（誤答時に S が下がる）は、
+  まさにその役割を担う量であり、この結果はその必要性を補強している。</p>
+  <figure class="figure">
+    <div class="legend">
+      <span style="color:var(--ink2)"><i style="background:currentColor"></i>生の確率（塗り）</span>
+      <span style="color:var(--ink2)"><i class="hollow"></i>temperature 較正後（白抜き）</span>
+      
+    </div>
+    <div class="legend"><span style="color:var(--ood)"><i style="background:var(--ood)"></i>分布外シフト（LOSO / vendor / field）</span><span style="color:var(--ind)"><i style="background:var(--ind)"></i>分布内（random 5-fold）</span></div>
+    <svg viewBox="0 0 760 392" role="img" width="100%" aria-label="ユニット別の ECE：生・temperature 較正後"><title>較正手法ごとの ECE</title><line class="grid" x1="172.0" y1="32" x2="172.0" y2="356"/><text class="tick" x="172.0" y="372" text-anchor="middle">0.00</text><line class="grid" x1="298.0" y1="32" x2="298.0" y2="356"/><text class="tick" x="298.0" y="372" text-anchor="middle">0.05</text><line class="grid" x1="424.0" y1="32" x2="424.0" y2="356"/><text class="tick" x="424.0" y="372" text-anchor="middle">0.10</text><line class="grid" x1="550.0" y1="32" x2="550.0" y2="356"/><text class="tick" x="550.0" y="372" text-anchor="middle">0.15</text><line class="grid" x1="676.0" y1="32" x2="676.0" y2="356"/><text class="tick" x="676.0" y="372" text-anchor="middle">0.20</text><text class="tick" x="424.0" y="388" text-anchor="middle">ECE（低いほど良い）</text><text class="rowlab" x="158" y="67.0" text-anchor="end">field（3T）</text><line class="conn ood" x1="380.2" y1="63.0" x2="393.4" y2="63.0"/><g class="mk" data-tip="field（3T） · 生 ECE 0.088"><circle class="dot ood" cx="393.4" cy="63.0" r="5.5"/><rect class="hit" x="384.4" y="51.0" width="18" height="24"/></g><g class="mk" data-tip="field（3T） · temperature ECE 0.083"><circle class="ring ood" cx="380.2" cy="63.0" r="5"/><rect class="hit" x="371.2" y="51.0" width="18" height="24"/></g><text class="val" x="688" y="67.0">0.083</text><text class="rowlab" x="158" y="101.0" text-anchor="end">LOSO-A（施設）</text><line class="conn ood" x1="377.9" y1="97.0" x2="394.2" y2="97.0"/><g class="mk" data-tip="LOSO-A（施設） · 生 ECE 0.082"><circle class="dot ood" cx="377.9" cy="97.0" r="5.5"/><rect class="hit" x="368.9" y="85.0" width="18" height="24"/></g><g class="mk" data-tip="LOSO-A（施設） · temperature ECE 0.088"><circle class="ring ood" cx="394.2" cy="97.0" r="5"/><rect class="hit" x="385.2" y="85.0" width="18" height="24"/></g><text class="val" x="688" y="101.0">0.082</text><text class="rowlab" x="158" y="135.0" text-anchor="end">LOSO-B（施設）</text><line class="conn ood" x1="575.1" y1="131.0" x2="579.9" y2="131.0"/><g class="mk" data-tip="LOSO-B（施設） · 生 ECE 0.162"><circle class="dot ood" cx="579.9" cy="131.0" r="5.5"/><rect class="hit" x="570.9" y="119.0" width="18" height="24"/></g><g class="mk" data-tip="LOSO-B（施設） · temperature ECE 0.160"><circle class="ring ood" cx="575.1" cy="131.0" r="5"/><rect class="hit" x="566.1" y="119.0" width="18" height="24"/></g><text class="val" x="688" y="135.0">0.160</text><text class="rowlab" x="158" y="169.0" text-anchor="end">vendor（Philips）</text><line class="conn ood" x1="354.8" y1="165.0" x2="385.2" y2="165.0"/><g class="mk" data-tip="vendor（Philips） · 生 ECE 0.085"><circle class="dot ood" cx="385.2" cy="165.0" r="5.5"/><rect class="hit" x="376.2" y="153.0" width="18" height="24"/></g><g class="mk" data-tip="vendor（Philips） · temperature ECE 0.073"><circle class="ring ood" cx="354.8" cy="165.0" r="5"/><rect class="hit" x="345.8" y="153.0" width="18" height="24"/></g><text class="val" x="688" y="169.0">0.073</text><line class="sep" x1="6" y1="182.0" x2="690" y2="182.0"/><text class="rowlab" x="158" y="203.0" text-anchor="end">random fold 0</text><line class="conn ind" x1="287.0" y1="199.0" x2="293.4" y2="199.0"/><g class="mk" data-tip="random fold 0 · 生 ECE 0.046"><circle class="dot ind" cx="287.0" cy="199.0" r="5.5"/><rect class="hit" x="278.0" y="187.0" width="18" height="24"/></g><g class="mk" data-tip="random fold 0 · temperature ECE 0.048"><circle class="ring ind" cx="293.4" cy="199.0" r="5"/><rect class="hit" x="284.4" y="187.0" width="18" height="24"/></g><text class="val" x="688" y="203.0">0.046</text><text class="rowlab" x="158" y="237.0" text-anchor="end">random fold 1</text><line class="conn ind" x1="260.8" y1="233.0" x2="279.2" y2="233.0"/><g class="mk" data-tip="random fold 1 · 生 ECE 0.035"><circle class="dot ind" cx="260.8" cy="233.0" r="5.5"/><rect class="hit" x="251.8" y="221.0" width="18" height="24"/></g><g class="mk" data-tip="random fold 1 · temperature ECE 0.043"><circle class="ring ind" cx="279.2" cy="233.0" r="5"/><rect class="hit" x="270.2" y="221.0" width="18" height="24"/></g><text class="val" x="688" y="237.0">0.035</text><text class="rowlab" x="158" y="271.0" text-anchor="end">random fold 2</text><line class="conn ind" x1="289.4" y1="267.0" x2="299.5" y2="267.0"/><g class="mk" data-tip="random fold 2 · 生 ECE 0.047"><circle class="dot ind" cx="289.4" cy="267.0" r="5.5"/><rect class="hit" x="280.4" y="255.0" width="18" height="24"/></g><g class="mk" data-tip="random fold 2 · temperature ECE 0.051"><circle class="ring ind" cx="299.5" cy="267.0" r="5"/><rect class="hit" x="290.5" y="255.0" width="18" height="24"/></g><text class="val" x="688" y="271.0">0.047</text><text class="rowlab" x="158" y="305.0" text-anchor="end">random fold 3</text><line class="conn ind" x1="285.5" y1="301.0" x2="288.1" y2="301.0"/><g class="mk" data-tip="random fold 3 · 生 ECE 0.046"><circle class="dot ind" cx="288.1" cy="301.0" r="5.5"/><rect class="hit" x="279.1" y="289.0" width="18" height="24"/></g><g class="mk" data-tip="random fold 3 · temperature ECE 0.045"><circle class="ring ind" cx="285.5" cy="301.0" r="5"/><rect class="hit" x="276.5" y="289.0" width="18" height="24"/></g><text class="val" x="688" y="305.0">0.045</text><text class="rowlab" x="158" y="339.0" text-anchor="end">random fold 4</text><line class="conn ind" x1="291.2" y1="335.0" x2="291.2" y2="335.0"/><g class="mk" data-tip="random fold 4 · 生 ECE 0.047"><circle class="dot ind" cx="291.2" cy="335.0" r="5.5"/><rect class="hit" x="282.2" y="323.0" width="18" height="24"/></g><g class="mk" data-tip="random fold 4 · temperature ECE 0.047"><circle class="ring ind" cx="291.2" cy="335.0" r="5"/><rect class="hit" x="282.2" y="323.0" width="18" height="24"/></g><text class="val" x="688" y="339.0">0.047</text></svg>
+    <figcaption>3 seed の平均 ECE。右端の数値は3手法のうち最も良い値。色は分布外／分布内、
+    形が較正手法を示す。</figcaption>
   </figure>
 </section>
 

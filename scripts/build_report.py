@@ -13,11 +13,13 @@ from __future__ import annotations
 
 import argparse
 import html
+import json
 import subprocess
 import sys
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 
 _ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_ROOT / "scripts"))
@@ -36,6 +38,19 @@ OOD = [r for r in ROWS if r["kind"] == "OOD"]
 IND = [r for r in ROWS if r["kind"] == "in-dist"]
 COMMIT = subprocess.run(["git", "-C", str(_ROOT), "rev-parse", "--short", "HEAD"],
                         capture_output=True, text=True).stdout.strip()
+
+# Optional inputs: the calibration pass may not have run yet, and an older pass
+# predates the prior-correction oracle. Each section renders only what exists.
+_RD = Path(_ARGS.runs_dir)
+CAL = {r["run"]: json.loads((_RD / r["run"] / "calibration.json").read_text())
+       for r in ROWS if (_RD / r["run"] / "calibration.json").is_file()}
+HAS_CAL = len(CAL) == len(ROWS)
+HAS_ORACLE = HAS_CAL and all("test_prior_oracle" in c for c in CAL.values())
+_pf = [_RD / r["run"] / "predictions.csv" for r in ROWS]
+PRED = (pd.concat([pd.read_csv(p) for p in _pf], ignore_index=True)
+        if all(p.is_file() for p in _pf) else None)
+KIND = {r["run"]: r["kind"] for r in ROWS}
+LABEL = {r["run"]: r["label"] for r in ROWS}
 
 JA = {"LOSO-A": "LOSO-A（施設）", "LOSO-B": "LOSO-B（施設）",
       "vendor Philips": "vendor（Philips）", "field 3T": "field（3T）"}
@@ -201,6 +216,168 @@ def fig_epochs():
     return "".join(s) + '</svg>'
 
 
+# ───────────────────────── figure 5: calibration methods ──────────────────────
+def fig_calibration():
+    """Per unit: raw ECE, after temperature, after the prior-correction oracle.
+
+    Colour keeps meaning OOD/in-dist as everywhere else; the correction method is
+    carried by mark shape, so no third hue is needed.
+    """
+    rowh, top, bot, labw = 34, 46, 40, 172
+    H = top + rowh * len(UNITS) + bot
+    W, plotw = 760, 760 - 172 - 84
+    hi = 0.20
+
+    def sx(v): return labw + min(v, hi) / hi * plotw
+
+    s = [f'<svg viewBox="0 0 {W} {H}" role="img" width="100%" '
+         f'aria-label="ユニット別の ECE：生・temperature 較正後'
+         f'{"・prior correction オラクル" if HAS_ORACLE else ""}">']
+    s.append('<title>較正手法ごとの ECE</title>')
+    for t in (0, .05, .10, .15, .20):
+        x = sx(t)
+        s.append(f'<line class="grid" x1="{x:.1f}" y1="{top - 14}" x2="{x:.1f}" y2="{H - bot + 4}"/>')
+        s.append(f'<text class="tick" x="{x:.1f}" y="{H - bot + 20}" text-anchor="middle">{t:.2f}</text>')
+    s.append(f'<text class="tick" x="{sx(.10):.1f}" y="{H - bot + 36}" text-anchor="middle">ECE（低いほど良い）</text>')
+
+    for i, (lab, kind, rs) in enumerate(UNITS):
+        y = top + rowh * i + rowh / 2
+        cls = "ood" if kind == "OOD" else "ind"
+        cals = [CAL[r["run"]] for r in rs]
+        raw = float(np.mean([c["test_raw"]["ece"] for c in cals]))
+        tmp = float(np.mean([c["test_calibrated"]["ece"] for c in cals]))
+        ora = (float(np.mean([c["test_prior_oracle"]["ece"] for c in cals]))
+               if HAS_ORACLE else None)
+        if i == 4:
+            s.append(f'<line class="sep" x1="6" y1="{y - rowh / 2:.1f}" x2="{W - 70}" y2="{y - rowh / 2:.1f}"/>')
+        s.append(f'<text class="rowlab" x="{labw - 14}" y="{y + 4:.1f}" text-anchor="end">{esc(JA[lab])}</text>')
+        pts = [(raw, "生"), (tmp, "temperature")] + ([(ora, "prior oracle")] if ora is not None else [])
+        s.append(f'<line class="conn {cls}" x1="{sx(min(p for p, _ in pts)):.1f}" y1="{y:.1f}" '
+                 f'x2="{sx(max(p for p, _ in pts)):.1f}" y2="{y:.1f}"/>')
+        for v, nm in pts:
+            tip = f"{JA[lab]} · {nm} ECE {v:.3f}"
+            s.append(f'<g class="mk" data-tip="{esc(tip)}">')
+            if nm == "生":
+                s.append(f'<circle class="dot {cls}" cx="{sx(v):.1f}" cy="{y:.1f}" r="5.5"/>')
+            elif nm == "temperature":
+                s.append(f'<circle class="ring {cls}" cx="{sx(v):.1f}" cy="{y:.1f}" r="5"/>')
+            else:
+                s.append(f'<rect class="diamond {cls}" x="{sx(v) - 4.6:.1f}" y="{y - 4.6:.1f}" '
+                         f'width="9.2" height="9.2" transform="rotate(45 {sx(v):.1f} {y:.1f})"/>')
+            s.append(f'<rect class="hit" x="{sx(v) - 9:.1f}" y="{y - 12:.1f}" width="18" height="24"/>')
+            s.append('</g>')
+        best = min(p for p, _ in pts)
+        s.append(f'<text class="val" x="{labw + plotw + 12}" y="{y + 4:.1f}">{best:.3f}</text>')
+    return "".join(s) + '</svg>'
+
+
+# ───────────────────────── figure 6: reliability diagram ──────────────────────
+def _bins(df, n=10):
+    edges = np.linspace(0, 1, n + 1)
+    out = []
+    for lo, hi in zip(edges[:-1], edges[1:]):
+        m = (df["p_hat"] > lo) & (df["p_hat"] <= hi) if lo > 0 else (df["p_hat"] <= hi)
+        if m.sum() < 5:            # too few subjects to read anything into
+            continue
+        out.append((float(df.loc[m, "p_hat"].mean()), float(df.loc[m, "y_true"].mean()), int(m.sum())))
+    return out
+
+
+def fig_reliability():
+    test = PRED[PRED["role"] == "test"]
+    series = [
+        ("分布内（random 5-fold）", "ind", test[test["run"].map(KIND) == "in-dist"]),
+        ("分布外（全4ユニット）", "ood", test[test["run"].map(KIND) == "OOD"]),
+        ("LOSO-B のみ", "acc", test[test["run"].map(LABEL) == "LOSO-B"]),
+    ]
+    W, H, pad, top = 520, 470, 54, 30
+    plot = W - pad - 26
+
+    def X(v): return pad + v * plot
+
+    def Y(v): return top + (1 - v) * plot
+
+    s = [f'<svg viewBox="0 0 {W} {H}" role="img" width="100%" '
+         f'aria-label="信頼度図：予測確率と実際の陽性率の対応">']
+    s.append('<title>reliability diagram</title>')
+    for t in (0, .25, .5, .75, 1.0):
+        s.append(f'<line class="grid" x1="{X(t):.1f}" y1="{top}" x2="{X(t):.1f}" y2="{Y(0):.1f}"/>')
+        s.append(f'<line class="grid" x1="{pad}" y1="{Y(t):.1f}" x2="{X(1):.1f}" y2="{Y(t):.1f}"/>')
+        s.append(f'<text class="tick" x="{X(t):.1f}" y="{Y(0) + 18:.1f}" text-anchor="middle">{t:.2f}</text>')
+        s.append(f'<text class="tick" x="{pad - 8}" y="{Y(t) + 4:.1f}" text-anchor="end">{t:.2f}</text>')
+    s.append(f'<line class="ideal" x1="{X(0):.1f}" y1="{Y(0):.1f}" x2="{X(1):.1f}" y2="{Y(1):.1f}"/>')
+    s.append(f'<text class="note" x="{X(.72):.1f}" y="{Y(.78):.1f}">完全較正</text>')
+    s.append(f'<text class="tick" x="{X(.5):.1f}" y="{Y(0) + 38:.1f}" text-anchor="middle">予測確率（ビン平均）</text>')
+    s.append(f'<text class="tick" x="14" y="{top + plot / 2:.1f}" text-anchor="middle" '
+             f'transform="rotate(-90 14 {top + plot / 2:.1f})">実際の陽性率</text>')
+
+    for nm, cls, df in series:
+        b = _bins(df)
+        if not b:
+            continue
+        pts = " ".join(f"{X(p):.1f},{Y(o):.1f}" for p, o, _ in b)
+        s.append(f'<polyline class="rel {cls}" points="{pts}"/>')
+        for p, o, n in b:
+            s.append(f'<g class="mk" data-tip="{esc(f"{nm} · 予測 {p:.2f} → 実際 {o:.2f}（n={n}）")}">')
+            s.append(f'<circle class="dot {cls}" cx="{X(p):.1f}" cy="{Y(o):.1f}" r="4.6"/>')
+            s.append(f'<rect class="hit" x="{X(p) - 9:.1f}" y="{Y(o) - 9:.1f}" width="18" height="18"/>')
+            s.append('</g>')
+        p, o, _ = b[-1]
+        s.append(f'<text class="dirlab {cls}" x="{X(p) + 9:.1f}" y="{Y(o) + 4:.1f}">{esc(nm)}</text>')
+    return "".join(s) + '</svg>'
+
+
+# ───────────────────────── figure 7: in-site vs out-site S ────────────────────
+LOSO_SITES = {"LOSO-A": ("UPenn + UTSW", "UCSF"), "LOSO-B": ("UCSF + UPenn", "UTSW")}
+
+
+def insite_outsite_rows():
+    """Same model, in-site held-out (inner-val) vs out-site (test) — spec §14.2."""
+    out = []
+    for r in ROWS:
+        if r["label"] not in LOSO_SITES:
+            continue
+        d = PRED[PRED["run"] == r["run"]]
+        v, t = d[d["role"] == "val"], d[d["role"] == "test"]
+        out.append({"run": r["run"], "label": r["label"],
+                    "in_site": LOSO_SITES[r["label"]][0], "out_site": LOSO_SITES[r["label"]][1],
+                    "S_in": float(v["S"].median()), "S_out": float(t["S"].median()),
+                    "n_in": len(v), "n_out": len(t)})
+    return sorted(out, key=lambda x: x["run"])
+
+
+def fig_insite():
+    rs = insite_outsite_rows()
+    rowh, top, bot, labw = 30, 44, 52, 108
+    H = top + rowh * len(rs) + bot
+    W, plotw = 700, 700 - 108 - 90
+    hi = max(max(r["S_in"], r["S_out"]) for r in rs) * 1.12
+
+    def sx(v): return labw + v / hi * plotw
+
+    s = [f'<svg viewBox="0 0 {W} {H}" role="img" width="100%" '
+         f'aria-label="同一モデルでの in-site と out-site の確信度 S の比較">']
+    s.append('<title>in-site vs out-site の S</title>')
+    for t in np.linspace(0, hi, 6):
+        s.append(f'<line class="grid" x1="{sx(t):.1f}" y1="{top - 12}" x2="{sx(t):.1f}" y2="{H - bot + 4}"/>')
+        s.append(f'<text class="tick" x="{sx(t):.1f}" y="{H - bot + 20}" text-anchor="middle">{t:.0f}</text>')
+    s.append(f'<text class="tick" x="{sx(hi / 2):.1f}" y="{H - bot + 36}" text-anchor="middle">median S</text>')
+    for i, r in enumerate(rs):
+        y = top + rowh * i + rowh / 2
+        s.append(f'<text class="runlab" x="{labw - 12}" y="{y + 3.5:.1f}" text-anchor="end">{esc(r["run"])}</text>')
+        tip = (f"{r['run']} · in-site {r['in_site']} S={r['S_in']:.1f} (n={r['n_in']}) / "
+               f"out-site {r['out_site']} S={r['S_out']:.1f} (n={r['n_out']})")
+        s.append(f'<g class="mk" data-tip="{esc(tip)}">')
+        s.append(f'<line class="conn ood" x1="{sx(r["S_out"]):.1f}" y1="{y:.1f}" x2="{sx(r["S_in"]):.1f}" y2="{y:.1f}"/>')
+        s.append(f'<circle class="ring ood" cx="{sx(r["S_in"]):.1f}" cy="{y:.1f}" r="4.6"/>')
+        s.append(f'<circle class="dot ood" cx="{sx(r["S_out"]):.1f}" cy="{y:.1f}" r="4.6"/>')
+        s.append(f'<rect class="hit" x="{labw - 8}" y="{y - 12:.1f}" width="{plotw + 16}" height="24"/>')
+        s.append('</g>')
+        s.append(f'<text class="val" x="{labw + plotw + 14}" y="{y + 4:.1f}">'
+                 f'{(r["S_out"] - r["S_in"]) / r["S_in"] * 100:+.0f}%</text>')
+    return "".join(s) + '</svg>'
+
+
 # ───────────────────────── tables ─────────────────────────────────────────────
 def table_units():
     h = ['<table><caption>ユニット別サマリ（3 seed の平均 ± 標準偏差）</caption><thead><tr>'
@@ -252,7 +429,7 @@ CSS = """
   --plane:#eff2f3; --surface:#fbfcfc; --raised:#f5f7f8;
   --ink:#10161a; --ink2:#4d5b63; --muted:#7b8a92;
   --rule:#dbe1e4; --hair:#e6eaec; --grid:#e2e7e9;
-  --accent:#1c5cab; --ood:#eb6834; --ind:#2a78d6;
+  --accent:#1c5cab; --ood:#eb6834; --ind:#2a78d6; --ser3:#1baf7a;
   --good:#0ca30c; --warn:#fab219; --crit:#d03b3b;
   --unused:rgba(16,22,26,.045);
   color-scheme:light;
@@ -261,7 +438,7 @@ CSS = """
   --plane:#0c0f11; --surface:#15191c; --raised:#1b2024;
   --ink:#f2f5f6; --ink2:#b3c0c7; --muted:#8b979e;
   --rule:#283036; --hair:#222a2f; --grid:#232b30;
-  --accent:#7fb0ec; --ood:#d95926; --ind:#3987e5;
+  --accent:#7fb0ec; --ood:#d95926; --ind:#3987e5; --ser3:#199e70;
   --good:#0ca30c; --warn:#fab219; --crit:#e06a6a;
   --unused:rgba(255,255,255,.05);
   color-scheme:dark;
@@ -270,7 +447,7 @@ CSS = """
   --plane:#0c0f11; --surface:#15191c; --raised:#1b2024;
   --ink:#f2f5f6; --ink2:#b3c0c7; --muted:#8b979e;
   --rule:#283036; --hair:#222a2f; --grid:#232b30;
-  --accent:#7fb0ec; --ood:#d95926; --ind:#3987e5;
+  --accent:#7fb0ec; --ood:#d95926; --ind:#3987e5; --ser3:#199e70;
   --good:#0ca30c; --warn:#fab219; --crit:#e06a6a;
   --unused:rgba(255,255,255,.05);
   color-scheme:dark;
@@ -279,7 +456,7 @@ CSS = """
   --plane:#eff2f3; --surface:#fbfcfc; --raised:#f5f7f8;
   --ink:#10161a; --ink2:#4d5b63; --muted:#7b8a92;
   --rule:#dbe1e4; --hair:#e6eaec; --grid:#e2e7e9;
-  --accent:#1c5cab; --ood:#eb6834; --ind:#2a78d6;
+  --accent:#1c5cab; --ood:#eb6834; --ind:#2a78d6; --ser3:#1baf7a;
   --unused:rgba(16,22,26,.045);
   color-scheme:light;
 }
@@ -349,6 +526,14 @@ svg{display:block; min-width:640px}
 .whisk.ood,.conn.ood{stroke:var(--ood)} .whisk.ind,.conn.ind{stroke:var(--ind)}
 .whisk{stroke-width:2; opacity:.5} .conn{stroke-width:2; opacity:.42}
 .bar.ood{fill:var(--ood)} .bar.ind{fill:var(--ind)}
+.dot.acc{fill:var(--ser3)} .ring.acc{stroke:var(--ser3)}
+.diamond{stroke:var(--surface); stroke-width:2}
+.diamond.ood{fill:var(--ood)} .diamond.ind{fill:var(--ind)}
+.rel{fill:none; stroke-width:2; opacity:.85}
+.rel.ood{stroke:var(--ood)} .rel.ind{stroke:var(--ind)} .rel.acc{stroke:var(--ser3)}
+.ideal{stroke:var(--muted); stroke-width:1.5; stroke-dasharray:5 4}
+.dirlab{font-size:11.5px; font-family:inherit}
+.dirlab.ood{fill:var(--ood)} .dirlab.ind{fill:var(--ind)} .dirlab.acc{fill:var(--ser3)}
 .unused{fill:var(--unused)}
 .hit{fill:transparent}
 .mk{cursor:default}
@@ -411,6 +596,109 @@ LEGEND = ('<div class="legend">'
           '<span style="color:var(--ind)"><i style="background:var(--ind)"></i>分布内（random 5-fold）</span>'
           '</div>')
 
+def _cal_mean(rs, sect, k):
+    return float(np.mean([CAL[r["run"]][sect][k] for r in rs]))
+
+
+CAL_SECTION = ""
+if HAS_CAL:
+    T_all = np.array([CAL[r["run"]]["temperature"] for r in ROWS])
+    ece_raw_o, ece_tmp_o = _cal_mean(OOD, "test_raw", "ece"), _cal_mean(OOD, "test_calibrated", "ece")
+    ece_raw_i, ece_tmp_i = _cal_mean(IND, "test_raw", "ece"), _cal_mean(IND, "test_calibrated", "ece")
+    worse = sum(1 for r in ROWS
+                if CAL[r["run"]]["test_calibrated"]["ece"] > CAL[r["run"]]["test_raw"]["ece"])
+    lb = [r for r in ROWS if r["label"] == "LOSO-B"]
+    lb_raw, lb_tmp = _cal_mean(lb, "test_raw", "ece"), _cal_mean(lb, "test_calibrated", "ece")
+    off_lb = float(np.mean([CAL[r["run"]]["prior_offset"] for r in lb])) if HAS_ORACLE else None
+
+    oracle_p = ""
+    if HAS_ORACLE:
+        eo_o, eo_i = _cal_mean(OOD, "test_prior_oracle", "ece"), _cal_mean(IND, "test_prior_oracle", "ece")
+        lb_ora = _cal_mean(lb, "test_prior_oracle", "ece")
+        share = (lb_raw - lb_ora) / lb_raw * 100
+        oracle_p = f"""
+  <p>切片が本当に足りていないのかを確かめるため、<strong>test の陽性率を既知と仮定した
+  prior correction をオラクルとして</strong>当てた。LOSO-B なら inner-val 11.8% → test 28.4%、
+  ロジットに {off_lb:+.2f} を足す操作にあたる。実運用では test の陽性率は分からないので配備できないが、
+  <strong>base rate 補正で取り戻せる上限</strong>を測れる。結果は LOSO-B の ECE が
+  <strong>{lb_raw:.3f} → {lb_ora:.3f}（{share:.0f}% 減）</strong>、分布外全体では {ece_raw_o:.3f} → {eo_o:.3f}、
+  分布内では {ece_raw_i:.3f} → {eo_i:.3f}。
+  <strong>つまり分布外の較正崩れのうち base rate 由来はおよそ {share:.0f}% で、残りは確率の形そのものの歪みである。</strong>
+  切片を持つ較正（Platt scaling）に広げても、埋められるのはこの {share:.0f}% ぶんが上限で、
+  しかも実運用では test の陽性率を知り得ない以上そこにも届かない。</p>"""
+
+    rel_fig = ""
+    if PRED is not None:
+        rel_fig = f"""
+  <figure class="figure">
+    <div class="legend">
+      <span style="color:var(--ind)"><i style="background:var(--ind)"></i>分布内</span>
+      <span style="color:var(--ood)"><i style="background:var(--ood)"></i>分布外（全4ユニット）</span>
+      <span style="color:var(--ser3)"><i style="background:var(--ser3)"></i>LOSO-B のみ</span>
+    </div>
+    {fig_reliability()}
+    <figcaption>予測確率を10ビンに分け、各ビンの平均予測確率（横）と実際の陽性率（縦）を取った。
+    対角線が完全較正。被験者5例未満のビンは描いていない。ECE は1つの数字に潰れてしまうが、
+    この図はどの確率帯でずれているかを示す。</figcaption>
+  </figure>"""
+
+    site_fig = ""
+    if PRED is not None:
+        rs = insite_outsite_rows()
+        d = float(np.mean([(x["S_out"] - x["S_in"]) / x["S_in"] * 100 for x in rs]))
+        site_fig = f"""
+  <p class="eyebrow" style="margin-top:8px">設計検証 §14.2 — 同一モデル内での in-site / out-site 比較</p>
+  <p>ラン間で S を比べると訓練セットの大きさが交絡するので、<strong>同一モデルに
+  in-site データと out-site データを通して比較した</strong>。LOSO なら inner-val が
+  in-site の held-out（LOSO-B なら UCSF + UPenn）、test が out-site（同 UTSW）にあたる。
+  結果は out-site 側で median S が平均 <strong>{d:+.0f}%</strong>。
+  {'施設が変わると確信度が下がるという設計意図どおりの挙動である。' if d < 0 else
+   'つまり施設が変わっても確信度が下がっていない。設計意図と逆であり、要検討である。'}</p>
+  <figure class="figure">
+    <div class="legend">
+      <span style="color:var(--ood)"><i class="hollow"></i>in-site（inner-val、訓練施設の held-out）</span>
+      <span style="color:var(--ood)"><i style="background:var(--ood)"></i>out-site（test、未知施設）</span>
+    </div>
+    {fig_insite()}
+    <figcaption>LOSO の6ラン。右端は out-site の median S が in-site から何%動いたか。</figcaption>
+  </figure>"""
+
+    CAL_SECTION = f"""
+<section class="finding">
+  <p class="eyebrow">所見 — 事後較正</p>
+  <h2 class="serif">temperature scaling は効かなかった。実装ではなく、道具が問題に合っていない</h2>
+  <p>仕様 §10 は inner-val で temperature をフィットして test に当てることを指定していた。
+  27ラン全てに適用した結果、<strong>分布外の ECE は {ece_raw_o:.3f} → {ece_tmp_o:.3f} とほぼ動かず、
+  分布内はむしろ {ece_raw_i:.3f} → {ece_tmp_i:.3f} と悪化した</strong>。
+  27ラン中 {worse} ランで ECE が悪化している。最も較正の悪い LOSO-B も {lb_raw:.3f} → {lb_tmp:.3f} で、実質ゼロだった。</p>
+  <p>原因は <strong>T の平均が {T_all.mean():.3f}（範囲 {T_all.min():.2f}〜{T_all.max():.2f}）</strong>
+  だったことに尽きる。inner-val 上ではモデルは既にほぼ較正されており、temperature は
+  「補正すべきものが無い」と判断している。これは実装の失敗ではなく、
+  <strong>道具が問題に構造的に噛み合っていない</strong>ということである。</p>
+  <p>理由は2つある。第一に、§10 が問題視したのは <strong>base rate のシフト</strong>
+  （LOSO-B: inner-val 11.8% → test 28.4%）だが、<strong>temperature はロジットを定数倍するだけで切片を持たない</strong>。
+  base rate のずれは切片で吸収すべき量なので、原理的に補正できない。第二に、
+  <strong>T をフィットする inner-val は train と同分布である</strong>。
+  シフトした後に生じる較正ずれは、inner-val からは観測できない。</p>{oracle_p}
+  <p>したがってこれは「較正手法の実装に失敗した」ではなく、
+  <strong>「事後較正では分布シフト下の較正ずれを吸収できない」という知見</strong>として読むべきである。
+  確率値そのものを信頼できない領域が残る以上、<strong>「この予測は信頼できるか」を確率とは別の量で持つ必要がある</strong>。
+  27ラン全てで成立していた evidential な不確実性（誤答時に S が下がる）は、
+  まさにその役割を担う量であり、この結果はその必要性を補強している。</p>
+  <figure class="figure">
+    <div class="legend">
+      <span style="color:var(--ink2)"><i style="background:currentColor"></i>生の確率（塗り）</span>
+      <span style="color:var(--ink2)"><i class="hollow"></i>temperature 較正後（白抜き）</span>
+      {'<span style="color:var(--ink2)"><i style="background:currentColor;border-radius:2px;transform:rotate(45deg)"></i>prior correction オラクル（菱形）</span>' if HAS_ORACLE else ''}
+    </div>
+    {LEGEND}
+    {fig_calibration()}
+    <figcaption>3 seed の平均 ECE。右端の数値は3手法のうち最も良い値。色は分布外／分布内、
+    形が較正手法を示す。</figcaption>
+  </figure>{rel_fig}{site_fig}
+</section>
+"""
+
 doc = f"""<title>OpenIDH Stage B — 27ラン結果解析</title>
 <style>{CSS}</style>
 <div class="wrap">
@@ -472,6 +760,7 @@ doc = f"""<title>OpenIDH Stage B — 27ラン結果解析</title>
   </figure>
 </section>
 
+{CAL_SECTION}
 <section class="finding">
   <p class="eyebrow">所見 — 不確実性</p>
   <h2 class="serif">27ラン全てで、モデルは間違えるときに自信を落としていた</h2>
