@@ -80,7 +80,8 @@ def calibrate_run(run_dir: Path, paths, device: str) -> dict | None:
 
     out = {
         "run": run_dir.name, "split_file": res["split_file"], "fold_id": res["fold_id"],
-        "seed": res["seed"], "temperature": T, "n_val": n_val, "n_test": n_test,
+        "seed": res["seed"], "train_yaml": res.get("train_yaml", "train.yaml"),
+        "temperature": T, "n_val": n_val, "n_test": n_test,
         "val_base_rate": float(np.mean(vy)), "test_base_rate": float(np.mean(ty)),
         "test_raw": raw, "test_calibrated": cal,
         "ranking_delta": deltas,
@@ -140,12 +141,23 @@ def main() -> None:
     ap.add_argument("--runs", nargs="*", default=None, help="run names (default: all with a checkpoint)")
     ap.add_argument("--paths-file", default=None, help="defaults to $OPENIDH_PATHS")
     ap.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
+    ap.add_argument("--include-all", action="store_true",
+                    help="include smoke/probe runs (default: train.yaml runs only)")
     a = ap.parse_args()
 
     paths = load_paths(a.paths_file)
     runs_dir = Path(a.runs_dir)
+
+    def _production(d: Path) -> bool:
+        """Same gate as aggregate_results: a smoke checkpoint must not land in the table."""
+        if a.include_all:
+            return True
+        rj = d / "result.json"
+        return rj.is_file() and json.loads(rj.read_text()).get("train_yaml") == "train.yaml"
+
     names = a.runs or sorted(d.name for d in runs_dir.iterdir()
-                             if (d / "model_best.pt").is_file() and (d / "result.json").is_file())
+                             if (d / "model_best.pt").is_file() and (d / "result.json").is_file()
+                             and _production(d))
     if not names:
         raise SystemExit(f"no run under {runs_dir}/ has both model_best.pt and result.json — "
                          "checkpoints are gitignored, so run this where the sweep ran.")
