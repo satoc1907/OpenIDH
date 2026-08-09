@@ -1,0 +1,33 @@
+{
+  "run": "smoke",
+  "split_file": "splits_loso_foldA.csv",
+  "fold_id": null,
+  "seed": 0,
+  "temperature": 0.26696621215680794,
+  "n_val": 10,
+  "n_test": 20,
+  "val_base_rate": 0.5,
+  "test_base_rate": 0.5,
+  "test_raw": {
+    "nll": 0.6912602212103645,
+    "brier": 0.24918559805242357,
+    "ece": 0.19774442586094942,
+    "mean_S": 28.40185480117798,
+    "median_S": 28.449421882629395,
+    "auc": 0.77,
+    "auprc": 0.845548245614035
+  },
+  "test_calibrated": {
+    "nll": 0.8157403142016436,
+    "brier": 0.3044357246972376,
+    "ece": 0.35373885765361013,
+    "mean_S": 28.40185480117798,
+    "median_S": 28.449421882629395,
+    "auc": 0.77,
+    "auprc": 0.845548245614035
+  },
+  "ranking_delta": {
+    "auc": 0.0,
+    "auprc": 0.0
+  }
+}
