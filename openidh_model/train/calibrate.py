@@ -29,13 +29,38 @@ def to_logit(alpha, beta) -> np.ndarray:
     return np.log(a) - np.log(b)
 
 
-def apply_temperature(alpha, beta, T: float):
-    """Scale the logit by 1/T, keeping S = alpha + beta fixed."""
+def apply_affine(alpha, beta, T: float = 1.0, offset: float = 0.0):
+    """z -> z/T + offset, keeping S = alpha + beta fixed.
+
+    T alone is temperature scaling; offset alone is a prior/base-rate correction;
+    both together is Platt scaling. Every variant is monotone in z, so none of
+    them can move AUC or AUPRC.
+    """
     a = np.asarray(alpha, dtype=np.float64)
     b = np.asarray(beta, dtype=np.float64)
     S = a + b
-    p = 1.0 / (1.0 + np.exp(-to_logit(a, b) / float(T)))
+    p = 1.0 / (1.0 + np.exp(-(to_logit(a, b) / float(T) + float(offset))))
     return p * S, S - p * S
+
+
+def apply_temperature(alpha, beta, T: float):
+    """Scale the logit by 1/T, keeping S = alpha + beta fixed."""
+    return apply_affine(alpha, beta, T=T)
+
+
+def prior_offset(pi_source: float, pi_target: float) -> float:
+    """log-odds shift from a source base rate to a target one.
+
+    The correction the fold-B miscalibration actually calls for: inner-val is
+    11.8% mutant, its test set 28.4%, and temperature — having no intercept —
+    cannot express that. Using the *observed* test prevalence makes this an
+    oracle: it is an upper bound on what base-rate correction can buy, not a
+    deployable method.
+    """
+    def _lo(p):
+        p = float(np.clip(p, _EPS, 1 - _EPS))
+        return np.log(p / (1 - p))
+    return float(_lo(pi_target) - _lo(pi_source))
 
 
 def fit_temperature(alpha, beta, y, bounds: tuple[float, float] = (0.02, 50.0)) -> float:
@@ -51,15 +76,16 @@ def fit_temperature(alpha, beta, y, bounds: tuple[float, float] = (0.02, 50.0)) 
     return float(np.exp(r.x))
 
 
-def calibrated_metrics(alpha, beta, y, T: float) -> dict:
-    a, b = apply_temperature(alpha, beta, T)
+def calibrated_metrics(alpha, beta, y, T: float = 1.0, offset: float = 0.0) -> dict:
+    a, b = apply_affine(alpha, beta, T=T, offset=offset)
     return compute_metrics(a, b, y)
 
 
-def check_ranking_invariant(alpha, beta, y, T: float, tol: float = 1e-9) -> dict:
-    """Temperature is monotone, so AUC/AUPRC must not move. Returns the deltas."""
+def check_ranking_invariant(alpha, beta, y, T: float = 1.0, offset: float = 0.0,
+                            tol: float = 1e-9) -> dict:
+    """The map is monotone, so AUC/AUPRC must not move. Returns the deltas."""
     raw = compute_metrics(alpha, beta, y)
-    cal = calibrated_metrics(alpha, beta, y, T)
+    cal = calibrated_metrics(alpha, beta, y, T=T, offset=offset)
     out = {k: cal[k] - raw[k] for k in ("auc", "auprc")}
     bad = {k: v for k, v in out.items() if not np.isnan(v) and abs(v) > tol}
     if bad:

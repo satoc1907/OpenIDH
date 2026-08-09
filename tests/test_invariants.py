@@ -186,3 +186,35 @@ def test_temperature_keeps_evidence_mass():
     a, b = _beta_from_logit([-2.0, 0.0, 1.3], S=55.0)
     a2, b2 = apply_temperature(a, b, 2.5)
     assert np.allclose(np.asarray(a) + np.asarray(b), a2 + b2)
+
+
+def test_prior_offset_matches_log_odds_ratio():
+    """§10's fold-B shift: 11.8% inner-val -> 28.4% test is a +1.087 logit offset."""
+    from openidh_model.train.calibrate import prior_offset
+    assert prior_offset(0.118, 0.284) == pytest.approx(1.0868, abs=1e-3)
+    assert prior_offset(0.3, 0.3) == pytest.approx(0.0, abs=1e-12)
+    assert prior_offset(0.284, 0.118) == pytest.approx(-prior_offset(0.118, 0.284), abs=1e-12)
+
+
+def test_prior_offset_shifts_the_logit_exactly():
+    """The contract is additive on the logit; the mean probability only follows
+    approximately, because sigmoid is nonlinear (Jensen)."""
+    import numpy as np
+    from openidh_model.train.calibrate import apply_affine, prior_offset, to_logit
+    rng = np.random.default_rng(3)
+    a, b = _beta_from_logit(rng.normal(-2.0, 1.0, 20000))
+    pi_src = float(np.mean(a / (a + b)))
+    off = prior_offset(pi_src, 0.284)
+    a2, b2 = apply_affine(a, b, offset=off)
+    assert np.allclose(to_logit(a2, b2), to_logit(a, b) + off, atol=1e-9)
+    assert pi_src < float(np.mean(a2 / (a2 + b2))) < 0.284 + 0.03
+
+
+def test_prior_offset_also_preserves_ranking():
+    import numpy as np
+    from openidh_model.train.calibrate import check_ranking_invariant
+    rng = np.random.default_rng(4)
+    y = rng.integers(0, 2, 300).astype(float)
+    a, b = _beta_from_logit(rng.normal(0, 2, 300) + 1.2 * y)
+    d = check_ranking_invariant(a, b, y, offset=1.108)
+    assert all(abs(v) < 1e-9 for v in d.values())

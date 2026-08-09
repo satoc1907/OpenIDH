@@ -1,15 +1,21 @@
-"""Apply post-hoc temperature scaling to finished runs — no retraining (spec §10).
+"""Post-hoc calibration over finished runs — no retraining (spec §10).
 
-For every runs/<name>/ that still has model_best.pt: reload the checkpoint, run
-inference once on the inner-val split and once on test, fit T on inner-val, apply
-it to test, and write runs/<name>/calibration.json with the raw and calibrated
-metrics side by side. Prints a markdown table of ECE before/after per fold-unit.
+For every runs/<name>/ that still has model_best.pt: reload the checkpoint, score
+the inner-val split and the test split once each, and write
 
-    uv run python scripts/calibrate_runs.py                    # every run with a checkpoint
+  runs/<name>/predictions.csv   one row per subject (fused Beta + per-head evidence)
+  runs/<name>/calibration.json  raw / temperature / prior-oracle metrics side by side
+
+Two corrections are reported, because they answer different questions:
+  temperature   T fitted on inner-val — the deployable one, and the one §10 asked for
+  prior oracle  logit offset from the OBSERVED test prevalence — not deployable, but
+                it bounds how much of the OOD miscalibration is pure base-rate shift
+
+    uv run python scripts/calibrate_runs.py                    # every production run
     uv run python scripts/calibrate_runs.py --runs foldB_s0    # just one
 
 Inference only — the weights are never updated. AUC/AUPRC are asserted unchanged
-(temperature is monotone); if that assertion fires, something else moved.
+(both corrections are monotone); if that assertion fires, something else moved.
 """
 from __future__ import annotations
 
@@ -28,33 +34,26 @@ sys.path.insert(0, str(_ROOT / "scripts"))
 from aggregate_results import SPLIT_KIND  # noqa: E402
 from openidh_model.data.dataset import GliomaDataset  # noqa: E402
 from openidh_model.eval.metrics import compute_metrics  # noqa: E402
+from openidh_model.eval.predict import collect_predictions, write_predictions  # noqa: E402
 from openidh_model.models.openidh import OpenIDH  # noqa: E402
 from openidh_model.train.calibrate import (  # noqa: E402
-    calibrated_metrics, check_ranking_invariant, fit_temperature,
+    calibrated_metrics, check_ranking_invariant, fit_temperature, prior_offset,
 )
-from openidh_model.train.loop import evaluate, make_loader  # noqa: E402
+from openidh_model.train.loop import make_loader  # noqa: E402
 from openidh_model.utils.config import load_config  # noqa: E402
 from openidh_model.utils.paths import load_paths  # noqa: E402
 
-METRICS = ("ece", "brier", "nll", "auc", "auprc")
 
-
-def _alpha_beta(records):
-    """evaluate() hands back S and p; recover the fused Beta from them."""
-    S, p = np.asarray(records["S"]), np.asarray(records["p"])
-    return p * S, S - p * S
-
-
-def _infer(model, split_csv, role, res, paths, cfg, device):
+def _infer(model, split_csv, role, res, paths, cfg, device, run):
     ds = GliomaDataset(split_csv, paths, role=role, fold_id=res["fold_id"],
                        age_mean=res["age_mean"], age_std=res["age_std"])
     if cfg["data"].get("subset_n"):  # mirror run_fold.py, so a smoke checkpoint stays smoke-sized
         from openidh_model.train.loop import _balanced_subset
         n = cfg["data"]["subset_n"]
         ds.rows = _balanced_subset(ds.rows, n if role == "test" else max(4, n // 2))
-    _, rec = evaluate(model, make_loader(ds, cfg, shuffle=False), cfg, device)
-    a, b = _alpha_beta(rec)
-    return a, b, np.asarray(rec["y"]), len(ds)
+    rows = collect_predictions(model, make_loader(ds, cfg, shuffle=False), cfg, device, role, run)
+    g = lambda k: np.array([r[k] for r in rows], dtype=float)  # noqa: E731
+    return g("alpha"), g("beta"), g("y_true"), len(ds), rows
 
 
 def calibrate_run(run_dir: Path, paths, device: str) -> dict | None:
@@ -71,20 +70,31 @@ def calibrate_run(run_dir: Path, paths, device: str) -> dict | None:
     model.to(device)
 
     split_csv = paths.splits_dir / res["split_file"]
-    va, vb, vy, n_val = _infer(model, split_csv, "val", res, paths, cfg, device)
-    ta, tb, ty, n_test = _infer(model, split_csv, "test", res, paths, cfg, device)
+    run = run_dir.name
+    va, vb, vy, n_val, vrows = _infer(model, split_csv, "val", res, paths, cfg, device, run)
+    ta, tb, ty, n_test, trows = _infer(model, split_csv, "test", res, paths, cfg, device, run)
+    write_predictions(vrows + trows, run_dir / "predictions.csv")
 
+    pi_val, pi_test = float(np.mean(vy)), float(np.mean(ty))
     T = fit_temperature(va, vb, vy)
-    raw, cal = compute_metrics(ta, tb, ty), calibrated_metrics(ta, tb, ty, T)
-    deltas = check_ranking_invariant(ta, tb, ty, T)
+    # Oracle: the offset uses the OBSERVED test prevalence, so it is an upper bound
+    # on base-rate correction, not a deployable method (spec §10 diagnosed exactly
+    # this shift on fold B, but temperature has no intercept to express it).
+    offset = prior_offset(pi_val, pi_test)
+
+    raw = compute_metrics(ta, tb, ty)
+    cal = calibrated_metrics(ta, tb, ty, T=T)
+    ora = calibrated_metrics(ta, tb, ty, offset=offset)
+    deltas = check_ranking_invariant(ta, tb, ty, T=T)
+    deltas_o = check_ranking_invariant(ta, tb, ty, offset=offset)
 
     out = {
-        "run": run_dir.name, "split_file": res["split_file"], "fold_id": res["fold_id"],
+        "run": run, "split_file": res["split_file"], "fold_id": res["fold_id"],
         "seed": res["seed"], "train_yaml": res.get("train_yaml", "train.yaml"),
-        "temperature": T, "n_val": n_val, "n_test": n_test,
-        "val_base_rate": float(np.mean(vy)), "test_base_rate": float(np.mean(ty)),
-        "test_raw": raw, "test_calibrated": cal,
-        "ranking_delta": deltas,
+        "temperature": T, "prior_offset": offset, "n_val": n_val, "n_test": n_test,
+        "val_base_rate": pi_val, "test_base_rate": pi_test,
+        "test_raw": raw, "test_calibrated": cal, "test_prior_oracle": ora,
+        "ranking_delta": deltas, "ranking_delta_prior": deltas_o,
     }
     (run_dir / "calibration.json").write_text(json.dumps(out, indent=2))
     return out
@@ -109,29 +119,39 @@ def markdown_tables(rows: list[dict]) -> str:
     def mean(rs, sect, k):
         return float(np.mean([x[sect][k] for x in rs]))
 
-    out = ["| ユニット | 条件 | T (平均) | ECE 生 | ECE 較正後 | 改善 | Brier 生 → 較正後 | NLL 生 → 較正後 |",
+    has_oracle = all("test_prior_oracle" in r for r in rows)
+    pct = lambda a, b: f"{(a - b) / a * 100:+.0f}%" if a else "n/a"  # noqa: E731
+
+    out = ["| ユニット | 条件 | T | prior offset | ECE 生 | ECE temp | ECE prior(oracle) | 生→oracle |",
            "|---|---|---|---|---|---|---|---|"]
     for lab in order:
         kind, rs = units[lab]
-        er, ec = mean(rs, "test_raw", "ece"), mean(rs, "test_calibrated", "ece")
-        br, bc = mean(rs, "test_raw", "brier"), mean(rs, "test_calibrated", "brier")
-        nr, nc = mean(rs, "test_raw", "nll"), mean(rs, "test_calibrated", "nll")
+        er = mean(rs, "test_raw", "ece")
+        ec = mean(rs, "test_calibrated", "ece")
+        eo = mean(rs, "test_prior_oracle", "ece") if has_oracle else float("nan")
         T = float(np.mean([x["temperature"] for x in rs]))
-        out.append(f"| {lab} | {'分布外' if kind == 'OOD' else '分布内'} | {T:.2f} | "
-                   f"{er:.3f} | {ec:.3f} | {(er - ec) / er * 100:+.0f}% | "
-                   f"{br:.3f} → {bc:.3f} | {nr:.3f} → {nc:.3f} |")
+        off = float(np.mean([x.get("prior_offset", float("nan")) for x in rs]))
+        out.append(f"| {lab} | {'分布外' if kind == 'OOD' else '分布内'} | {T:.2f} | {off:+.2f} | "
+                   f"{er:.3f} | {ec:.3f} | {eo:.3f} | {pct(er, eo)} |")
 
     ood = [r for r in rows if _unit(r)[1] == "OOD"]
     ind = [r for r in rows if _unit(r)[1] == "in-dist"]
-    out += ["", "| グループ | ECE 生 | ECE 較正後 | 改善 |", "|---|---|---|---|"]
+    out += ["", "| グループ | ECE 生 | ECE temp | ECE prior(oracle) | Brier 生→oracle | NLL 生→oracle |",
+            "|---|---|---|---|---|---|"]
     for nm, rs in (("分布外 (OOD)", ood), ("分布内", ind)):
         if not rs:
             continue
         er, ec = mean(rs, "test_raw", "ece"), mean(rs, "test_calibrated", "ece")
-        out.append(f"| {nm} | {er:.3f} | {ec:.3f} | {(er - ec) / er * 100:+.0f}% |")
+        eo = mean(rs, "test_prior_oracle", "ece") if has_oracle else float("nan")
+        br, bo = mean(rs, "test_raw", "brier"), mean(rs, "test_prior_oracle", "brier")
+        nr, no = mean(rs, "test_raw", "nll"), mean(rs, "test_prior_oracle", "nll")
+        out.append(f"| {nm} | {er:.3f} | {ec:.3f} | {eo:.3f} | "
+                   f"{br:.3f} → {bo:.3f} | {nr:.3f} → {no:.3f} |")
 
-    d = max(abs(r["ranking_delta"].get(k, 0.0) or 0.0) for r in rows for k in ("auc", "auprc"))
-    out += ["", f"検算: AUC / AUPRC の最大変化量 {d:.2e}（temperature scaling は単調変換なので 0 のはず）"]
+    keys = ["ranking_delta"] + (["ranking_delta_prior"] if has_oracle else [])
+    d = max(abs(r[k].get(m, 0.0) or 0.0) for r in rows for k in keys for m in ("auc", "auprc"))
+    out += ["", f"検算: AUC / AUPRC の最大変化量 {d:.2e}"
+                "（temperature も prior offset も単調変換なので 0 のはず）"]
     return "\n".join(out)
 
 
@@ -169,7 +189,7 @@ def main() -> None:
             skipped.append(n); continue
         rows.append(r)
         print(f"[{len(rows)}/{len(names)}] {n:14s} T={r['temperature']:.3f}  "
-              f"ECE {r['test_raw']['ece']:.3f} -> {r['test_calibrated']['ece']:.3f}", flush=True)
+              f"ECE {r["test_raw"]["ece"]:.3f} -> temp {r["test_calibrated"]["ece"]:.3f} / prior {r["test_prior_oracle"]["ece"]:.3f}", flush=True)
 
     if skipped:
         print(f"\nskipped (no checkpoint): {skipped}")
