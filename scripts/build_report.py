@@ -286,11 +286,11 @@ def _bins(df, n=10):
 def fig_reliability():
     test = PRED[PRED["role"] == "test"]
     series = [
-        ("分布内（random 5-fold）", "ind", test[test["run"].map(KIND) == "in-dist"]),
-        ("分布外（全4ユニット）", "ood", test[test["run"].map(KIND) == "OOD"]),
-        ("LOSO-B のみ", "acc", test[test["run"].map(LABEL) == "LOSO-B"]),
+        ("分布内", "ind", test[test["run"].map(KIND) == "in-dist"]),
+        ("分布外", "ood", test[test["run"].map(KIND) == "OOD"]),
+        ("LOSO-B", "acc", test[test["run"].map(LABEL) == "LOSO-B"]),
     ]
-    W, H, pad, top = 520, 470, 54, 30
+    W, H, pad, top = 520, 536, 54, 30
     plot = W - pad - 26
 
     def X(v): return pad + v * plot
@@ -323,7 +323,8 @@ def fig_reliability():
             s.append(f'<rect class="hit" x="{X(p) - 9:.1f}" y="{Y(o) - 9:.1f}" width="18" height="18"/>')
             s.append('</g>')
         p, o, _ = b[-1]
-        s.append(f'<text class="dirlab {cls}" x="{X(p) + 9:.1f}" y="{Y(o) + 4:.1f}">{esc(nm)}</text>')
+        s.append(f'<text class="dirlab {cls}" x="{X(p) - 9:.1f}" y="{Y(o) - 9:.1f}" '
+                 f'text-anchor="end">{esc(nm)}</text>')
     return "".join(s) + '</svg>'
 
 
@@ -615,21 +616,40 @@ if HAS_CAL:
     if HAS_ORACLE:
         eo_o, eo_i = _cal_mean(OOD, "test_prior_oracle", "ece"), _cal_mean(IND, "test_prior_oracle", "ece")
         lb_ora = _cal_mean(lb, "test_prior_oracle", "ece")
-        share = (lb_raw - lb_ora) / lb_raw * 100
+        cut_lb = (lb_raw - lb_ora) / lb_raw * 100
+        share_lb = (lb_raw - lb_ora) / (lb_raw - ece_raw_i) * 100
+        share_o = (ece_raw_o - eo_o) / (ece_raw_o - ece_raw_i) * 100
         oracle_p = f"""
   <p>切片が本当に足りていないのかを確かめるため、<strong>test の陽性率を既知と仮定した
   prior correction をオラクルとして</strong>当てた。LOSO-B なら inner-val 11.8% → test 28.4%、
-  ロジットに {off_lb:+.2f} を足す操作にあたる。実運用では test の陽性率は分からないので配備できないが、
-  <strong>base rate 補正で取り戻せる上限</strong>を測れる。結果は LOSO-B の ECE が
-  <strong>{lb_raw:.3f} → {lb_ora:.3f}（{share:.0f}% 減）</strong>、分布外全体では {ece_raw_o:.3f} → {eo_o:.3f}、
-  分布内では {ece_raw_i:.3f} → {eo_i:.3f}。
-  <strong>つまり分布外の較正崩れのうち base rate 由来はおよそ {share:.0f}% で、残りは確率の形そのものの歪みである。</strong>
-  切片を持つ較正（Platt scaling）に広げても、埋められるのはこの {share:.0f}% ぶんが上限で、
-  しかも実運用では test の陽性率を知り得ない以上そこにも届かない。</p>"""
+  ロジットに {off_lb:+.2f} を足す操作にあたる。test の陽性率は実運用では分からないので配備はできないが、
+  <strong>base rate 補正で取り戻せる上限</strong>が測れる。</p>
+  <p>結果は明快だった。<strong>LOSO-B の ECE は {lb_raw:.3f} → {lb_ora:.3f}（{cut_lb:.0f}% 減）</strong>、
+  分布外全体でも {ece_raw_o:.3f} → {eo_o:.3f}。分布内は {ece_raw_i:.3f} → {eo_i:.3f} とほぼ動かない
+  （シフトが無いのだから当然である）。分布内の ECE {ece_raw_i:.3f} を「較正の下限」とみなして超過分で測ると、
+  <strong>LOSO-B の較正崩れの {share_lb:.0f}%、分布外全体では {share_o:.0f}% が base rate 由来</strong>ということになる。
+  効く場所も一貫している——オフセットが大きいユニットほど改善が大きく（LOSO-B {off_lb:+.2f} → {cut_lb:.0f}% 減）、
+  オフセットがほぼゼロの field 3T では何も起きない。</p>
+  <p>裏を返せば、<strong>残りは確率の形そのものの歪みであり、base rate 補正では届かない</strong>。
+  切片を持つ較正（Platt scaling）に広げても埋められるのはこの上限までで、
+  しかも実運用では test の陽性率を知り得ない以上、そこにも届かない。</p>"""
 
     rel_fig = ""
     if PRED is not None:
+        _t = PRED[PRED["role"] == "test"]
+        _b = _bins(_t[_t["run"].map(LABEL) == "LOSO-B"])
+        _g = [np.log(o / (1 - o)) - np.log(p / (1 - p)) for p, o, n in _b if 0 < o < 1 and n >= 20]
         rel_fig = f"""
+  <p>ECE は1つの数字に潰れてしまうので、<strong>どの確率帯でずれているのかを信頼度図で見た</strong>。
+  分布内の曲線は対角線にほぼ乗る。分布外は全域で対角線の上、つまり
+  <strong>どの確率帯でも実際の陽性率が予測を上回る（過小評価）</strong>。
+  LOSO-B は特に顕著で、0.35 と予測した群の実際の陽性率は 0.75 に達する。</p>
+  <p>重要なのは<strong>そのずれが高確率側に偏っておらず、全域でほぼ一様だ</strong>という点である。
+  LOSO-B のずれをロジットで測ると <strong>+{np.mean(_g):.2f} ± {np.std(_g, ddof=1):.2f}</strong>
+  （n≥20 の {len(_g)} ビン、予測確率 0.03〜0.64 の範囲）で、
+  <strong>ビンをまたいでほぼ定数</strong>——これは定数のロジットオフセット、すなわち base rate のずれが
+  持つ形そのものである。オラクルのオフセット {off_lb:+.2f} とも整合する。
+  対処としては「高確率側だけを叩く」補正ではなく、全体を平行移動させる補正が要る、ということになる。</p>
   <figure class="figure">
     <div class="legend">
       <span style="color:var(--ind)"><i style="background:var(--ind)"></i>分布内</span>
@@ -646,14 +666,21 @@ if HAS_CAL:
     if PRED is not None:
         rs = insite_outsite_rows()
         d = float(np.mean([(x["S_out"] - x["S_in"]) / x["S_in"] * 100 for x in rs]))
+        neg = sum(1 for x in rs if x["S_out"] < x["S_in"])
+        err = float(np.mean([(r["S_wrong"] - r["S_correct"]) / r["S_correct"] * 100 for r in ROWS]))
         site_fig = f"""
   <p class="eyebrow" style="margin-top:8px">設計検証 §14.2 — 同一モデル内での in-site / out-site 比較</p>
   <p>ラン間で S を比べると訓練セットの大きさが交絡するので、<strong>同一モデルに
   in-site データと out-site データを通して比較した</strong>。LOSO なら inner-val が
   in-site の held-out（LOSO-B なら UCSF + UPenn）、test が out-site（同 UTSW）にあたる。
-  結果は out-site 側で median S が平均 <strong>{d:+.0f}%</strong>。
-  {'施設が変わると確信度が下がるという設計意図どおりの挙動である。' if d < 0 else
-   'つまり施設が変わっても確信度が下がっていない。設計意図と逆であり、要検討である。'}</p>
+  vendor と field は train・val・test すべて UTSW なので、この対比自体が存在しない。対象は LOSO の6ラン。</p>
+  <p>結果は out-site 側で median S が平均 <strong>{d:+.0f}%</strong>（{neg}/{len(rs)} ランで低下、
+  最大 {min((x["S_out"] - x["S_in"]) / x["S_in"] * 100 for x in rs):.0f}%、
+  1ランは逆に上昇）。<strong>向きは設計意図どおりだが、効果は弱く seed 間で一貫していない。</strong></p>
+  <p>これは同じ S が誤答に対して示す反応と比べると際立つ。<strong>誤答時の S 低下は平均 {err:.0f}%、
+  27/27 ランで例外なし</strong>だった。つまりこのモデルの不確実性は
+  <strong>「間違えていること」には強く反応するが、「施設が変わったこと」自体にはほとんど反応しない</strong>。
+  誤答検知としては機能しており、分布シフトの検知器としては弱い、という切り分けになる。</p>
   <figure class="figure">
     <div class="legend">
       <span style="color:var(--ood)"><i class="hollow"></i>in-site（inner-val、訓練施設の held-out）</span>
