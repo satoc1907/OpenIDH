@@ -379,6 +379,51 @@ def fig_insite():
     return "".join(s) + '</svg>'
 
 
+# ───────────────────────── figure 8: sample-size curve ────────────────────────
+def fig_sample_size(rows, floor, target=0.08):
+    W, H, pad, top, bot = 720, 350, 62, 34, 62
+    plotw, ploth = W - pad - 150, H - top - bot
+    hi = max([r["ece_hi"] for r in rows] + [rows[0]["ece_raw"]]) * 1.06
+    xs = [np.log10(r["n"]) for r in rows]
+    lo_x, hi_x = min(xs), max(xs)
+
+    def X(n): return pad + (np.log10(n) - lo_x) / (hi_x - lo_x) * plotw
+
+    def Y(v): return top + (1 - min(v, hi) / hi) * ploth
+
+    s = [f'<svg viewBox="0 0 {W} {H}" role="img" width="100%" '
+         f'aria-label="target ドメインのラベル付き症例数と較正誤差の関係">']
+    s.append('<title>必要な症例数と ECE</title>')
+    for t in np.linspace(0, hi, 5):
+        s.append(f'<line class="grid" x1="{pad}" y1="{Y(t):.1f}" x2="{pad + plotw:.1f}" y2="{Y(t):.1f}"/>')
+        s.append(f'<text class="tick" x="{pad - 8}" y="{Y(t) + 4:.1f}" text-anchor="end">{t:.2f}</text>')
+    for r in rows:
+        s.append(f'<text class="tick" x="{X(r["n"]):.1f}" y="{Y(0) + 20:.1f}" text-anchor="middle">{r["n"]}</text>')
+    s.append(f'<text class="tick" x="{pad + plotw / 2:.1f}" y="{Y(0) + 40:.1f}" text-anchor="middle">'
+             f'target ドメインのラベル付き症例数 N（対数目盛）</text>')
+    s.append(f'<text class="tick" x="16" y="{top + ploth / 2:.1f}" text-anchor="middle" '
+             f'transform="rotate(-90 16 {top + ploth / 2:.1f})">ECE</text>')
+
+    for v, nm, cls in ((rows[0]["ece_raw"], "補正なし", "ood"),
+                       (target, f"目標 {target:.2f}", "muted"),
+                       (floor, "分布内の水準", "ind")):
+        s.append(f'<line class="refline {cls}" x1="{pad}" y1="{Y(v):.1f}" x2="{pad + plotw:.1f}" y2="{Y(v):.1f}"/>')
+        s.append(f'<text class="dirlab {cls}" x="{pad + plotw + 10:.1f}" y="{Y(v) + 4:.1f}">{esc(nm)} {v:.3f}</text>')
+
+    band = ([f"{X(r['n']):.1f},{Y(r['ece_hi']):.1f}" for r in rows]
+            + [f"{X(r['n']):.1f},{Y(r['ece_lo']):.1f}" for r in reversed(rows)])
+    s.append(f'<polygon class="band ood" points="{" ".join(band)}"/>')
+    s.append(f'<polyline class="rel ood" points="{" ".join(f"{X(r['n']):.1f},{Y(r['ece_mean']):.1f}" for r in rows)}"/>')
+    for r in rows:
+        tip = (f"N={r['n']} · ECE {r['ece_mean']:.3f}（95%CI {r['ece_lo']:.3f}–{r['ece_hi']:.3f}、"
+               f"{r['reps']}回）· 推定オフセット {r['offset_mean']:+.2f} ± {r['offset_sd']:.2f}")
+        s.append(f'<g class="mk" data-tip="{esc(tip)}">')
+        s.append(f'<circle class="dot ood" cx="{X(r["n"]):.1f}" cy="{Y(r["ece_mean"]):.1f}" r="5"/>')
+        s.append(f'<rect class="hit" x="{X(r["n"]) - 12:.1f}" y="{top}" width="24" height="{ploth:.0f}"/>')
+        s.append('</g>')
+    return "".join(s) + '</svg>'
+
+
 # ───────────────────────── tables ─────────────────────────────────────────────
 def table_units():
     h = ['<table><caption>ユニット別サマリ（3 seed の平均 ± 標準偏差）</caption><thead><tr>'
@@ -533,6 +578,11 @@ svg{display:block; min-width:640px}
 .rel{fill:none; stroke-width:2; opacity:.85}
 .rel.ood{stroke:var(--ood)} .rel.ind{stroke:var(--ind)} .rel.acc{stroke:var(--ser3)}
 .ideal{stroke:var(--muted); stroke-width:1.5; stroke-dasharray:5 4}
+.refline{stroke-width:1.5; stroke-dasharray:5 4; opacity:.75}
+.refline.ood{stroke:var(--ood)} .refline.ind{stroke:var(--ind)} .refline.muted{stroke:var(--muted)}
+.dirlab.muted{fill:var(--muted)}
+.band{opacity:.15; stroke:none}
+.band.ood{fill:var(--ood)}
 .dirlab{font-size:11.5px; font-family:inherit}
 .dirlab.ood{fill:var(--ood)} .dirlab.ind{fill:var(--ind)} .dirlab.acc{fill:var(--ser3)}
 .unused{fill:var(--unused)}
@@ -627,7 +677,8 @@ if HAS_CAL:
   <p>結果は明快だった。<strong>LOSO-B の ECE は {lb_raw:.3f} → {lb_ora:.3f}（{cut_lb:.0f}% 減）</strong>、
   分布外全体でも {ece_raw_o:.3f} → {eo_o:.3f}。分布内は {ece_raw_i:.3f} → {eo_i:.3f} とほぼ動かない
   （シフトが無いのだから当然である）。分布内の ECE {ece_raw_i:.3f} を「較正の下限」とみなして超過分で測ると、
-  <strong>LOSO-B の較正崩れの {share_lb:.0f}%、分布外全体では {share_o:.0f}% が base rate 由来</strong>ということになる。
+  <strong>LOSO-B の較正崩れの {share_lb:.0f}%、分布外全体では {share_o:.0f}% が base rate 由来</strong>ということになる
+  （ロジットで測った場合の割合は次節で併記する）。
   効く場所も一貫している——オフセットが大きいユニットほど改善が大きく（LOSO-B {off_lb:+.2f} → {cut_lb:.0f}% 減）、
   オフセットがほぼゼロの field 3T では何も起きない。</p>
   <p>裏を返せば、<strong>残りは確率の形そのものの歪みであり、base rate 補正では届かない</strong>。
@@ -679,8 +730,14 @@ if HAS_CAL:
   1ランは逆に上昇）。<strong>向きは設計意図どおりだが、効果は弱く seed 間で一貫していない。</strong></p>
   <p>これは同じ S が誤答に対して示す反応と比べると際立つ。<strong>誤答時の S 低下は平均 {err:.0f}%、
   27/27 ランで例外なし</strong>だった。つまりこのモデルの不確実性は
-  <strong>「間違えていること」には強く反応するが、「施設が変わったこと」自体にはほとんど反応しない</strong>。
-  誤答検知としては機能しており、分布シフトの検知器としては弱い、という切り分けになる。</p>
+  <strong>「間違えていること」には強く反応するが、「施設が変わったこと」自体にはほとんど反応しない</strong>。</p>
+  <p>ただしこれは「検証に失敗した」のではなく、<strong>そもそもその能力を訓練していなかった</strong>と書くのが正確である。
+  evidential loss が勾配を与えるのは予測の誤りに対してだけで、正則化項が罰するのも誤方向の evidence だけである。
+  <strong>ドメインが変わっても予測さえ当たっていれば損失は下がらない</strong>。
+  訓練信号にドメインの情報が一切入っていない以上、ドメイン検知能力が育たないのは道理であり、
+  −{abs(d):.0f}% という弱い反応はむしろ設計どおりの帰結である。
+  これは設計上の見落としであり、ドメイン検知を求めるなら
+  損失かデータ設計の側にその信号を入れる必要がある——不確実性の定式化を変えるだけでは足りない。</p>
   <figure class="figure">
     <div class="legend">
       <span style="color:var(--ood)"><i class="hollow"></i>in-site（inner-val、訓練施設の held-out）</span>
@@ -725,6 +782,61 @@ if HAS_CAL:
   </figure>{rel_fig}{site_fig}
 </section>
 """
+
+# ── how many labelled target cases buy the calibration back ───────────────────
+SSC_SECTION = ""
+if PRED is not None and HAS_CAL:
+    from sample_size_curve import build as ssc_build, min_n_for
+
+    _floor = _cal_mean(IND, "test_raw", "ece")
+    _ssc = {u: ssc_build(_RD, u, reps=50, how="nll")["curve"] for u in ("LOSO-B", "LOSO-A")}
+    _lb = _ssc["LOSO-B"]
+    _n80 = min_n_for(_lb, 0.08)
+    _asy = float(np.mean([r["ece_asymptote"] for r in _lb]))
+    _row = {r["n"]: r for r in _lb}
+    _tbl = "".join(
+        f'<tr><th scope="row">{r["n"]}</th><td class="n">{r["ece_mean"]:.3f}</td>'
+        f'<td class="n">{r["ece_lo"]:.3f} – {r["ece_hi"]:.3f}</td>'
+        f'<td class="n">{r["offset_mean"]:+.2f} ± {r["offset_sd"]:.2f}</td></tr>' for r in _lb)
+    _la = {r["n"]: r for r in _ssc["LOSO-A"]}
+
+    SSC_SECTION = f"""
+<section class="finding">
+  <p class="eyebrow">所見 — 処方箋</p>
+  <h2 class="serif">target 施設の {_n80} 例で、較正はほぼ取り戻せる</h2>
+  <p>ここまでは「事後較正では届かない」という問題提起で終わっている。だが前節の分解が正しいなら、
+  必要なのは<strong>定数を1つ、target 側で決めること</strong>だけのはずである。
+  そこで <strong>target 施設のラベル付き症例を N 例だけ使って切片を推定し、残りの症例で ECE を測った</strong>。
+  N ごとに 50 回のブートストラップを行い、同じ評価集合の上で補正なしの値とも比べている。</p>
+  <p>LOSO-B の結果は明快で、<strong>N = {_n80} 例で ECE 平均 {_row[_n80]["ece_mean"]:.3f}</strong>、
+  N = 100 で {_row[100]["ece_mean"]:.3f}、補正なしの {_row[_n80]["ece_raw"]:.3f} から大きく下がる。
+  全例を使った場合の到達点は {_asy:.3f} で、<strong>分布内の水準 {_floor:.3f} とほぼ同じ</strong>である。
+  LOSO-A でも N = 50 で {_la[50]["ece_mean"]:.3f}（補正なし {_la[50]["ece_raw"]:.3f}）と同じ傾向が出る。</p>
+  <p>ここで前節の数字が繋がる。<strong>切片を直接あてはめると LOSO-B の較正崩れはほぼ全部消える</strong>——
+  つまり崩れの正体は<strong>ほぼ純粋な定数ロジットオフセット</strong>である。
+  一方その定数の大きさは、base rate のずれだけでは説明しきれない。
+  実測のずれ +1.42 に対し base rate から予測される値は +1.09 で、
+  <strong>ロジットベースでは 77%、ECE ベースでは 86%</strong> が base rate 由来にあたる。
+  ECE が非線形な指標なので両者は一致しないが、どちらで測っても主要因が base rate であることは変わらない。
+  残りは施設が変わったこと自体が動作点をずらした分である。</p>
+  <p>実務的な読み方はこうなる。<strong>未知の施設に持ち込むとき、その施設のラベル付き症例が数十例あれば
+  確率値は使える水準に戻る。</strong>ただし {_lb[-1]["n"]} 例まで増やしても
+  95% 区間の上端は {_lb[-1]["ece_hi"]:.3f} までしか下がらない。
+  <strong>平均としては届くが、個々の施設で必ず届くとは言えない</strong>——
+  N が小さいほど推定オフセットのばらつきが大きく（N=10 で ± {_row[10]["offset_sd"]:.2f}、
+  N=100 で ± {_row[100]["offset_sd"]:.2f}）、外す側に外すと補正が害になり得る。</p>
+  <figure class="figure">
+    {fig_sample_size(_lb, _floor)}
+    <figcaption>LOSO-B。線は50回×3 seed のブートストラップ平均、帯は95%区間。
+    横軸は対数目盛。各 N で切片は N 例のみから推定し、ECE は残りの症例で測っている。
+    vendor と field は base rate のずれがほぼ無いため、この補正では改善しない（前節のとおり）。</figcaption>
+  </figure>
+  <div class="tablewrap"><table><caption>LOSO-B — N 例で切片を推定したときの ECE</caption>
+    <thead><tr><th scope="col">N</th><th scope="col">ECE 平均</th><th scope="col">95% 区間</th>
+    <th scope="col">推定オフセット</th></tr></thead><tbody>{_tbl}</tbody></table></div>
+</section>
+"""
+
 
 doc = f"""<title>OpenIDH Stage B — 27ラン結果解析</title>
 <style>{CSS}</style>
@@ -788,6 +900,7 @@ doc = f"""<title>OpenIDH Stage B — 27ラン結果解析</title>
 </section>
 
 {CAL_SECTION}
+{SSC_SECTION}
 <section class="finding">
   <p class="eyebrow">所見 — 不確実性</p>
   <h2 class="serif">27ラン全てで、モデルは間違えるときに自信を落としていた</h2>
