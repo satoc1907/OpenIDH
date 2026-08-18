@@ -10,6 +10,7 @@ import os
 import sys
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -217,4 +218,43 @@ def test_prior_offset_also_preserves_ranking():
     y = rng.integers(0, 2, 300).astype(float)
     a, b = _beta_from_logit(rng.normal(0, 2, 300) + 1.2 * y)
     d = check_ranking_invariant(a, b, y, offset=1.108)
+    assert all(abs(v) < 1e-9 for v in d.values())
+
+
+# ── EM prior shift (spec §10, zero-shot variant) ─────────────────────────────
+def _label_shift_scores(rng, n, pi_source, pi_target, mu=2.0):
+    """Textbook label shift: p(x|y) fixed, prevalence moves, model still assumes
+    pi_source. The posterior it emits is then exactly what EM is built to correct."""
+    y = (rng.random(n) < pi_target).astype(float)
+    x = rng.normal(mu * y, 1.0)
+    z = np.log(pi_source / (1 - pi_source)) + mu * x - mu ** 2 / 2
+    return 1 / (1 + np.exp(-z)), y
+
+
+def test_em_recovers_prevalence_under_true_label_shift():
+    """EM's assumption is p(x|y) fixed, p(y) moved. Under that, it must find p(y)."""
+    from openidh_model.train.calibrate import em_prior_shift
+    rng = np.random.default_rng(7)
+    p, _ = _label_shift_scores(rng, 40000, pi_source=0.12, pi_target=0.30)
+    out = em_prior_shift(p, pi_source=0.12)
+    assert out["converged"]
+    assert out["pi_hat"] == pytest.approx(0.30, abs=0.03), out["pi_hat"]
+
+
+def test_em_is_a_noop_when_nothing_shifted():
+    from openidh_model.train.calibrate import em_prior_shift
+    rng = np.random.default_rng(8)
+    p, _ = _label_shift_scores(rng, 40000, pi_source=0.18, pi_target=0.18)
+    out = em_prior_shift(p, pi_source=0.18)
+    assert out["pi_hat"] == pytest.approx(0.18, abs=0.02)
+    assert abs(out["offset"]) < 0.15
+
+
+def test_em_correction_preserves_ranking():
+    from openidh_model.train.calibrate import check_ranking_invariant, em_prior_shift
+    rng = np.random.default_rng(9)
+    y = rng.integers(0, 2, 500).astype(float)
+    a, b = _beta_from_logit(rng.normal(-1.0, 1.8, 500) + 1.4 * y)
+    out = em_prior_shift(a / (a + b), pi_source=0.15)
+    d = check_ranking_invariant(a, b, y, offset=out["offset"])
     assert all(abs(v) < 1e-9 for v in d.values())

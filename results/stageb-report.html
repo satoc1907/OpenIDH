@@ -109,6 +109,7 @@ svg{display:block; min-width:640px}
 .ideal{stroke:var(--muted); stroke-width:1.5; stroke-dasharray:5 4}
 .refline{stroke-width:1.5; stroke-dasharray:5 4; opacity:.75}
 .refline.ood{stroke:var(--ood)} .refline.ind{stroke:var(--ind)} .refline.muted{stroke:var(--muted)}
+.refline.acc{stroke:var(--ser3); stroke-dasharray:none; stroke-width:2.5}
 .dirlab.muted{fill:var(--muted)}
 .band{opacity:.15; stroke:none}
 .band.ood{fill:var(--ood)}
@@ -164,7 +165,7 @@ footer code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; co
     <div><dt>構成</dt><dd>9 fold-unit × 3 seed = 27 ラン</dd></div>
     <div><dt>実行環境</dt><dd>A100-SXM4-40GB / 1 GPU per job</dd></div>
     <div><dt>不確実性チェック</dt><dd>27 / 27 合格</dd></div>
-    <div><dt>commit</dt><dd>ac2f2af</dd></div>
+    <div><dt>commit</dt><dd>d67b5f5</dd></div>
   </dl>
 </header>
 
@@ -333,7 +334,7 @@ footer code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; co
   N が小さいほど推定オフセットのばらつきが大きく（N=10 で ± 0.87、
   N=100 で ± 0.32）、外す側に外すと補正が害になり得る。</p>
   <figure class="figure">
-    <svg viewBox="0 0 720 350" role="img" width="100%" aria-label="target ドメインのラベル付き症例数と較正誤差の関係"><title>必要な症例数と ECE</title><line class="grid" x1="62" y1="288.0" x2="570.0" y2="288.0"/><text class="tick" x="54" y="292.0" text-anchor="end">0.00</text><line class="grid" x1="62" y1="224.5" x2="570.0" y2="224.5"/><text class="tick" x="54" y="228.5" text-anchor="end">0.06</text><line class="grid" x1="62" y1="161.0" x2="570.0" y2="161.0"/><text class="tick" x="54" y="165.0" text-anchor="end">0.12</text><line class="grid" x1="62" y1="97.5" x2="570.0" y2="97.5"/><text class="tick" x="54" y="101.5" text-anchor="end">0.19</text><line class="grid" x1="62" y1="34.0" x2="570.0" y2="34.0"/><text class="tick" x="54" y="38.0" text-anchor="end">0.25</text><text class="tick" x="62.0" y="308.0" text-anchor="middle">10</text><text class="tick" x="179.5" y="308.0" text-anchor="middle">20</text><text class="tick" x="334.9" y="308.0" text-anchor="middle">50</text><text class="tick" x="452.5" y="308.0" text-anchor="middle">100</text><text class="tick" x="570.0" y="308.0" text-anchor="middle">200</text><text class="tick" x="316.0" y="328.0" text-anchor="middle">target ドメインのラベル付き症例数 N（対数目盛）</text><text class="tick" x="16" y="161.0" text-anchor="middle" transform="rotate(-90 16 161.0)">ECE</text><line class="refline ood" x1="62" y1="121.9" x2="570.0" y2="121.9"/><text class="dirlab ood" x="580.0" y="125.9">補正なし 0.162</text><line class="refline muted" x1="62" y1="205.8" x2="570.0" y2="205.8"/><text class="dirlab muted" x="580.0" y="209.8">目標 0.08 0.080</text><line class="refline ind" x1="62" y1="242.6" x2="570.0" y2="242.6"/><text class="dirlab ind" x="580.0" y="246.6">分布内の水準 0.044</text><polygon class="band ood" points="62.0,48.4 179.5,108.7 334.9,163.5 452.5,198.2 570.0,201.6 570.0,248.6 452.5,247.4 334.9,253.5 179.5,246.9 62.0,246.9"/><polyline class="rel ood" points="62.0,182.0 179.5,206.1 334.9,224.4 452.5,230.1 570.0,226.5"/><g class="mk" data-tip="N=10 · ECE 0.103（95%CI 0.040–0.233、145回）· 推定オフセット +1.33 ± 0.87"><circle class="dot ood" cx="62.0" cy="182.0" r="5"/><rect class="hit" x="50.0" y="34" width="24" height="254"/></g><g class="mk" data-tip="N=20 · ECE 0.080（95%CI 0.040–0.175、150回）· 推定オフセット +1.42 ± 0.63"><circle class="dot ood" cx="179.5" cy="206.1" r="5"/><rect class="hit" x="167.5" y="34" width="24" height="254"/></g><g class="mk" data-tip="N=50 · ECE 0.062（95%CI 0.034–0.121、150回）· 推定オフセット +1.45 ± 0.41"><circle class="dot ood" cx="334.9" cy="224.4" r="5"/><rect class="hit" x="322.9" y="34" width="24" height="254"/></g><g class="mk" data-tip="N=100 · ECE 0.056（95%CI 0.040–0.087、150回）· 推定オフセット +1.49 ± 0.32"><circle class="dot ood" cx="452.5" cy="230.1" r="5"/><rect class="hit" x="440.5" y="34" width="24" height="254"/></g><g class="mk" data-tip="N=200 · ECE 0.060（95%CI 0.038–0.084、150回）· 推定オフセット +1.45 ± 0.28"><circle class="dot ood" cx="570.0" cy="226.5" r="5"/><rect class="hit" x="558.0" y="34" width="24" height="254"/></g></svg>
+    <svg viewBox="0 0 720 350" role="img" width="100%" aria-label="target ドメインのラベル付き症例数と較正誤差の関係"><title>必要な症例数と ECE</title><line class="grid" x1="62" y1="288.0" x2="570.0" y2="288.0"/><text class="tick" x="54" y="292.0" text-anchor="end">0.00</text><line class="grid" x1="62" y1="224.5" x2="570.0" y2="224.5"/><text class="tick" x="54" y="228.5" text-anchor="end">0.06</text><line class="grid" x1="62" y1="161.0" x2="570.0" y2="161.0"/><text class="tick" x="54" y="165.0" text-anchor="end">0.12</text><line class="grid" x1="62" y1="97.5" x2="570.0" y2="97.5"/><text class="tick" x="54" y="101.5" text-anchor="end">0.19</text><line class="grid" x1="62" y1="34.0" x2="570.0" y2="34.0"/><text class="tick" x="54" y="38.0" text-anchor="end">0.25</text><text class="tick" x="62.0" y="308.0" text-anchor="middle">10</text><text class="tick" x="179.5" y="308.0" text-anchor="middle">20</text><text class="tick" x="334.9" y="308.0" text-anchor="middle">50</text><text class="tick" x="452.5" y="308.0" text-anchor="middle">100</text><text class="tick" x="570.0" y="308.0" text-anchor="middle">200</text><text class="tick" x="316.0" y="328.0" text-anchor="middle">target ドメインのラベル付き症例数 N（対数目盛）</text><text class="tick" x="16" y="161.0" text-anchor="middle" transform="rotate(-90 16 161.0)">ECE</text><line class="refline ood" x1="62" y1="121.9" x2="570.0" y2="121.9"/><text class="dirlab ood" x="580.0" y="125.9">補正なし 0.162</text><line class="refline acc" x1="62" y1="143.1" x2="570.0" y2="143.1"/><text class="dirlab acc" x="580.0" y="147.1">EM（ラベル0例） 0.141</text><line class="refline muted" x1="62" y1="205.8" x2="570.0" y2="205.8"/><text class="dirlab muted" x="580.0" y="209.8">目標 0.08 0.080</text><line class="refline ind" x1="62" y1="242.6" x2="570.0" y2="242.6"/><text class="dirlab ind" x="580.0" y="246.6">分布内の水準 0.044</text><polygon class="band ood" points="62.0,48.4 179.5,108.7 334.9,163.5 452.5,198.2 570.0,201.6 570.0,248.6 452.5,247.4 334.9,253.5 179.5,246.9 62.0,246.9"/><polyline class="rel ood" points="62.0,182.0 179.5,206.1 334.9,224.4 452.5,230.1 570.0,226.5"/><g class="mk" data-tip="N=10 · ECE 0.103（95%CI 0.040–0.233、145回）· 推定オフセット +1.33 ± 0.87"><circle class="dot ood" cx="62.0" cy="182.0" r="5"/><rect class="hit" x="50.0" y="34" width="24" height="254"/></g><g class="mk" data-tip="N=20 · ECE 0.080（95%CI 0.040–0.175、150回）· 推定オフセット +1.42 ± 0.63"><circle class="dot ood" cx="179.5" cy="206.1" r="5"/><rect class="hit" x="167.5" y="34" width="24" height="254"/></g><g class="mk" data-tip="N=50 · ECE 0.062（95%CI 0.034–0.121、150回）· 推定オフセット +1.45 ± 0.41"><circle class="dot ood" cx="334.9" cy="224.4" r="5"/><rect class="hit" x="322.9" y="34" width="24" height="254"/></g><g class="mk" data-tip="N=100 · ECE 0.056（95%CI 0.040–0.087、150回）· 推定オフセット +1.49 ± 0.32"><circle class="dot ood" cx="452.5" cy="230.1" r="5"/><rect class="hit" x="440.5" y="34" width="24" height="254"/></g><g class="mk" data-tip="N=200 · ECE 0.060（95%CI 0.038–0.084、150回）· 推定オフセット +1.45 ± 0.28"><circle class="dot ood" cx="570.0" cy="226.5" r="5"/><rect class="hit" x="558.0" y="34" width="24" height="254"/></g></svg>
     <figcaption>LOSO-B。線は50回×3 seed のブートストラップ平均、帯は95%区間。
     横軸は対数目盛。各 N で切片は N 例のみから推定し、ECE は残りの症例で測っている。
     vendor と field は base rate のずれがほぼ無いため、この補正では改善しない（前節のとおり）。</figcaption>
@@ -341,6 +342,44 @@ footer code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; co
   <div class="tablewrap"><table><caption>LOSO-B — N 例で切片を推定したときの ECE</caption>
     <thead><tr><th scope="col">N</th><th scope="col">ECE 平均</th><th scope="col">95% 区間</th>
     <th scope="col">推定オフセット</th></tr></thead><tbody><tr><th scope="row">10</th><td class="n">0.103</td><td class="n">0.040 – 0.233</td><td class="n">+1.33 ± 0.87</td></tr><tr><th scope="row">20</th><td class="n">0.080</td><td class="n">0.040 – 0.175</td><td class="n">+1.42 ± 0.63</td></tr><tr><th scope="row">50</th><td class="n">0.062</td><td class="n">0.034 – 0.121</td><td class="n">+1.45 ± 0.41</td></tr><tr><th scope="row">100</th><td class="n">0.056</td><td class="n">0.040 – 0.087</td><td class="n">+1.49 ± 0.32</td></tr><tr><th scope="row">200</th><td class="n">0.060</td><td class="n">0.038 – 0.084</td><td class="n">+1.45 ± 0.28</td></tr></tbody></table></div>
+</section>
+
+<section class="finding">
+  <p class="eyebrow">所見 — ゼロショットの限界</p>
+  <h2 class="serif">ラベル無しで同じ定数を当てられるか。当てられなかった</h2>
+  <p>必要なのがスカラー1個なら、ラベルは要らないかもしれない。
+  <strong>EM prior shift（Saerens-Latinne-Decaestecker）は、予測確率の分布の形だけから
+  target の有病率を推定する</strong>——ラベルを一切使わない。27ラン全てに適用した。</p>
+  <p><strong>27/27 で収束した。発散も振動もしていない。それでも推定は外れた。</strong>
+  LOSO-B は真の有病率 28.4% に対し EM の推定 14.6%、
+  LOSO-A は真値 20.6% に対し 6.6%。
+  どちらも 14 ポイント近い過小推定である。結果として当たるオフセットも小さすぎ
+  （LOSO-B で EM +0.15、必要な値は +1.46）、
+  LOSO-A に至っては -1.33 と<strong>符号が逆</strong>になる。
+  ECE は分布外全体で 0.104 → 0.128 と<strong>悪化した</strong>。</p>
+  <p>実装の誤りではない。<strong>分布内のユニットでは EM の推定は正確である</strong>
+  （真値 18.0% 前後に対し誤差 0〜3 ポイント）。単体テストでも、
+  p(x|y) を固定して有病率だけ動かした合成データなら EM は正しく回収する。
+  <strong>外れるのは分布外のときだけ</strong>だ。</p>
+  <p>理由は EM の仮定にある。EM が想定するのは<strong>ラベルシフト</strong>——
+  クラス条件付き分布 p(x|y) は変わらず、事前確率 p(y) だけが動く状況である。
+  ところがここで起きているのは施設の変更であり、<strong>撮像装置もプロトコルも患者層も変わる。
+  p(x|y) 自体が動いている。</strong>その結果モデルの出力は有病率とは無関係に押し下げられる。
+  実際 LOSO-B の test では<strong>予測確率の平均が 12.3%、真の有病率は 28.4%</strong> だった。
+  EM はこの押し下げられた分布を「陽性が少ない証拠」と読み、
+  <strong>有病率が上がっているのに下がったと結論する</strong>。</p>
+  <p>根本にあるのは循環である。<strong>EM が使える唯一の信号は、まさにシフトによって歪められた
+  予測確率の分布そのものだ。</strong>歪みを、歪んだものから推定することはできない。
+  ラベルはこの循環の外にあるから効く——前節の N 例曲線が効いたのはそのためであり、
+  EM が効かないのも同じ理由である。</p>
+  <p>結論として、<strong>ゼロショットでの較正回復はこの設定では成立しない。
+  target 施設の少数ラベルが要る。</strong>上の図の EM の水平線は
+  0.141 で、ラベル 10 例の点（0.103）にも届かない。
+  <strong>ラベル無しの推定は、ラベル 10 例分の価値にも満たない。</strong></p>
+  <div class="tablewrap"><table><caption>EM の有病率推定（ラベル不使用、3 seed 平均）</caption>
+    <thead><tr><th scope="col">ユニット</th><th scope="col">訓練時</th><th scope="col">真の値</th>
+    <th scope="col">EM 推定</th><th scope="col">誤差</th><th scope="col">ECE 生 → EM</th></tr></thead>
+    <tbody><tr><th scope="row">field（3T）</th><td class="n">28.2%</td><td class="n">27.2%</td><td class="n">20.5%</td><td class="n">-6.6pt</td><td class="n">0.088 → 0.115</td></tr><tr><th scope="row">LOSO-A（施設）</th><td class="n">16.7%</td><td class="n">20.6%</td><td class="n">6.6%</td><td class="n">-14.0pt</td><td class="n">0.082 → 0.141</td></tr><tr><th scope="row">LOSO-B（施設）</th><td class="n">11.8%</td><td class="n">28.4%</td><td class="n">14.6%</td><td class="n">-13.8pt</td><td class="n">0.162 → 0.141</td></tr><tr><th scope="row">vendor（Philips）</th><td class="n">26.0%</td><td class="n">35.0%</td><td class="n">38.8%</td><td class="n">+3.8pt</td><td class="n">0.085 → 0.114</td></tr><tr><th scope="row">random fold 0</th><td class="n">18.3%</td><td class="n">18.0%</td><td class="n">21.4%</td><td class="n">+3.3pt</td><td class="n">0.046 → 0.079</td></tr><tr><th scope="row">random fold 1</th><td class="n">17.9%</td><td class="n">18.0%</td><td class="n">15.9%</td><td class="n">-2.2pt</td><td class="n">0.035 → 0.045</td></tr><tr><th scope="row">random fold 2</th><td class="n">17.9%</td><td class="n">18.0%</td><td class="n">18.0%</td><td class="n">-0.0pt</td><td class="n">0.047 → 0.063</td></tr><tr><th scope="row">random fold 3</th><td class="n">18.3%</td><td class="n">17.7%</td><td class="n">15.3%</td><td class="n">-2.5pt</td><td class="n">0.046 → 0.045</td></tr><tr><th scope="row">random fold 4</th><td class="n">17.6%</td><td class="n">18.3%</td><td class="n">17.0%</td><td class="n">-1.4pt</td><td class="n">0.047 → 0.064</td></tr></tbody></table></div>
 </section>
 
 <section class="finding">

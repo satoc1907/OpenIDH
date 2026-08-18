@@ -380,10 +380,10 @@ def fig_insite():
 
 
 # ───────────────────────── figure 8: sample-size curve ────────────────────────
-def fig_sample_size(rows, floor, target=0.08):
+def fig_sample_size(rows, floor, em=None, target=0.08):
     W, H, pad, top, bot = 720, 350, 62, 34, 62
     plotw, ploth = W - pad - 150, H - top - bot
-    hi = max([r["ece_hi"] for r in rows] + [rows[0]["ece_raw"]]) * 1.06
+    hi = max([r["ece_hi"] for r in rows] + [rows[0]["ece_raw"]] + ([em] if em else [])) * 1.06
     xs = [np.log10(r["n"]) for r in rows]
     lo_x, hi_x = min(xs), max(xs)
 
@@ -404,9 +404,11 @@ def fig_sample_size(rows, floor, target=0.08):
     s.append(f'<text class="tick" x="16" y="{top + ploth / 2:.1f}" text-anchor="middle" '
              f'transform="rotate(-90 16 {top + ploth / 2:.1f})">ECE</text>')
 
-    for v, nm, cls in ((rows[0]["ece_raw"], "補正なし", "ood"),
-                       (target, f"目標 {target:.2f}", "muted"),
-                       (floor, "分布内の水準", "ind")):
+    refs = [(rows[0]["ece_raw"], "補正なし", "ood"), (target, f"目標 {target:.2f}", "muted"),
+            (floor, "分布内の水準", "ind")]
+    if em is not None:
+        refs.insert(1, (em, "EM（ラベル0例）", "acc"))
+    for v, nm, cls in refs:
         s.append(f'<line class="refline {cls}" x1="{pad}" y1="{Y(v):.1f}" x2="{pad + plotw:.1f}" y2="{Y(v):.1f}"/>')
         s.append(f'<text class="dirlab {cls}" x="{pad + plotw + 10:.1f}" y="{Y(v) + 4:.1f}">{esc(nm)} {v:.3f}</text>')
 
@@ -580,6 +582,7 @@ svg{display:block; min-width:640px}
 .ideal{stroke:var(--muted); stroke-width:1.5; stroke-dasharray:5 4}
 .refline{stroke-width:1.5; stroke-dasharray:5 4; opacity:.75}
 .refline.ood{stroke:var(--ood)} .refline.ind{stroke:var(--ind)} .refline.muted{stroke:var(--muted)}
+.refline.acc{stroke:var(--ser3); stroke-dasharray:none; stroke-width:2.5}
 .dirlab.muted{fill:var(--muted)}
 .band{opacity:.15; stroke:none}
 .band.ood{fill:var(--ood)}
@@ -790,6 +793,16 @@ if PRED is not None and HAS_CAL:
 
     _floor = _cal_mean(IND, "test_raw", "ece")
     _ssc = {u: ssc_build(_RD, u, reps=50, how="nll")["curve"] for u in ("LOSO-B", "LOSO-A")}
+    from em_prior_shift_eval import per_run as _em_run
+    _rng = np.random.default_rng(0)
+    EM = {r["run"]: _em_run(PRED, r["run"], 50, _rng) for r in ROWS}
+
+    def _emu(lab, k):
+        return float(np.mean([EM[r["run"]][k] for r in ROWS if r["label"] == lab]))
+
+    def _emg(kind, k):
+        return float(np.mean([EM[r["run"]][k] for r in ROWS if r["kind"] == kind]))
+
     _lb = _ssc["LOSO-B"]
     _n80 = min_n_for(_lb, 0.08)
     _asy = float(np.mean([r["ece_asymptote"] for r in _lb]))
@@ -799,6 +812,14 @@ if PRED is not None and HAS_CAL:
         f'<td class="n">{r["ece_lo"]:.3f} – {r["ece_hi"]:.3f}</td>'
         f'<td class="n">{r["offset_mean"]:+.2f} ± {r["offset_sd"]:.2f}</td></tr>' for r in _lb)
     _la = {r["n"]: r for r in _ssc["LOSO-A"]}
+    _emtbl = "".join(
+        f'<tr><th scope="row">{esc(JA[lab])}</th>'
+        f'<td class="n">{_emu(lab,"pi_source")*100:.1f}%</td>'
+        f'<td class="n">{_emu(lab,"pi_true")*100:.1f}%</td>'
+        f'<td class="n">{_emu(lab,"pi_em")*100:.1f}%</td>'
+        f'<td class="n">{(_emu(lab,"pi_em")-_emu(lab,"pi_true"))*100:+.1f}pt</td>'
+        f'<td class="n">{_emu(lab,"ece_raw"):.3f} → {_emu(lab,"ece_em"):.3f}</td></tr>'
+        for lab, _k, _rs in UNITS)
 
     SSC_SECTION = f"""
 <section class="finding">
@@ -826,7 +847,7 @@ if PRED is not None and HAS_CAL:
   N が小さいほど推定オフセットのばらつきが大きく（N=10 で ± {_row[10]["offset_sd"]:.2f}、
   N=100 で ± {_row[100]["offset_sd"]:.2f}）、外す側に外すと補正が害になり得る。</p>
   <figure class="figure">
-    {fig_sample_size(_lb, _floor)}
+    {fig_sample_size(_lb, _floor, em=_emu("LOSO-B", "ece_em"))}
     <figcaption>LOSO-B。線は50回×3 seed のブートストラップ平均、帯は95%区間。
     横軸は対数目盛。各 N で切片は N 例のみから推定し、ECE は残りの症例で測っている。
     vendor と field は base rate のずれがほぼ無いため、この補正では改善しない（前節のとおり）。</figcaption>
@@ -834,6 +855,44 @@ if PRED is not None and HAS_CAL:
   <div class="tablewrap"><table><caption>LOSO-B — N 例で切片を推定したときの ECE</caption>
     <thead><tr><th scope="col">N</th><th scope="col">ECE 平均</th><th scope="col">95% 区間</th>
     <th scope="col">推定オフセット</th></tr></thead><tbody>{_tbl}</tbody></table></div>
+</section>
+
+<section class="finding">
+  <p class="eyebrow">所見 — ゼロショットの限界</p>
+  <h2 class="serif">ラベル無しで同じ定数を当てられるか。当てられなかった</h2>
+  <p>必要なのがスカラー1個なら、ラベルは要らないかもしれない。
+  <strong>EM prior shift（Saerens-Latinne-Decaestecker）は、予測確率の分布の形だけから
+  target の有病率を推定する</strong>——ラベルを一切使わない。27ラン全てに適用した。</p>
+  <p><strong>27/27 で収束した。発散も振動もしていない。それでも推定は外れた。</strong>
+  LOSO-B は真の有病率 {_emu("LOSO-B","pi_true")*100:.1f}% に対し EM の推定 {_emu("LOSO-B","pi_em")*100:.1f}%、
+  LOSO-A は真値 {_emu("LOSO-A","pi_true")*100:.1f}% に対し {_emu("LOSO-A","pi_em")*100:.1f}%。
+  どちらも 14 ポイント近い過小推定である。結果として当たるオフセットも小さすぎ
+  （LOSO-B で EM {_emu("LOSO-B","offset_em"):+.2f}、必要な値は {_emu("LOSO-B","offset_labelled"):+.2f}）、
+  LOSO-A に至っては {_emu("LOSO-A","offset_em"):+.2f} と<strong>符号が逆</strong>になる。
+  ECE は分布外全体で {_emg("OOD","ece_raw"):.3f} → {_emg("OOD","ece_em"):.3f} と<strong>悪化した</strong>。</p>
+  <p>実装の誤りではない。<strong>分布内のユニットでは EM の推定は正確である</strong>
+  （真値 18.0% 前後に対し誤差 0〜3 ポイント）。単体テストでも、
+  p(x|y) を固定して有病率だけ動かした合成データなら EM は正しく回収する。
+  <strong>外れるのは分布外のときだけ</strong>だ。</p>
+  <p>理由は EM の仮定にある。EM が想定するのは<strong>ラベルシフト</strong>——
+  クラス条件付き分布 p(x|y) は変わらず、事前確率 p(y) だけが動く状況である。
+  ところがここで起きているのは施設の変更であり、<strong>撮像装置もプロトコルも患者層も変わる。
+  p(x|y) 自体が動いている。</strong>その結果モデルの出力は有病率とは無関係に押し下げられる。
+  実際 LOSO-B の test では<strong>予測確率の平均が 12.3%、真の有病率は 28.4%</strong> だった。
+  EM はこの押し下げられた分布を「陽性が少ない証拠」と読み、
+  <strong>有病率が上がっているのに下がったと結論する</strong>。</p>
+  <p>根本にあるのは循環である。<strong>EM が使える唯一の信号は、まさにシフトによって歪められた
+  予測確率の分布そのものだ。</strong>歪みを、歪んだものから推定することはできない。
+  ラベルはこの循環の外にあるから効く——前節の N 例曲線が効いたのはそのためであり、
+  EM が効かないのも同じ理由である。</p>
+  <p>結論として、<strong>ゼロショットでの較正回復はこの設定では成立しない。
+  target 施設の少数ラベルが要る。</strong>上の図の EM の水平線は
+  {_emu("LOSO-B","ece_em"):.3f} で、ラベル {_lb[0]["n"]} 例の点（{_lb[0]["ece_mean"]:.3f}）にも届かない。
+  <strong>ラベル無しの推定は、ラベル 10 例分の価値にも満たない。</strong></p>
+  <div class="tablewrap"><table><caption>EM の有病率推定（ラベル不使用、3 seed 平均）</caption>
+    <thead><tr><th scope="col">ユニット</th><th scope="col">訓練時</th><th scope="col">真の値</th>
+    <th scope="col">EM 推定</th><th scope="col">誤差</th><th scope="col">ECE 生 → EM</th></tr></thead>
+    <tbody>{_emtbl}</tbody></table></div>
 </section>
 """
 

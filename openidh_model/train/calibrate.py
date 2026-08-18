@@ -76,6 +76,44 @@ def fit_temperature(alpha, beta, y, bounds: tuple[float, float] = (0.02, 50.0)) 
     return float(np.exp(r.x))
 
 
+def em_prior_shift(probs, pi_source: float, n_iter: int = 100, tol: float = 1e-6) -> dict:
+    """Saerens-Latinne-Decaestecker EM: estimate the target prevalence from
+    UNLABELLED predictions, then re-weight by the prior ratio.
+
+    The zero-shot counterpart to prior_offset(): same one-parameter correction,
+    but the target prevalence is read off the shape of the predicted-probability
+    distribution instead of from labels. Returns the estimate, the corrected
+    probabilities, and enough diagnostics to tell convergence from a stall.
+
+    The re-weighting is exactly a logit offset of prior_offset(pi_source, pi_hat),
+    so it inherits the ranking invariance.
+    """
+    p = np.clip(np.asarray(probs, dtype=np.float64), _EPS, 1 - _EPS)
+    pi_s = float(np.clip(pi_source, _EPS, 1 - _EPS))
+    pi, trace = pi_s, []
+
+    def _adjust(pi_cur):
+        r, r0 = pi_cur / pi_s, (1 - pi_cur) / (1 - pi_s)
+        return (r * p) / (r * p + r0 * (1 - p))
+
+    converged, used = False, n_iter
+    for i in range(n_iter):
+        pi_new = float(_adjust(pi).mean())
+        trace.append(pi_new)
+        if abs(pi_new - pi) < tol:
+            pi, converged, used = pi_new, True, i + 1
+            break
+        pi = pi_new
+    return {
+        "pi_hat": pi,
+        "p_adj": _adjust(pi),                       # recomputed at the converged pi
+        "offset": prior_offset(pi_s, pi),
+        "n_iter": used, "converged": converged,
+        # a late oscillation shows up here even when the tolerance is met
+        "tail_range": float(np.ptp(trace[-5:])) if len(trace) >= 2 else 0.0,
+    }
+
+
 def calibrated_metrics(alpha, beta, y, T: float = 1.0, offset: float = 0.0) -> dict:
     a, b = apply_affine(alpha, beta, T=T, offset=offset)
     return compute_metrics(a, b, y)
