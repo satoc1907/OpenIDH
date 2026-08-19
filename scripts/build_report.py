@@ -1125,9 +1125,13 @@ doc = f"""<title>OpenIDH Stage B — 27ラン結果解析</title>
 </section>
 
 <footer>
-  <div>集計元：<code>runs/*/result.json</code>（27ラン）／ 再現：<code>uv run python scripts/aggregate_results.py</code></div>
-  <div>各 fold の test セットは仕様どおり1回だけ評価している。± は 3 seed の標本標準偏差であり、症例レベルの信頼区間ではない。</div>
-  <div>ROC 曲線・キャリブレーションプロットには症例ごとの予測値が必要で、<code>result.json</code> には含まれていない。作成するには推論ジョブの追加実行が要る。</div>
+  <div>集計元：<code>runs/*/{{result,calibration}}.json</code> と <code>runs/*/predictions.csv</code>（27ラン）</div>
+  <div>再現：<code>aggregate_results.py</code>（数表）→ <code>calibrate_runs.py</code>（較正・要チェックポイント）→
+  <code>sample_size_curve.py</code> / <code>em_prior_shift_eval.py</code> / <code>correction_policy.py</code> →
+  <code>build_report.py</code>（この頁）→ <code>report_to_markdown.py</code>（Markdown 版）</div>
+  <div>各 fold の test セットは仕様どおり1回だけ評価している。± は 3 seed の標本標準偏差であり、症例レベルの信頼区間ではない。
+  ブートストラップの区間は、症例の再抽出による分散であって施設間のばらつきではない。</div>
+  <div>較正の補正はいずれも単調変換なので、AUC・AUPRC は全27ランで変化しない（最大変化量 0.00e+00）。</div>
 </footer>
 
 </div>
