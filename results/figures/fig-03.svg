@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 536" width="520" height="536" role="img"><title>reliability diagram</title><style>svg{font-family:system-ui,-apple-system,"Segoe UI","Hiragino Sans","Yu Gothic UI","Noto Sans JP",sans-serif;background:#fbfcfc} text{fill:#10161a}
+.grid{stroke:#e2e7e9; stroke-width:1}
+.sep{stroke:#dbe1e4; stroke-width:1; stroke-dasharray:3 3}
+.tick{font-size:11px; fill:#7b8a92; font-variant-numeric:tabular-nums}
+.pnl{font-size:12.5px; fill:#4d5b63; letter-spacing:.02em}
+.rowlab{font-size:12.5px; fill:#10161a; font-family:inherit}
+.runlab{font-size:10.5px; fill:#7b8a92}
+.val{font-size:11.5px; fill:#4d5b63; font-variant-numeric:tabular-nums}
+.val.sm{font-size:10.5px}
+.note{font-size:11.5px; fill:#7b8a92}
+.dot.ood{fill:#eb6834}
+.dot.ind{fill:#2a78d6}
+.dot{stroke:#fbfcfc; stroke-width:2}
+.dot.soft{opacity:.85}
+.ring.ood{stroke:#eb6834}
+.ring.ind{stroke:#2a78d6}
+.ring{fill:#fbfcfc; stroke-width:2}
+.whisk.ood,.conn.ood{stroke:#eb6834}
+.whisk.ind,.conn.ind{stroke:#2a78d6}
+.whisk{stroke-width:2; opacity:.5}
+.conn{stroke-width:2; opacity:.42}
+.bar.ood{fill:#eb6834}
+.bar.ind{fill:#2a78d6}
+.dot.acc{fill:#1baf7a}
+.ring.acc{stroke:#1baf7a}
+.diamond{stroke:#fbfcfc; stroke-width:2}
+.diamond.ood{fill:#eb6834}
+.diamond.ind{fill:#2a78d6}
+.rel{fill:none; stroke-width:2; opacity:.85}
+.rel.ood{stroke:#eb6834}
+.rel.ind{stroke:#2a78d6}
+.rel.acc{stroke:#1baf7a}
+.ideal{stroke:#7b8a92; stroke-width:1.5; stroke-dasharray:5 4}
+.refline{stroke-width:1.5; stroke-dasharray:5 4; opacity:.75}
+.refline.ood{stroke:#eb6834}
+.refline.ind{stroke:#2a78d6}
+.refline.muted{stroke:#7b8a92}
+.refline.acc{stroke:#1baf7a; stroke-dasharray:none; stroke-width:2.5}
+.dirlab.muted{fill:#7b8a92}
+.band{opacity:.15; stroke:none}
+.band.ood{fill:#eb6834}
+.dirlab{font-size:11.5px; font-family:inherit}
+.dirlab.ood{fill:#eb6834}
+.dirlab.ind{fill:#2a78d6}
+.dirlab.acc{fill:#1baf7a}
+.unused{fill:rgba(16,22,26,.045)}
+.hit{fill:transparent}
+.mk{cursor:default}
+.mk:hover .dot,.mk:hover .bar{filter:brightness(1.12)}</style><rect width="520" height="536" fill="#fbfcfc"/><title>reliability diagram</title><line class="grid" x1="54.0" y1="30" x2="54.0" y2="470.0"/><line class="grid" x1="54" y1="470.0" x2="494.0" y2="470.0"/><text class="tick" x="54.0" y="488.0" text-anchor="middle">0.00</text><text class="tick" x="46" y="474.0" text-anchor="end">0.00</text><line class="grid" x1="164.0" y1="30" x2="164.0" y2="470.0"/><line class="grid" x1="54" y1="360.0" x2="494.0" y2="360.0"/><text class="tick" x="164.0" y="488.0" text-anchor="middle">0.25</text><text class="tick" x="46" y="364.0" text-anchor="end">0.25</text><line class="grid" x1="274.0" y1="30" x2="274.0" y2="470.0"/><line class="grid" x1="54" y1="250.0" x2="494.0" y2="250.0"/><text class="tick" x="274.0" y="488.0" text-anchor="middle">0.50</text><text class="tick" x="46" y="254.0" text-anchor="end">0.50</text><line class="grid" x1="384.0" y1="30" x2="384.0" y2="470.0"/><line class="grid" x1="54" y1="140.0" x2="494.0" y2="140.0"/><text class="tick" x="384.0" y="488.0" text-anchor="middle">0.75</text><text class="tick" x="46" y="144.0" text-anchor="end">0.75</text><line class="grid" x1="494.0" y1="30" x2="494.0" y2="470.0"/><line class="grid" x1="54" y1="30.0" x2="494.0" y2="30.0"/><text class="tick" x="494.0" y="488.0" text-anchor="middle">1.00</text><text class="tick" x="46" y="34.0" text-anchor="end">1.00</text><line class="ideal" x1="54.0" y1="470.0" x2="494.0" y2="30.0"/><text class="note" x="370.8" y="126.8">完全較正</text><text class="tick" x="274.0" y="508.0" text-anchor="middle">予測確率（ビン平均）</text><text class="tick" x="14" y="250.0" text-anchor="middle" transform="rotate(-90 14 250.0)">実際の陽性率</text><polyline class="rel ind" points="70.1,451.5 117.4,402.9 161.2,385.2 207.9,338.5 251.2,263.9 297.4,186.7 338.8,157.3 380.2,125.3 430.0,156.3 466.9,56.9"/><g class="mk" data-tip="分布内 · 予測 0.04 → 実際 0.04（n=3230）"><circle class="dot ind" cx="70.1" cy="451.5" r="4.6"/></g><g class="mk" data-tip="分布内 · 予測 0.14 → 実際 0.15（n=413）"><circle class="dot ind" cx="117.4" cy="402.9" r="4.6"/></g><g class="mk" data-tip="分布内 · 予測 0.24 → 実際 0.19（n=244）"><circle class="dot ind" cx="161.2" cy="385.2" r="4.6"/></g><g class="mk" data-tip="分布内 · 予測 0.35 → 実際 0.30（n=194）"><circle class="dot ind" cx="207.9" cy="338.5" r="4.6"/></g><g class="mk" data-tip="分布内 · 予測 0.45 → 実際 0.47（n=158）"><circle class="dot ind" cx="251.2" cy="263.9" r="4.6"/></g><g class="mk" data-tip="分布内 · 予測 0.55 → 実際 0.64（n=132）"><circle class="dot ind" cx="297.4" cy="186.7" r="4.6"/></g><g class="mk" data-tip="分布内 · 予測 0.65 → 実際 0.71（n=159）"><circle class="dot ind" cx="338.8" cy="157.3" r="4.6"/></g><g class="mk" data-tip="分布内 · 予測 0.74 → 実際 0.78（n=120）"><circle class="dot ind" cx="380.2" cy="125.3" r="4.6"/></g><g class="mk" data-tip="分布内 · 予測 0.85 → 実際 0.71（n=108）"><circle class="dot ind" cx="430.0" cy="156.3" r="4.6"/></g><g class="mk" data-tip="分布内 · 予測 0.94 → 実際 0.94（n=147）"><circle class="dot ind" cx="466.9" cy="56.9" r="4.6"/></g><text class="dirlab ind" x="457.9" y="47.9" text-anchor="end">分布内</text><polyline class="rel ood" points="70.5,424.7 116.6,343.9 163.8,289.2 208.1,191.3 250.6,166.9 295.7,139.2 338.8,170.6 381.1,127.8 429.7,36.8 467.9,44.2"/><g class="mk" data-tip="分布外 · 予測 0.04 → 実際 0.10（n=2746）"><circle class="dot ood" cx="70.5" cy="424.7" r="4.6"/></g><g class="mk" data-tip="分布外 · 予測 0.14 → 実際 0.29（n=492）"><circle class="dot ood" cx="116.6" cy="343.9" r="4.6"/></g><g class="mk" data-tip="分布外 · 予測 0.25 → 実際 0.41（n=309）"><circle class="dot ood" cx="163.8" cy="289.2" r="4.6"/></g><g class="mk" data-tip="分布外 · 予測 0.35 → 実際 0.63（n=240）"><circle class="dot ood" cx="208.1" cy="191.3" r="4.6"/></g><g class="mk" data-tip="分布外 · 予測 0.45 → 実際 0.69（n=180）"><circle class="dot ood" cx="250.6" cy="166.9" r="4.6"/></g><g class="mk" data-tip="分布外 · 予測 0.55 → 実際 0.75（n=133）"><circle class="dot ood" cx="295.7" cy="139.2" r="4.6"/></g><g class="mk" data-tip="分布外 · 予測 0.65 → 実際 0.68（n=97）"><circle class="dot ood" cx="338.8" cy="170.6" r="4.6"/></g><g class="mk" data-tip="分布外 · 予測 0.74 → 実際 0.78（n=72）"><circle class="dot ood" cx="381.1" cy="127.8" r="4.6"/></g><g class="mk" data-tip="分布外 · 予測 0.85 → 実際 0.98（n=65）"><circle class="dot ood" cx="429.7" cy="36.8" r="4.6"/></g><g class="mk" data-tip="分布外 · 予測 0.94 → 実際 0.97（n=31）"><circle class="dot ood" cx="467.9" cy="44.2" r="4.6"/></g><text class="dirlab ood" x="458.9" y="35.2" text-anchor="end">分布外</text><polyline class="rel acc" points="68.4,416.9 118.8,270.0 165.3,236.3 208.5,141.7 250.0,132.7 294.6,105.4 337.7,90.0 381.8,118.0"/><g class="mk" data-tip="LOSO-B · 予測 0.03 → 実際 0.12（n=1252）"><circle class="dot acc" cx="68.4" cy="416.9" r="4.6"/></g><g class="mk" data-tip="LOSO-B · 予測 0.15 → 実際 0.45（n=176）"><circle class="dot acc" cx="118.8" cy="270.0" r="4.6"/></g><g class="mk" data-tip="LOSO-B · 予測 0.25 → 実際 0.53（n=145）"><circle class="dot acc" cx="165.3" cy="236.3" r="4.6"/></g><g class="mk" data-tip="LOSO-B · 予測 0.35 → 実際 0.75（n=130）"><circle class="dot acc" cx="208.5" cy="141.7" r="4.6"/></g><g class="mk" data-tip="LOSO-B · 予測 0.45 → 実際 0.77（n=90）"><circle class="dot acc" cx="250.0" cy="132.7" r="4.6"/></g><g class="mk" data-tip="LOSO-B · 予測 0.55 → 実際 0.83（n=35）"><circle class="dot acc" cx="294.6" cy="105.4" r="4.6"/></g><g class="mk" data-tip="LOSO-B · 予測 0.64 → 実際 0.86（n=22）"><circle class="dot acc" cx="337.7" cy="90.0" r="4.6"/></g><g class="mk" data-tip="LOSO-B · 予測 0.74 → 実際 0.80（n=5）"><circle class="dot acc" cx="381.8" cy="118.0" r="4.6"/></g><text class="dirlab acc" x="372.8" y="109.0" text-anchor="end">LOSO-B</text></svg>

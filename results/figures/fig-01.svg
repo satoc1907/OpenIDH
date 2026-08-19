@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 818 350" width="818" height="350" role="img"><title>ユニット別 AUC / ECE</title><style>svg{font-family:system-ui,-apple-system,"Segoe UI","Hiragino Sans","Yu Gothic UI","Noto Sans JP",sans-serif;background:#fbfcfc} text{fill:#10161a}
+.grid{stroke:#e2e7e9; stroke-width:1}
+.sep{stroke:#dbe1e4; stroke-width:1; stroke-dasharray:3 3}
+.tick{font-size:11px; fill:#7b8a92; font-variant-numeric:tabular-nums}
+.pnl{font-size:12.5px; fill:#4d5b63; letter-spacing:.02em}
+.rowlab{font-size:12.5px; fill:#10161a; font-family:inherit}
+.runlab{font-size:10.5px; fill:#7b8a92}
+.val{font-size:11.5px; fill:#4d5b63; font-variant-numeric:tabular-nums}
+.val.sm{font-size:10.5px}
+.note{font-size:11.5px; fill:#7b8a92}
+.dot.ood{fill:#eb6834}
+.dot.ind{fill:#2a78d6}
+.dot{stroke:#fbfcfc; stroke-width:2}
+.dot.soft{opacity:.85}
+.ring.ood{stroke:#eb6834}
+.ring.ind{stroke:#2a78d6}
+.ring{fill:#fbfcfc; stroke-width:2}
+.whisk.ood,.conn.ood{stroke:#eb6834}
+.whisk.ind,.conn.ind{stroke:#2a78d6}
+.whisk{stroke-width:2; opacity:.5}
+.conn{stroke-width:2; opacity:.42}
+.bar.ood{fill:#eb6834}
+.bar.ind{fill:#2a78d6}
+.dot.acc{fill:#1baf7a}
+.ring.acc{stroke:#1baf7a}
+.diamond{stroke:#fbfcfc; stroke-width:2}
+.diamond.ood{fill:#eb6834}
+.diamond.ind{fill:#2a78d6}
+.rel{fill:none; stroke-width:2; opacity:.85}
+.rel.ood{stroke:#eb6834}
+.rel.ind{stroke:#2a78d6}
+.rel.acc{stroke:#1baf7a}
+.ideal{stroke:#7b8a92; stroke-width:1.5; stroke-dasharray:5 4}
+.refline{stroke-width:1.5; stroke-dasharray:5 4; opacity:.75}
+.refline.ood{stroke:#eb6834}
+.refline.ind{stroke:#2a78d6}
+.refline.muted{stroke:#7b8a92}
+.refline.acc{stroke:#1baf7a; stroke-dasharray:none; stroke-width:2.5}
+.dirlab.muted{fill:#7b8a92}
+.band{opacity:.15; stroke:none}
+.band.ood{fill:#eb6834}
+.dirlab{font-size:11.5px; font-family:inherit}
+.dirlab.ood{fill:#eb6834}
+.dirlab.ind{fill:#2a78d6}
+.dirlab.acc{fill:#1baf7a}
+.unused{fill:rgba(16,22,26,.045)}
+.hit{fill:transparent}
+.mk{cursor:default}
+.mk:hover .dot,.mk:hover .bar{filter:brightness(1.12)}</style><rect width="818" height="350" fill="#fbfcfc"/><title>ユニット別 AUC / ECE</title><text class="pnl" x="172" y="16">AUC（判別）</text><line class="grid" x1="172.0" y1="34" x2="172.0" y2="320"/><text class="tick" x="172.0" y="336" text-anchor="middle">0.80</text><line class="grid" x1="242.0" y1="34" x2="242.0" y2="320"/><text class="tick" x="242.0" y="336" text-anchor="middle">0.85</text><line class="grid" x1="312.0" y1="34" x2="312.0" y2="320"/><text class="tick" x="312.0" y="336" text-anchor="middle">0.90</text><line class="grid" x1="382.0" y1="34" x2="382.0" y2="320"/><text class="tick" x="382.0" y="336" text-anchor="middle">0.95</text><text class="pnl" x="484" y="16">ECE（較正誤差）</text><line class="grid" x1="484.0" y1="34" x2="484.0" y2="320"/><text class="tick" x="484.0" y="336" text-anchor="middle">0.00</text><line class="grid" x1="536.5" y1="34" x2="536.5" y2="320"/><text class="tick" x="536.5" y="336" text-anchor="middle">0.05</text><line class="grid" x1="589.0" y1="34" x2="589.0" y2="320"/><text class="tick" x="589.0" y="336" text-anchor="middle">0.10</text><line class="grid" x1="641.5" y1="34" x2="641.5" y2="320"/><text class="tick" x="641.5" y="336" text-anchor="middle">0.15</text><line class="grid" x1="694.0" y1="34" x2="694.0" y2="320"/><text class="tick" x="694.0" y="336" text-anchor="middle">0.20</text><text class="rowlab" x="158" y="65.0" text-anchor="end">field（3T）</text><g class="mk" data-tip="field（3T） · AUC 0.861 ± 0.024（3 seed）"><line class="whisk ood" x1="223.4" y1="61.0" x2="291.8" y2="61.0"/><circle class="dot ood" cx="257.6" cy="61.0" r="5.5"/></g><text class="val" x="390" y="65.0">0.861</text><g class="mk" data-tip="field（3T） · ECE 0.088 ± 0.004（3 seed）"><line class="whisk ood" x1="571.9" y1="61.0" x2="580.5" y2="61.0"/><circle class="dot ood" cx="576.2" cy="61.0" r="5.5"/></g><text class="val" x="702" y="65.0">0.088</text><text class="rowlab" x="158" y="95.0" text-anchor="end">LOSO-A（施設）</text><g class="mk" data-tip="LOSO-A（施設） · AUC 0.856 ± 0.021（3 seed）"><line class="whisk ood" x1="221.1" y1="91.0" x2="278.6" y2="91.0"/><circle class="dot ood" cx="249.9" cy="91.0" r="5.5"/></g><text class="val" x="390" y="95.0">0.856</text><g class="mk" data-tip="LOSO-A（施設） · ECE 0.082 ± 0.025（3 seed）"><line class="whisk ood" x1="543.9" y1="91.0" x2="595.7" y2="91.0"/><circle class="dot ood" cx="569.8" cy="91.0" r="5.5"/></g><text class="val" x="702" y="95.0">0.082</text><text class="rowlab" x="158" y="125.0" text-anchor="end">LOSO-B（施設）</text><g class="mk" data-tip="LOSO-B（施設） · AUC 0.854 ± 0.019（3 seed）"><line class="whisk ood" x1="220.6" y1="121.0" x2="274.6" y2="121.0"/><circle class="dot ood" cx="247.6" cy="121.0" r="5.5"/></g><text class="val" x="390" y="125.0">0.854</text><g class="mk" data-tip="LOSO-B（施設） · ECE 0.162 ± 0.018（3 seed）"><line class="whisk ood" x1="635.3" y1="121.0" x2="672.6" y2="121.0"/><circle class="dot ood" cx="653.9" cy="121.0" r="5.5"/></g><text class="val" x="702" y="125.0">0.162</text><text class="rowlab" x="158" y="155.0" text-anchor="end">vendor（Philips）</text><g class="mk" data-tip="vendor（Philips） · AUC 0.867 ± 0.053（3 seed）"><line class="whisk ood" x1="192.4" y1="151.0" x2="340.3" y2="151.0"/><circle class="dot ood" cx="266.3" cy="151.0" r="5.5"/></g><text class="val" x="390" y="155.0">0.867</text><g class="mk" data-tip="vendor（Philips） · ECE 0.085 ± 0.019（3 seed）"><line class="whisk ood" x1="552.6" y1="151.0" x2="593.1" y2="151.0"/><circle class="dot ood" cx="572.8" cy="151.0" r="5.5"/></g><text class="val" x="702" y="155.0">0.085</text><line class="sep" x1="6" y1="166.0" x2="758" y2="166.0"/><text class="rowlab" x="158" y="185.0" text-anchor="end">random fold 0</text><g class="mk" data-tip="random fold 0 · AUC 0.917 ± 0.013（3 seed）"><line class="whisk ind" x1="318.4" y1="181.0" x2="354.1" y2="181.0"/><circle class="dot ind" cx="336.2" cy="181.0" r="5.5"/></g><text class="val" x="390" y="185.0">0.917</text><g class="mk" data-tip="random fold 0 · ECE 0.046 ± 0.005（3 seed）"><line class="whisk ind" x1="526.2" y1="181.0" x2="537.6" y2="181.0"/><circle class="dot ind" cx="531.9" cy="181.0" r="5.5"/></g><text class="val" x="702" y="185.0">0.046</text><text class="rowlab" x="158" y="215.0" text-anchor="end">random fold 1</text><g class="mk" data-tip="random fold 1 · AUC 0.898 ± 0.011（3 seed）"><line class="whisk ind" x1="292.8" y1="211.0" x2="324.2" y2="211.0"/><circle class="dot ind" cx="308.5" cy="211.0" r="5.5"/></g><text class="val" x="390" y="215.0">0.898</text><g class="mk" data-tip="random fold 1 · ECE 0.035 ± 0.006（3 seed）"><line class="whisk ind" x1="514.3" y1="211.0" x2="527.7" y2="211.0"/><circle class="dot ind" cx="521.0" cy="211.0" r="5.5"/></g><text class="val" x="702" y="215.0">0.035</text><text class="rowlab" x="158" y="245.0" text-anchor="end">random fold 2</text><g class="mk" data-tip="random fold 2 · AUC 0.900 ± 0.009（3 seed）"><line class="whisk ind" x1="300.4" y1="241.0" x2="324.3" y2="241.0"/><circle class="dot ind" cx="312.3" cy="241.0" r="5.5"/></g><text class="val" x="390" y="245.0">0.900</text><g class="mk" data-tip="random fold 2 · ECE 0.047 ± 0.004（3 seed）"><line class="whisk ind" x1="528.9" y1="241.0" x2="536.9" y2="241.0"/><circle class="dot ind" cx="532.9" cy="241.0" r="5.5"/></g><text class="val" x="702" y="245.0">0.047</text><text class="rowlab" x="158" y="275.0" text-anchor="end">random fold 3</text><g class="mk" data-tip="random fold 3 · AUC 0.907 ± 0.019（3 seed）"><line class="whisk ind" x1="295.7" y1="271.0" x2="347.6" y2="271.0"/><circle class="dot ind" cx="321.6" cy="271.0" r="5.5"/></g><text class="val" x="390" y="275.0">0.907</text><g class="mk" data-tip="random fold 3 · ECE 0.046 ± 0.024（3 seed）"><line class="whisk ind" x1="507.2" y1="271.0" x2="557.6" y2="271.0"/><circle class="dot ind" cx="532.4" cy="271.0" r="5.5"/></g><text class="val" x="702" y="275.0">0.046</text><text class="rowlab" x="158" y="305.0" text-anchor="end">random fold 4</text><g class="mk" data-tip="random fold 4 · AUC 0.907 ± 0.018（3 seed）"><line class="whisk ind" x1="296.8" y1="301.0" x2="347.0" y2="301.0"/><circle class="dot ind" cx="321.9" cy="301.0" r="5.5"/></g><text class="val" x="390" y="305.0">0.907</text><g class="mk" data-tip="random fold 4 · ECE 0.047 ± 0.008（3 seed）"><line class="whisk ind" x1="525.0" y1="301.0" x2="542.4" y2="301.0"/><circle class="dot ind" cx="533.7" cy="301.0" r="5.5"/></g><text class="val" x="702" y="305.0">0.047</text></svg>

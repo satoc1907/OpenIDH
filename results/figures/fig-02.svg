@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 392" width="760" height="392" role="img"><title>較正手法ごとの ECE</title><style>svg{font-family:system-ui,-apple-system,"Segoe UI","Hiragino Sans","Yu Gothic UI","Noto Sans JP",sans-serif;background:#fbfcfc} text{fill:#10161a}
+.grid{stroke:#e2e7e9; stroke-width:1}
+.sep{stroke:#dbe1e4; stroke-width:1; stroke-dasharray:3 3}
+.tick{font-size:11px; fill:#7b8a92; font-variant-numeric:tabular-nums}
+.pnl{font-size:12.5px; fill:#4d5b63; letter-spacing:.02em}
+.rowlab{font-size:12.5px; fill:#10161a; font-family:inherit}
+.runlab{font-size:10.5px; fill:#7b8a92}
+.val{font-size:11.5px; fill:#4d5b63; font-variant-numeric:tabular-nums}
+.val.sm{font-size:10.5px}
+.note{font-size:11.5px; fill:#7b8a92}
+.dot.ood{fill:#eb6834}
+.dot.ind{fill:#2a78d6}
+.dot{stroke:#fbfcfc; stroke-width:2}
+.dot.soft{opacity:.85}
+.ring.ood{stroke:#eb6834}
+.ring.ind{stroke:#2a78d6}
+.ring{fill:#fbfcfc; stroke-width:2}
+.whisk.ood,.conn.ood{stroke:#eb6834}
+.whisk.ind,.conn.ind{stroke:#2a78d6}
+.whisk{stroke-width:2; opacity:.5}
+.conn{stroke-width:2; opacity:.42}
+.bar.ood{fill:#eb6834}
+.bar.ind{fill:#2a78d6}
+.dot.acc{fill:#1baf7a}
+.ring.acc{stroke:#1baf7a}
+.diamond{stroke:#fbfcfc; stroke-width:2}
+.diamond.ood{fill:#eb6834}
+.diamond.ind{fill:#2a78d6}
+.rel{fill:none; stroke-width:2; opacity:.85}
+.rel.ood{stroke:#eb6834}
+.rel.ind{stroke:#2a78d6}
+.rel.acc{stroke:#1baf7a}
+.ideal{stroke:#7b8a92; stroke-width:1.5; stroke-dasharray:5 4}
+.refline{stroke-width:1.5; stroke-dasharray:5 4; opacity:.75}
+.refline.ood{stroke:#eb6834}
+.refline.ind{stroke:#2a78d6}
+.refline.muted{stroke:#7b8a92}
+.refline.acc{stroke:#1baf7a; stroke-dasharray:none; stroke-width:2.5}
+.dirlab.muted{fill:#7b8a92}
+.band{opacity:.15; stroke:none}
+.band.ood{fill:#eb6834}
+.dirlab{font-size:11.5px; font-family:inherit}
+.dirlab.ood{fill:#eb6834}
+.dirlab.ind{fill:#2a78d6}
+.dirlab.acc{fill:#1baf7a}
+.unused{fill:rgba(16,22,26,.045)}
+.hit{fill:transparent}
+.mk{cursor:default}
+.mk:hover .dot,.mk:hover .bar{filter:brightness(1.12)}</style><rect width="760" height="392" fill="#fbfcfc"/><title>較正手法ごとの ECE</title><line class="grid" x1="172.0" y1="32" x2="172.0" y2="356"/><text class="tick" x="172.0" y="372" text-anchor="middle">0.00</text><line class="grid" x1="298.0" y1="32" x2="298.0" y2="356"/><text class="tick" x="298.0" y="372" text-anchor="middle">0.05</text><line class="grid" x1="424.0" y1="32" x2="424.0" y2="356"/><text class="tick" x="424.0" y="372" text-anchor="middle">0.10</text><line class="grid" x1="550.0" y1="32" x2="550.0" y2="356"/><text class="tick" x="550.0" y="372" text-anchor="middle">0.15</text><line class="grid" x1="676.0" y1="32" x2="676.0" y2="356"/><text class="tick" x="676.0" y="372" text-anchor="middle">0.20</text><text class="tick" x="424.0" y="388" text-anchor="middle">ECE（低いほど良い）</text><text class="rowlab" x="158" y="67.0" text-anchor="end">field（3T）</text><line class="conn ood" x1="380.2" y1="63.0" x2="398.4" y2="63.0"/><g class="mk" data-tip="field（3T） · 生 ECE 0.088"><circle class="dot ood" cx="393.4" cy="63.0" r="5.5"/></g><g class="mk" data-tip="field（3T） · temperature ECE 0.083"><circle class="ring ood" cx="380.2" cy="63.0" r="5"/></g><g class="mk" data-tip="field（3T） · prior oracle ECE 0.090"><rect class="diamond ood" x="393.8" y="58.4" width="9.2" height="9.2" transform="rotate(45 398.4 63.0)"/></g><text class="val" x="688" y="67.0">0.083</text><text class="rowlab" x="158" y="101.0" text-anchor="end">LOSO-A（施設）</text><line class="conn ood" x1="321.6" y1="97.0" x2="394.2" y2="97.0"/><g class="mk" data-tip="LOSO-A（施設） · 生 ECE 0.082"><circle class="dot ood" cx="377.9" cy="97.0" r="5.5"/></g><g class="mk" data-tip="LOSO-A（施設） · temperature ECE 0.088"><circle class="ring ood" cx="394.2" cy="97.0" r="5"/></g><g class="mk" data-tip="LOSO-A（施設） · prior oracle ECE 0.059"><rect class="diamond ood" x="317.0" y="92.4" width="9.2" height="9.2" transform="rotate(45 321.6 97.0)"/></g><text class="val" x="688" y="101.0">0.059</text><text class="rowlab" x="158" y="135.0" text-anchor="end">LOSO-B（施設）</text><line class="conn ood" x1="325.9" y1="131.0" x2="579.9" y2="131.0"/><g class="mk" data-tip="LOSO-B（施設） · 生 ECE 0.162"><circle class="dot ood" cx="579.9" cy="131.0" r="5.5"/></g><g class="mk" data-tip="LOSO-B（施設） · temperature ECE 0.160"><circle class="ring ood" cx="575.1" cy="131.0" r="5"/></g><g class="mk" data-tip="LOSO-B（施設） · prior oracle ECE 0.061"><rect class="diamond ood" x="321.3" y="126.4" width="9.2" height="9.2" transform="rotate(45 325.9 131.0)"/></g><text class="val" x="688" y="135.0">0.061</text><text class="rowlab" x="158" y="169.0" text-anchor="end">vendor（Philips）</text><line class="conn ood" x1="354.8" y1="165.0" x2="385.2" y2="165.0"/><g class="mk" data-tip="vendor（Philips） · 生 ECE 0.085"><circle class="dot ood" cx="385.2" cy="165.0" r="5.5"/></g><g class="mk" data-tip="vendor（Philips） · temperature ECE 0.073"><circle class="ring ood" cx="354.8" cy="165.0" r="5"/></g><g class="mk" data-tip="vendor（Philips） · prior oracle ECE 0.077"><rect class="diamond ood" x="360.2" y="160.4" width="9.2" height="9.2" transform="rotate(45 364.8 165.0)"/></g><text class="val" x="688" y="169.0">0.073</text><line class="sep" x1="6" y1="182.0" x2="690" y2="182.0"/><text class="rowlab" x="158" y="203.0" text-anchor="end">random fold 0</text><line class="conn ind" x1="284.2" y1="199.0" x2="293.4" y2="199.0"/><g class="mk" data-tip="random fold 0 · 生 ECE 0.046"><circle class="dot ind" cx="287.0" cy="199.0" r="5.5"/></g><g class="mk" data-tip="random fold 0 · temperature ECE 0.048"><circle class="ring ind" cx="293.4" cy="199.0" r="5"/></g><g class="mk" data-tip="random fold 0 · prior oracle ECE 0.045"><rect class="diamond ind" x="279.6" y="194.4" width="9.2" height="9.2" transform="rotate(45 284.2 199.0)"/></g><text class="val" x="688" y="203.0">0.045</text><text class="rowlab" x="158" y="237.0" text-anchor="end">random fold 1</text><line class="conn ind" x1="260.7" y1="233.0" x2="279.2" y2="233.0"/><g class="mk" data-tip="random fold 1 · 生 ECE 0.035"><circle class="dot ind" cx="260.8" cy="233.0" r="5.5"/></g><g class="mk" data-tip="random fold 1 · temperature ECE 0.043"><circle class="ring ind" cx="279.2" cy="233.0" r="5"/></g><g class="mk" data-tip="random fold 1 · prior oracle ECE 0.035"><rect class="diamond ind" x="256.1" y="228.4" width="9.2" height="9.2" transform="rotate(45 260.7 233.0)"/></g><text class="val" x="688" y="237.0">0.035</text><text class="rowlab" x="158" y="271.0" text-anchor="end">random fold 2</text><line class="conn ind" x1="289.4" y1="267.0" x2="299.5" y2="267.0"/><g class="mk" data-tip="random fold 2 · 生 ECE 0.047"><circle class="dot ind" cx="289.4" cy="267.0" r="5.5"/></g><g class="mk" data-tip="random fold 2 · temperature ECE 0.051"><circle class="ring ind" cx="299.5" cy="267.0" r="5"/></g><g class="mk" data-tip="random fold 2 · prior oracle ECE 0.049"><rect class="diamond ind" x="290.4" y="262.4" width="9.2" height="9.2" transform="rotate(45 295.0 267.0)"/></g><text class="val" x="688" y="271.0">0.047</text><text class="rowlab" x="158" y="305.0" text-anchor="end">random fold 3</text><line class="conn ind" x1="285.5" y1="301.0" x2="288.1" y2="301.0"/><g class="mk" data-tip="random fold 3 · 生 ECE 0.046"><circle class="dot ind" cx="288.1" cy="301.0" r="5.5"/></g><g class="mk" data-tip="random fold 3 · temperature ECE 0.045"><circle class="ring ind" cx="285.5" cy="301.0" r="5"/></g><g class="mk" data-tip="random fold 3 · prior oracle ECE 0.045"><rect class="diamond ind" x="281.6" y="296.4" width="9.2" height="9.2" transform="rotate(45 286.2 301.0)"/></g><text class="val" x="688" y="305.0">0.045</text><text class="rowlab" x="158" y="339.0" text-anchor="end">random fold 4</text><line class="conn ind" x1="288.0" y1="335.0" x2="291.2" y2="335.0"/><g class="mk" data-tip="random fold 4 · 生 ECE 0.047"><circle class="dot ind" cx="291.2" cy="335.0" r="5.5"/></g><g class="mk" data-tip="random fold 4 · temperature ECE 0.047"><circle class="ring ind" cx="291.2" cy="335.0" r="5"/></g><g class="mk" data-tip="random fold 4 · prior oracle ECE 0.046"><rect class="diamond ind" x="283.4" y="330.4" width="9.2" height="9.2" transform="rotate(45 288.0 335.0)"/></g><text class="val" x="688" y="339.0">0.046</text></svg>

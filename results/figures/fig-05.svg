@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 350" width="720" height="350" role="img"><title>必要な症例数と ECE</title><style>svg{font-family:system-ui,-apple-system,"Segoe UI","Hiragino Sans","Yu Gothic UI","Noto Sans JP",sans-serif;background:#fbfcfc} text{fill:#10161a}
+.grid{stroke:#e2e7e9; stroke-width:1}
+.sep{stroke:#dbe1e4; stroke-width:1; stroke-dasharray:3 3}
+.tick{font-size:11px; fill:#7b8a92; font-variant-numeric:tabular-nums}
+.pnl{font-size:12.5px; fill:#4d5b63; letter-spacing:.02em}
+.rowlab{font-size:12.5px; fill:#10161a; font-family:inherit}
+.runlab{font-size:10.5px; fill:#7b8a92}
+.val{font-size:11.5px; fill:#4d5b63; font-variant-numeric:tabular-nums}
+.val.sm{font-size:10.5px}
+.note{font-size:11.5px; fill:#7b8a92}
+.dot.ood{fill:#eb6834}
+.dot.ind{fill:#2a78d6}
+.dot{stroke:#fbfcfc; stroke-width:2}
+.dot.soft{opacity:.85}
+.ring.ood{stroke:#eb6834}
+.ring.ind{stroke:#2a78d6}
+.ring{fill:#fbfcfc; stroke-width:2}
+.whisk.ood,.conn.ood{stroke:#eb6834}
+.whisk.ind,.conn.ind{stroke:#2a78d6}
+.whisk{stroke-width:2; opacity:.5}
+.conn{stroke-width:2; opacity:.42}
+.bar.ood{fill:#eb6834}
+.bar.ind{fill:#2a78d6}
+.dot.acc{fill:#1baf7a}
+.ring.acc{stroke:#1baf7a}
+.diamond{stroke:#fbfcfc; stroke-width:2}
+.diamond.ood{fill:#eb6834}
+.diamond.ind{fill:#2a78d6}
+.rel{fill:none; stroke-width:2; opacity:.85}
+.rel.ood{stroke:#eb6834}
+.rel.ind{stroke:#2a78d6}
+.rel.acc{stroke:#1baf7a}
+.ideal{stroke:#7b8a92; stroke-width:1.5; stroke-dasharray:5 4}
+.refline{stroke-width:1.5; stroke-dasharray:5 4; opacity:.75}
+.refline.ood{stroke:#eb6834}
+.refline.ind{stroke:#2a78d6}
+.refline.muted{stroke:#7b8a92}
+.refline.acc{stroke:#1baf7a; stroke-dasharray:none; stroke-width:2.5}
+.dirlab.muted{fill:#7b8a92}
+.band{opacity:.15; stroke:none}
+.band.ood{fill:#eb6834}
+.dirlab{font-size:11.5px; font-family:inherit}
+.dirlab.ood{fill:#eb6834}
+.dirlab.ind{fill:#2a78d6}
+.dirlab.acc{fill:#1baf7a}
+.unused{fill:rgba(16,22,26,.045)}
+.hit{fill:transparent}
+.mk{cursor:default}
+.mk:hover .dot,.mk:hover .bar{filter:brightness(1.12)}</style><rect width="720" height="350" fill="#fbfcfc"/><title>必要な症例数と ECE</title><line class="grid" x1="62" y1="288.0" x2="570.0" y2="288.0"/><text class="tick" x="54" y="292.0" text-anchor="end">0.00</text><line class="grid" x1="62" y1="224.5" x2="570.0" y2="224.5"/><text class="tick" x="54" y="228.5" text-anchor="end">0.06</text><line class="grid" x1="62" y1="161.0" x2="570.0" y2="161.0"/><text class="tick" x="54" y="165.0" text-anchor="end">0.12</text><line class="grid" x1="62" y1="97.5" x2="570.0" y2="97.5"/><text class="tick" x="54" y="101.5" text-anchor="end">0.19</text><line class="grid" x1="62" y1="34.0" x2="570.0" y2="34.0"/><text class="tick" x="54" y="38.0" text-anchor="end">0.25</text><text class="tick" x="62.0" y="308.0" text-anchor="middle">10</text><text class="tick" x="179.5" y="308.0" text-anchor="middle">20</text><text class="tick" x="334.9" y="308.0" text-anchor="middle">50</text><text class="tick" x="452.5" y="308.0" text-anchor="middle">100</text><text class="tick" x="570.0" y="308.0" text-anchor="middle">200</text><text class="tick" x="316.0" y="328.0" text-anchor="middle">target ドメインのラベル付き症例数 N（対数目盛）</text><text class="tick" x="16" y="161.0" text-anchor="middle" transform="rotate(-90 16 161.0)">ECE</text><line class="refline ood" x1="62" y1="121.9" x2="570.0" y2="121.9"/><text class="dirlab ood" x="580.0" y="125.9">補正なし 0.162</text><line class="refline acc" x1="62" y1="143.1" x2="570.0" y2="143.1"/><text class="dirlab acc" x="580.0" y="147.1">EM（ラベル0例） 0.141</text><line class="refline muted" x1="62" y1="205.8" x2="570.0" y2="205.8"/><text class="dirlab muted" x="580.0" y="209.8">目標 0.08 0.080</text><line class="refline ind" x1="62" y1="242.6" x2="570.0" y2="242.6"/><text class="dirlab ind" x="580.0" y="246.6">分布内の水準 0.044</text><polygon class="band ood" points="62.0,48.4 179.5,108.7 334.9,163.5 452.5,198.2 570.0,201.6 570.0,248.6 452.5,247.4 334.9,253.5 179.5,246.9 62.0,246.9"/><polyline class="rel ood" points="62.0,182.0 179.5,206.1 334.9,224.4 452.5,230.1 570.0,226.5"/><g class="mk" data-tip="N=10 · ECE 0.103（95%CI 0.040–0.233、145回）· 推定オフセット +1.33 ± 0.87"><circle class="dot ood" cx="62.0" cy="182.0" r="5"/></g><g class="mk" data-tip="N=20 · ECE 0.080（95%CI 0.040–0.175、150回）· 推定オフセット +1.42 ± 0.63"><circle class="dot ood" cx="179.5" cy="206.1" r="5"/></g><g class="mk" data-tip="N=50 · ECE 0.062（95%CI 0.034–0.121、150回）· 推定オフセット +1.45 ± 0.41"><circle class="dot ood" cx="334.9" cy="224.4" r="5"/></g><g class="mk" data-tip="N=100 · ECE 0.056（95%CI 0.040–0.087、150回）· 推定オフセット +1.49 ± 0.32"><circle class="dot ood" cx="452.5" cy="230.1" r="5"/></g><g class="mk" data-tip="N=200 · ECE 0.060（95%CI 0.038–0.084、150回）· 推定オフセット +1.45 ± 0.28"><circle class="dot ood" cx="570.0" cy="226.5" r="5"/></g></svg>

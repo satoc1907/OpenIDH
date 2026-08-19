@@ -635,6 +635,33 @@ footer code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; co
      font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 #tip.on{opacity:1; transform:translateY(0)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
+
+/* Print = the PDF path: browsers can Save as PDF, so make the page paginate. */
+@media print{
+  :root{
+    --plane:#fff; --surface:#fff; --raised:#fafbfb;
+    --ink:#000; --ink2:#333; --muted:#666;
+    --rule:#bbb; --hair:#ccc; --grid:#ddd;
+    color-scheme:light;
+  }
+  @page{margin:16mm 14mm}
+  body{background:#fff; font-size:10.5pt; line-height:1.6}
+  .wrap{max-width:none; padding:0; gap:22px}
+  h1{font-size:24pt} section.finding h2{font-size:14pt}
+  section.finding p{max-width:none}
+  /* charts are laid out for a 640px+ canvas; let them shrink to the paper */
+  svg{min-width:0; width:100%; height:auto}
+  .figure{overflow:visible; break-inside:avoid; page-break-inside:avoid}
+  figure,table,.tile,.rules li,.callout{break-inside:avoid; page-break-inside:avoid}
+  section.finding{break-inside:auto}
+  section.finding h2{break-after:avoid; page-break-after:avoid}
+  .tablewrap{overflow:visible; max-height:none}
+  details .tablewrap{max-height:none; overflow:visible}
+  thead th{position:static}
+  table{font-size:8.5pt} .rules li{font-size:10pt}
+  #tip{display:none}
+  summary{list-style:none}
+}
 """
 
 JS = """
@@ -652,6 +679,13 @@ JS = """
     if(m&&m.dataset.tip){show(e,m.dataset.tip);}else{tip.classList.remove('on');}
   });
   document.addEventListener('pointerleave',function(){tip.classList.remove('on');});
+  // print/PDF: a collapsed <details> would silently drop the raw 27-run table
+  var opened=[];
+  addEventListener('beforeprint',function(){
+    opened=[].slice.call(document.querySelectorAll('details:not([open])'));
+    opened.forEach(function(d){d.open=true;});
+  });
+  addEventListener('afterprint',function(){opened.forEach(function(d){d.open=false;});opened=[];});
 })();
 """
 

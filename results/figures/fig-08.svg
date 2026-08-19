@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 214" width="760" height="214" role="img"><title>エポック予算の使用状況</title><style>svg{font-family:system-ui,-apple-system,"Segoe UI","Hiragino Sans","Yu Gothic UI","Noto Sans JP",sans-serif;background:#fbfcfc} text{fill:#10161a}
+.grid{stroke:#e2e7e9; stroke-width:1}
+.sep{stroke:#dbe1e4; stroke-width:1; stroke-dasharray:3 3}
+.tick{font-size:11px; fill:#7b8a92; font-variant-numeric:tabular-nums}
+.pnl{font-size:12.5px; fill:#4d5b63; letter-spacing:.02em}
+.rowlab{font-size:12.5px; fill:#10161a; font-family:inherit}
+.runlab{font-size:10.5px; fill:#7b8a92}
+.val{font-size:11.5px; fill:#4d5b63; font-variant-numeric:tabular-nums}
+.val.sm{font-size:10.5px}
+.note{font-size:11.5px; fill:#7b8a92}
+.dot.ood{fill:#eb6834}
+.dot.ind{fill:#2a78d6}
+.dot{stroke:#fbfcfc; stroke-width:2}
+.dot.soft{opacity:.85}
+.ring.ood{stroke:#eb6834}
+.ring.ind{stroke:#2a78d6}
+.ring{fill:#fbfcfc; stroke-width:2}
+.whisk.ood,.conn.ood{stroke:#eb6834}
+.whisk.ind,.conn.ind{stroke:#2a78d6}
+.whisk{stroke-width:2; opacity:.5}
+.conn{stroke-width:2; opacity:.42}
+.bar.ood{fill:#eb6834}
+.bar.ind{fill:#2a78d6}
+.dot.acc{fill:#1baf7a}
+.ring.acc{stroke:#1baf7a}
+.diamond{stroke:#fbfcfc; stroke-width:2}
+.diamond.ood{fill:#eb6834}
+.diamond.ind{fill:#2a78d6}
+.rel{fill:none; stroke-width:2; opacity:.85}
+.rel.ood{stroke:#eb6834}
+.rel.ind{stroke:#2a78d6}
+.rel.acc{stroke:#1baf7a}
+.ideal{stroke:#7b8a92; stroke-width:1.5; stroke-dasharray:5 4}
+.refline{stroke-width:1.5; stroke-dasharray:5 4; opacity:.75}
+.refline.ood{stroke:#eb6834}
+.refline.ind{stroke:#2a78d6}
+.refline.muted{stroke:#7b8a92}
+.refline.acc{stroke:#1baf7a; stroke-dasharray:none; stroke-width:2.5}
+.dirlab.muted{fill:#7b8a92}
+.band{opacity:.15; stroke:none}
+.band.ood{fill:#eb6834}
+.dirlab{font-size:11.5px; font-family:inherit}
+.dirlab.ood{fill:#eb6834}
+.dirlab.ind{fill:#2a78d6}
+.dirlab.acc{fill:#1baf7a}
+.unused{fill:rgba(16,22,26,.045)}
+.hit{fill:transparent}
+.mk{cursor:default}
+.mk:hover .dot,.mk:hover .bar{filter:brightness(1.12)}</style><rect width="760" height="214" fill="#fbfcfc"/><title>エポック予算の使用状況</title><rect class="unused" x="233.5" y="38" width="486.5" height="104" rx="3"/><text class="note" x="476.7" y="102" text-anchor="middle">未使用（上限 200 epoch まで）</text><line class="grid" x1="108.0" y1="38" x2="108.0" y2="144"/><text class="tick" x="108.0" y="162" text-anchor="middle">0</text><line class="grid" x1="261.0" y1="38" x2="261.0" y2="144"/><text class="tick" x="261.0" y="162" text-anchor="middle">50</text><line class="grid" x1="414.0" y1="38" x2="414.0" y2="144"/><text class="tick" x="414.0" y="162" text-anchor="middle">100</text><line class="grid" x1="567.0" y1="38" x2="567.0" y2="144"/><text class="tick" x="567.0" y="162" text-anchor="middle">150</text><line class="grid" x1="720.0" y1="38" x2="720.0" y2="144"/><text class="tick" x="720.0" y="162" text-anchor="middle">200</text><text class="tick" x="414.0" y="180" text-anchor="middle">epoch</text><text class="rowlab" x="94" y="60.0" text-anchor="end">ベスト epoch</text><g class="mk" data-tip="rand0_s1 · ベスト epoch 3"><circle class="dot soft ind" cx="117.2" cy="50.0" r="4.6"/></g><g class="mk" data-tip="rand3_s2 · ベスト epoch 3"><circle class="dot soft ind" cx="117.2" cy="53.0" r="4.6"/></g><g class="mk" data-tip="rand4_s1 · ベスト epoch 3"><circle class="dot soft ind" cx="117.2" cy="56.0" r="4.6"/></g><g class="mk" data-tip="field_s1 · ベスト epoch 4"><circle class="dot soft ood" cx="120.2" cy="59.0" r="4.6"/></g><g class="mk" data-tip="vendor_s1 · ベスト epoch 4"><circle class="dot soft ood" cx="120.2" cy="62.0" r="4.6"/></g><g class="mk" data-tip="rand1_s1 · ベスト epoch 5"><circle class="dot soft ind" cx="123.3" cy="50.0" r="4.6"/></g><g class="mk" data-tip="rand2_s2 · ベスト epoch 5"><circle class="dot soft ind" cx="123.3" cy="53.0" r="4.6"/></g><g class="mk" data-tip="vendor_s0 · ベスト epoch 5"><circle class="dot soft ood" cx="123.3" cy="56.0" r="4.6"/></g><g class="mk" data-tip="foldB_s0 · ベスト epoch 6"><circle class="dot soft ood" cx="126.4" cy="59.0" r="4.6"/></g><g class="mk" data-tip="rand0_s0 · ベスト epoch 6"><circle class="dot soft ind" cx="126.4" cy="62.0" r="4.6"/></g><g class="mk" data-tip="rand0_s2 · ベスト epoch 6"><circle class="dot soft ind" cx="126.4" cy="50.0" r="4.6"/></g><g class="mk" data-tip="rand4_s2 · ベスト epoch 6"><circle class="dot soft ind" cx="126.4" cy="53.0" r="4.6"/></g><g class="mk" data-tip="foldB_s1 · ベスト epoch 7"><circle class="dot soft ood" cx="129.4" cy="56.0" r="4.6"/></g><g class="mk" data-tip="rand1_s0 · ベスト epoch 7"><circle class="dot soft ind" cx="129.4" cy="59.0" r="4.6"/></g><g class="mk" data-tip="rand3_s0 · ベスト epoch 7"><circle class="dot soft ind" cx="129.4" cy="62.0" r="4.6"/></g><g class="mk" data-tip="rand4_s0 · ベスト epoch 7"><circle class="dot soft ind" cx="129.4" cy="50.0" r="4.6"/></g><g class="mk" data-tip="foldA_s0 · ベスト epoch 8"><circle class="dot soft ood" cx="132.5" cy="53.0" r="4.6"/></g><g class="mk" data-tip="foldA_s1 · ベスト epoch 8"><circle class="dot soft ood" cx="132.5" cy="56.0" r="4.6"/></g><g class="mk" data-tip="foldA_s2 · ベスト epoch 8"><circle class="dot soft ood" cx="132.5" cy="59.0" r="4.6"/></g><g class="mk" data-tip="rand3_s1 · ベスト epoch 8"><circle class="dot soft ind" cx="132.5" cy="62.0" r="4.6"/></g><g class="mk" data-tip="rand2_s0 · ベスト epoch 11"><circle class="dot soft ind" cx="141.7" cy="50.0" r="4.6"/></g><g class="mk" data-tip="foldB_s2 · ベスト epoch 12"><circle class="dot soft ood" cx="144.7" cy="53.0" r="4.6"/></g><g class="mk" data-tip="rand2_s1 · ベスト epoch 13"><circle class="dot soft ind" cx="147.8" cy="56.0" r="4.6"/></g><g class="mk" data-tip="field_s2 · ベスト epoch 14"><circle class="dot soft ood" cx="150.8" cy="59.0" r="4.6"/></g><g class="mk" data-tip="vendor_s2 · ベスト epoch 14"><circle class="dot soft ood" cx="150.8" cy="62.0" r="4.6"/></g><g class="mk" data-tip="rand1_s2 · ベスト epoch 16"><circle class="dot soft ind" cx="157.0" cy="50.0" r="4.6"/></g><g class="mk" data-tip="field_s0 · ベスト epoch 19"><circle class="dot soft ood" cx="166.1" cy="53.0" r="4.6"/></g><text class="rowlab" x="94" y="104.0" text-anchor="end">停止した epoch</text><g class="mk" data-tip="rand0_s1 · 停止した epoch 24"><circle class="dot soft ind" cx="181.4" cy="94.0" r="4.6"/></g><g class="mk" data-tip="rand3_s2 · 停止した epoch 24"><circle class="dot soft ind" cx="181.4" cy="97.0" r="4.6"/></g><g class="mk" data-tip="rand4_s1 · 停止した epoch 24"><circle class="dot soft ind" cx="181.4" cy="100.0" r="4.6"/></g><g class="mk" data-tip="field_s1 · 停止した epoch 25"><circle class="dot soft ood" cx="184.5" cy="103.0" r="4.6"/></g><g class="mk" data-tip="vendor_s1 · 停止した epoch 25"><circle class="dot soft ood" cx="184.5" cy="106.0" r="4.6"/></g><g class="mk" data-tip="rand1_s1 · 停止した epoch 26"><circle class="dot soft ind" cx="187.6" cy="94.0" r="4.6"/></g><g class="mk" data-tip="rand2_s2 · 停止した epoch 26"><circle class="dot soft ind" cx="187.6" cy="97.0" r="4.6"/></g><g class="mk" data-tip="vendor_s0 · 停止した epoch 26"><circle class="dot soft ood" cx="187.6" cy="100.0" r="4.6"/></g><g class="mk" data-tip="foldB_s0 · 停止した epoch 27"><circle class="dot soft ood" cx="190.6" cy="103.0" r="4.6"/></g><g class="mk" data-tip="rand0_s0 · 停止した epoch 27"><circle class="dot soft ind" cx="190.6" cy="106.0" r="4.6"/></g><g class="mk" data-tip="rand0_s2 · 停止した epoch 27"><circle class="dot soft ind" cx="190.6" cy="94.0" r="4.6"/></g><g class="mk" data-tip="rand4_s2 · 停止した epoch 27"><circle class="dot soft ind" cx="190.6" cy="97.0" r="4.6"/></g><g class="mk" data-tip="foldB_s1 · 停止した epoch 28"><circle class="dot soft ood" cx="193.7" cy="100.0" r="4.6"/></g><g class="mk" data-tip="rand1_s0 · 停止した epoch 28"><circle class="dot soft ind" cx="193.7" cy="103.0" r="4.6"/></g><g class="mk" data-tip="rand3_s0 · 停止した epoch 28"><circle class="dot soft ind" cx="193.7" cy="106.0" r="4.6"/></g><g class="mk" data-tip="rand4_s0 · 停止した epoch 28"><circle class="dot soft ind" cx="193.7" cy="94.0" r="4.6"/></g><g class="mk" data-tip="foldA_s0 · 停止した epoch 29"><circle class="dot soft ood" cx="196.7" cy="97.0" r="4.6"/></g><g class="mk" data-tip="foldA_s1 · 停止した epoch 29"><circle class="dot soft ood" cx="196.7" cy="100.0" r="4.6"/></g><g class="mk" data-tip="foldA_s2 · 停止した epoch 29"><circle class="dot soft ood" cx="196.7" cy="103.0" r="4.6"/></g><g class="mk" data-tip="rand3_s1 · 停止した epoch 29"><circle class="dot soft ind" cx="196.7" cy="106.0" r="4.6"/></g><g class="mk" data-tip="rand2_s0 · 停止した epoch 32"><circle class="dot soft ind" cx="205.9" cy="94.0" r="4.6"/></g><g class="mk" data-tip="foldB_s2 · 停止した epoch 33"><circle class="dot soft ood" cx="209.0" cy="97.0" r="4.6"/></g><g class="mk" data-tip="rand2_s1 · 停止した epoch 34"><circle class="dot soft ind" cx="212.0" cy="100.0" r="4.6"/></g><g class="mk" data-tip="field_s2 · 停止した epoch 35"><circle class="dot soft ood" cx="215.1" cy="103.0" r="4.6"/></g><g class="mk" data-tip="vendor_s2 · 停止した epoch 35"><circle class="dot soft ood" cx="215.1" cy="106.0" r="4.6"/></g><g class="mk" data-tip="rand1_s2 · 停止した epoch 37"><circle class="dot soft ind" cx="221.2" cy="94.0" r="4.6"/></g><g class="mk" data-tip="field_s0 · 停止した epoch 40"><circle class="dot soft ood" cx="230.4" cy="97.0" r="4.6"/></g></svg>

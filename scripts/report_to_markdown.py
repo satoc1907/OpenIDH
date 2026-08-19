@@ -30,6 +30,7 @@ class _Md(HTMLParser):
         self._table: list[list[str]] = []
         self._head = False
         self._skip = 0
+        self._fig = 0          # figures are numbered in document order, as exported
 
     # ── helpers ──────────────────────────────────────────────────────────────
     def _cls(self, depth=1):
@@ -49,6 +50,9 @@ class _Md(HTMLParser):
         if tag == "footer":
             self.out.append("\n---\n\n**出典・注記**\n")
         if tag in ("style", "script", "svg"):
+            if tag == "svg" and not self._skip:
+                self._fig += 1
+                self.out.append(f"\n![図{self._fig}](figures/fig-{self._fig:02d}.svg)\n")
             self._skip += 1
             return
         if self._skip:
@@ -100,7 +104,7 @@ class _Md(HTMLParser):
             txt = self._flush()
             self.out.append(f"- {txt}" if txt else "")
         elif tag == "figcaption":
-            self.out.append(f"\n> 図 — {self._flush()}\n")
+            self.out.append(f"\n*図{self._fig} — {self._flush()}*\n")
         elif tag == "dt":
             self._buf.append(": ")
         elif tag == "dd":
@@ -176,8 +180,10 @@ def main() -> None:
     out.parent.mkdir(parents=True, exist_ok=True)
     md = convert(src.read_text(encoding="utf-8"))
     note = ("> この Markdown は `results/stageb-report.html` から生成しています。"
-            "図は SVG のため本文には含まれません——各図の位置には「図 —」で始まる"
-            "キャプション行が残してあり、図そのものは HTML 版で参照できます。\n\n")
+            "図は `results/figures/fig-NN.svg` を参照しており、"
+            "`results/` ごと配置すれば GitHub などでもそのまま表示されます。"
+            "PDF が要る場合は HTML 版をブラウザで開き、印刷から「PDF として保存」してください"
+            "（印刷用のレイアウトを用意してあります）。\n\n")
     lines = md.split("\n")
     cut = next((i for i, l in enumerate(lines) if l.startswith("# ")), 0) + 1
     md = "\n".join(lines[:cut]) + "\n\n" + note + "\n".join(lines[cut:])
