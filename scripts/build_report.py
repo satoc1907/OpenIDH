@@ -584,6 +584,16 @@ svg{display:block; min-width:640px}
 .refline.ood{stroke:var(--ood)} .refline.ind{stroke:var(--ind)} .refline.muted{stroke:var(--muted)}
 .refline.acc{stroke:var(--ser3); stroke-dasharray:none; stroke-width:2.5}
 .dirlab.muted{fill:var(--muted)}
+.lead{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:11px;
+      letter-spacing:.1em; color:var(--muted); margin-right:12px; white-space:nowrap}
+.callout{border-left:3px solid var(--accent); background:var(--raised); border-radius:0 8px 8px 0;
+         padding:16px 20px; margin:0; font-size:14.5px; line-height:1.7; color:var(--ink2)}
+.callout strong{color:var(--ink)}
+.rules{display:flex; flex-direction:column; gap:10px; margin:0; padding:0; list-style:none}
+.rules li{display:flex; gap:14px; align-items:baseline; background:var(--surface);
+          border:1px solid var(--hair); border-radius:8px; padding:13px 18px; font-size:14.5px}
+.rules b{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:12.5px;
+         white-space:nowrap; color:var(--ink)}
 .band{opacity:.15; stroke:none}
 .band.ood{fill:var(--ood)}
 .dirlab{font-size:11.5px; font-family:inherit}
@@ -812,6 +822,23 @@ if PRED is not None and HAS_CAL:
         f'<td class="n">{r["ece_lo"]:.3f} – {r["ece_hi"]:.3f}</td>'
         f'<td class="n">{r["offset_mean"]:+.2f} ± {r["offset_sd"]:.2f}</td></tr>' for r in _lb)
     _la = {r["n"]: r for r in _ssc["LOSO-A"]}
+    _POL = {}
+    for _lab, _f in (("LOSO-B", "correction_policy_losob.json"),
+                     ("LOSO-A", "correction_policy_losoa.json")):
+        _p = _ROOT / "results" / _f
+        if _p.is_file():
+            _POL[_lab] = {r["n"]: r for r in json.loads(_p.read_text())}
+
+    def _pol(lab, n, k):
+        return _POL[lab][n][k]
+
+    _poltbl = "".join(
+        f'<tr><th scope="row">{esc(lab)}</th><td class="n">{n}</td>'
+        f'<td class="n">{r["p_harm"]*100:.0f}%</td><td class="n">{r["p_harm_ruled"]*100:.0f}%</td>'
+        f'<td class="n">{r["abstain"]*100:.0f}%</td><td class="n">{r["gain_mean"]:+.3f}</td>'
+        f'<td class="n">{r["loss_when_harm"]:.3f}</td></tr>'
+        for lab in ("LOSO-B", "LOSO-A") for n, r in _POL.get(lab, {}).items())
+
     _emtbl = "".join(
         f'<tr><th scope="row">{esc(JA[lab])}</th>'
         f'<td class="n">{_emu(lab,"pi_source")*100:.1f}%</td>'
@@ -859,40 +886,95 @@ if PRED is not None and HAS_CAL:
 
 <section class="finding">
   <p class="eyebrow">所見 — ゼロショットの限界</p>
-  <h2 class="serif">ラベル無しで同じ定数を当てられるか。当てられなかった</h2>
-  <p>必要なのがスカラー1個なら、ラベルは要らないかもしれない。
+  <h2 class="serif">ラベル無しで同じ定数を当てられるか。原理的に当てられない</h2>
+  <p><span class="lead">仮説</span>較正崩れがほぼ純粋な定数ロジットオフセットなら、
+  それは<strong>ラベルシフト</strong>——クラス条件付き分布 p(x|y) は動かず、有病率 p(y) だけが動いた——
+  の兆候かもしれない。もしそうなら推定すべきはスカラー1個で、しかもラベルは要らない。
   <strong>EM prior shift（Saerens-Latinne-Decaestecker）は、予測確率の分布の形だけから
-  target の有病率を推定する</strong>——ラベルを一切使わない。27ラン全てに適用した。</p>
-  <p><strong>27/27 で収束した。発散も振動もしていない。それでも推定は外れた。</strong>
-  LOSO-B は真の有病率 {_emu("LOSO-B","pi_true")*100:.1f}% に対し EM の推定 {_emu("LOSO-B","pi_em")*100:.1f}%、
-  LOSO-A は真値 {_emu("LOSO-A","pi_true")*100:.1f}% に対し {_emu("LOSO-A","pi_em")*100:.1f}%。
-  どちらも 14 ポイント近い過小推定である。結果として当たるオフセットも小さすぎ
-  （LOSO-B で EM {_emu("LOSO-B","offset_em"):+.2f}、必要な値は {_emu("LOSO-B","offset_labelled"):+.2f}）、
-  LOSO-A に至っては {_emu("LOSO-A","offset_em"):+.2f} と<strong>符号が逆</strong>になる。
-  ECE は分布外全体で {_emg("OOD","ece_raw"):.3f} → {_emg("OOD","ece_em"):.3f} と<strong>悪化した</strong>。</p>
-  <p>実装の誤りではない。<strong>分布内のユニットでは EM の推定は正確である</strong>
-  （真値 18.0% 前後に対し誤差 0〜3 ポイント）。単体テストでも、
-  p(x|y) を固定して有病率だけ動かした合成データなら EM は正しく回収する。
-  <strong>外れるのは分布外のときだけ</strong>だ。</p>
-  <p>理由は EM の仮定にある。EM が想定するのは<strong>ラベルシフト</strong>——
-  クラス条件付き分布 p(x|y) は変わらず、事前確率 p(y) だけが動く状況である。
-  ところがここで起きているのは施設の変更であり、<strong>撮像装置もプロトコルも患者層も変わる。
-  p(x|y) 自体が動いている。</strong>その結果モデルの出力は有病率とは無関係に押し下げられる。
-  実際 LOSO-B の test では<strong>予測確率の平均が 12.3%、真の有病率は 28.4%</strong> だった。
-  EM はこの押し下げられた分布を「陽性が少ない証拠」と読み、
-  <strong>有病率が上がっているのに下がったと結論する</strong>。</p>
-  <p>根本にあるのは循環である。<strong>EM が使える唯一の信号は、まさにシフトによって歪められた
-  予測確率の分布そのものだ。</strong>歪みを、歪んだものから推定することはできない。
-  ラベルはこの循環の外にあるから効く——前節の N 例曲線が効いたのはそのためであり、
-  EM が効かないのも同じ理由である。</p>
-  <p>結論として、<strong>ゼロショットでの較正回復はこの設定では成立しない。
-  target 施設の少数ラベルが要る。</strong>上の図の EM の水平線は
-  {_emu("LOSO-B","ece_em"):.3f} で、ラベル {_lb[0]["n"]} 例の点（{_lb[0]["ece_mean"]:.3f}）にも届かない。
+  target の有病率を推定する手法</strong>である。27ラン全てに適用した。</p>
+  <p><span class="lead">実測</span>外れた。LOSO-B は真の有病率 {_emu("LOSO-B","pi_true")*100:.1f}% に対し
+  EM の推定 <strong>{_emu("LOSO-B","pi_em")*100:.1f}%</strong>、LOSO-A は真値 {_emu("LOSO-A","pi_true")*100:.1f}% に対し
+  <strong>{_emu("LOSO-A","pi_em")*100:.1f}%</strong>——どちらも 14 ポイント近い過小推定である。
+  当たるオフセットも小さすぎ（LOSO-B で {_emu("LOSO-B","offset_em"):+.2f}、必要な値は {_emu("LOSO-B","offset_labelled"):+.2f}）、
+  LOSO-A では {_emu("LOSO-A","offset_em"):+.2f} と<strong>符号が逆</strong>になる。
+  分布外の ECE は {_emg("OOD","ece_raw"):.3f} → <strong>{_emg("OOD","ece_em"):.3f} と悪化した</strong>。</p>
+  <p><span class="lead">反証の排除</span>実装の誤りでも、サンプル不足でも、数値の不安定でもない。
+  <strong>27/27 ランで収束した</strong>（発散も振動もなし）。
+  <strong>分布内では推定が正確</strong>で、真値 18% 前後に対し誤差 0〜3 ポイントに収まる。
+  <strong>合成データでは回収できる</strong>——p(x|y) を固定して有病率を 12% → 30% に動かした設定では
+  EM は正しく 30% を返す（単体テスト）。
+  <strong>ラベルなし症例数を増やしても改善しない</strong>：LOSO-B の推定は n=20 で 18.8% ± 15.3、
+  n=200 で 14.6% ± 4.1 と、ばらつきが縮むだけで<strong>間違った値に精度よく収束する</strong>。
+  系統誤差であって分散の問題ではない。残るのは仮定の破れだけである。</p>
+  <p><span class="lead">原因</span>施設が変われば撮像装置もプロトコルも患者層も変わる。
+  <strong>p(x|y) 自体が動いており、ラベルシフトの仮定が成立していない。</strong>
+  決定的な数字はこれである——<strong>LOSO-B の test では予測確率の平均が 12.3%、真の有病率は 28.4%</strong>。
+  真の有病率が<em>上がっている</em>のにモデルの出力は<em>押し下げられている</em>。
+  ラベルシフトなら両者は同じ方向に動くはずで、逆方向に動いた時点で仮定は否定されている。
+  EM はこの押し下げられた分布を「陽性が少ない証拠」と読み、有病率が下がったと結論する。</p>
+  <p><span class="lead">一般化</span>失敗は構造的である。
+  <strong>EM が使える唯一の信号は、まさにシフトによって歪められた予測確率の分布そのものだ。
+  歪みを、歪んだものから推定することはできない。</strong>
+  ラベルはこの循環の外にある。前節の N 例曲線が効いた理由と、EM が効かない理由は、同じ構造から出てくる。
+  同じことは予測分布のみに依拠する他のゼロショット較正——出力エントロピーや確信度ヒストグラムに基づく手法——
+  にも当てはまるはずである。</p>
+  <p><span class="lead">結論</span><strong>ゼロショットでの較正回復はこの設定では成立しない。
+  target 施設の少数ラベルが要る。</strong>上の図で EM の水平線は {_emu("LOSO-B","ece_em"):.3f} にあり、
+  ラベル {_lb[0]["n"]} 例の点（{_lb[0]["ece_mean"]:.3f}）にすら届かない。
   <strong>ラベル無しの推定は、ラベル 10 例分の価値にも満たない。</strong></p>
   <div class="tablewrap"><table><caption>EM の有病率推定（ラベル不使用、3 seed 平均）</caption>
     <thead><tr><th scope="col">ユニット</th><th scope="col">訓練時</th><th scope="col">真の値</th>
     <th scope="col">EM 推定</th><th scope="col">誤差</th><th scope="col">ECE 生 → EM</th></tr></thead>
     <tbody>{_emtbl}</tbody></table></div>
+</section>
+
+<section class="finding">
+  <p class="eyebrow">運用 — いつ補正してよいか</p>
+  <h2 class="serif">平均の利得だけでは足りない。害を出す確率で決める</h2>
+  <p>N 例曲線が示すのは平均の利得である。だが公開ツールに必要なのはもう一方の数字——
+  <strong>補正がかえって悪化させる確率</strong>だ。N が小さいとオフセットの推定は荒く、
+  符号を外せば補正は害になる。EM の LOSO-A がまさにその実例で、
+  符号を逆に推定して ECE を {_emu("LOSO-A","ece_raw"):.3f} → {_emu("LOSO-A","ece_em"):.3f} に悪化させた。</p>
+  <p>そこで各 N について、<strong>補正後の ECE が補正なしを上回った割合</strong>を数えた。
+  あわせて配備可能な判断基準も評価した——<strong>N 例を復元抽出し直してオフセットを推定し直し、
+  そのばらつき（SE）の 2 倍を |オフセット| が超えたときだけ補正する</strong>というルールである。
+  施設が手元に持っている情報だけで判定できる。</p>
+  <div class="tablewrap"><table><caption>補正が害になる確率と、見送りルールの効果（50回 × 3 seed）</caption>
+    <thead><tr><th scope="col">ユニット</th><th scope="col">N</th><th scope="col">悪化する確率</th>
+    <th scope="col">ルール適用後</th><th scope="col">見送り率</th><th scope="col">ECE 改善</th>
+    <th scope="col">悪化時の幅</th></tr></thead><tbody>{_poltbl}</tbody></table></div>
+  <p><strong>シフトが大きいユニットでは補正はほぼ安全である。</strong>LOSO-B は N=10 でも悪化率 {_pol("LOSO-B",10,"p_harm")*100:.0f}%、
+  N=50 以上では 0% で、改善幅も {_pol("LOSO-B",50,"gain_mean"):.3f} と大きい。
+  <strong>危ないのはシフトが小さいときだ。</strong>LOSO-A は N=10 で悪化率 {_pol("LOSO-A",10,"p_harm")*100:.0f}%——
+  ほぼコイン投げで、期待利得は {_pol("LOSO-A",10,"gain_mean"):+.3f} とマイナスである。
+  補正すべき量が小さいほど、推定誤差が相対的に大きくなるためで、道理ではある。</p>
+  <p>見送りルールはこの危ない側を守る。LOSO-A の悪化率は N=10 で {_pol("LOSO-A",10,"p_harm")*100:.0f}% → {_pol("LOSO-A",10,"p_harm_ruled")*100:.0f}%、
+  N=20 で {_pol("LOSO-A",20,"p_harm")*100:.0f}% → {_pol("LOSO-A",20,"p_harm_ruled")*100:.0f}% に下がる。
+  代償として、シフトが大きいときには過剰に見送る（LOSO-B の N=10 で {_pol("LOSO-B",10,"abstain")*100:.0f}% 見送り、
+  利得は {_pol("LOSO-B",10,"gain_mean"):.3f} → {_pol("LOSO-B",10,"gain_ruled"):.3f} に減る）。
+  <strong>だが配備時にはどちらの状況にいるか分からない。</strong>取りこぼしより害の回避を優先するのが妥当だと考える。</p>
+  <p class="eyebrow" style="margin-top:8px">ポータルの運用ルール（案）</p>
+  <ul class="rules">
+    <li><b>N &lt; 20</b><span>補正しない。確定診断例が 20 例に満たない施設では、
+      推定オフセットの SE が {_pol("LOSO-A",10,"se_mean"):.2f} 前後あり、期待利得が負になり得る。
+      確率値は補正なしで提供し、但し書きを添える。</span></li>
+    <li><b>20 ≤ N &lt; 50</b><span>ルールが発火したときだけ補正する。
+      |オフセット| がブートストラップ SE の 2 倍を超えない限り適用しない。
+      この帯では見送りが多数派になる（LOSO-A で {_pol("LOSO-A",20,"abstain")*100:.0f}%）が、それが正しい挙動である。</span></li>
+    <li><b>N ≥ 50</b><span>補正を既定にし、ルールはガードとして残す。
+      悪化率は {_pol("LOSO-A",50,"p_harm_ruled")*100:.0f}% 以下、改善幅は LOSO-B で {_pol("LOSO-B",50,"gain_mean"):.3f}。
+      それでも悪化したときの幅は {_pol("LOSO-A",50,"loss_when_harm"):.3f} 程度で、破滅的ではない。</span></li>
+    <li><b>常時</b><span>推定オフセットとその SE、および補正の適用可否を画面に出す。
+      補正が効いているかどうかを利用者が知らないまま確率値を読む状態を作らない。</span></li>
+  </ul>
+  <p class="eyebrow" style="margin-top:8px">補正なしで提供する場合の但し書き（案）</p>
+  <p class="callout">この確率値は<strong>他施設のデータで学習したモデル</strong>によるものです。
+  当施設の IDH 変異頻度が学習データと異なる場合、確率値は<strong>系統的にずれます</strong>。
+  検証では、真の陽性率が 28.4% の施設で予測確率の平均が 12.3% と低く出ました。
+  <strong>どの症例がより疑わしいかという順位付けは保たれます</strong>が
+  （AUC は施設が変わっても 0.85〜0.87 を維持）、
+  <strong>確率値そのものを閾値判断に用いないでください</strong>。
+  当施設の確定例を 20 例以上登録いただくと、施設ごとの補正が有効になります。</p>
 </section>
 """
 

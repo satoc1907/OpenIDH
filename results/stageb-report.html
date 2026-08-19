@@ -111,6 +111,16 @@ svg{display:block; min-width:640px}
 .refline.ood{stroke:var(--ood)} .refline.ind{stroke:var(--ind)} .refline.muted{stroke:var(--muted)}
 .refline.acc{stroke:var(--ser3); stroke-dasharray:none; stroke-width:2.5}
 .dirlab.muted{fill:var(--muted)}
+.lead{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:11px;
+      letter-spacing:.1em; color:var(--muted); margin-right:12px; white-space:nowrap}
+.callout{border-left:3px solid var(--accent); background:var(--raised); border-radius:0 8px 8px 0;
+         padding:16px 20px; margin:0; font-size:14.5px; line-height:1.7; color:var(--ink2)}
+.callout strong{color:var(--ink)}
+.rules{display:flex; flex-direction:column; gap:10px; margin:0; padding:0; list-style:none}
+.rules li{display:flex; gap:14px; align-items:baseline; background:var(--surface);
+          border:1px solid var(--hair); border-radius:8px; padding:13px 18px; font-size:14.5px}
+.rules b{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:12.5px;
+         white-space:nowrap; color:var(--ink)}
 .band{opacity:.15; stroke:none}
 .band.ood{fill:var(--ood)}
 .dirlab{font-size:11.5px; font-family:inherit}
@@ -165,7 +175,7 @@ footer code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; co
     <div><dt>構成</dt><dd>9 fold-unit × 3 seed = 27 ラン</dd></div>
     <div><dt>実行環境</dt><dd>A100-SXM4-40GB / 1 GPU per job</dd></div>
     <div><dt>不確実性チェック</dt><dd>27 / 27 合格</dd></div>
-    <div><dt>commit</dt><dd>d67b5f5</dd></div>
+    <div><dt>commit</dt><dd>b3342a3</dd></div>
   </dl>
 </header>
 
@@ -346,40 +356,95 @@ footer code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; co
 
 <section class="finding">
   <p class="eyebrow">所見 — ゼロショットの限界</p>
-  <h2 class="serif">ラベル無しで同じ定数を当てられるか。当てられなかった</h2>
-  <p>必要なのがスカラー1個なら、ラベルは要らないかもしれない。
+  <h2 class="serif">ラベル無しで同じ定数を当てられるか。原理的に当てられない</h2>
+  <p><span class="lead">仮説</span>較正崩れがほぼ純粋な定数ロジットオフセットなら、
+  それは<strong>ラベルシフト</strong>——クラス条件付き分布 p(x|y) は動かず、有病率 p(y) だけが動いた——
+  の兆候かもしれない。もしそうなら推定すべきはスカラー1個で、しかもラベルは要らない。
   <strong>EM prior shift（Saerens-Latinne-Decaestecker）は、予測確率の分布の形だけから
-  target の有病率を推定する</strong>——ラベルを一切使わない。27ラン全てに適用した。</p>
-  <p><strong>27/27 で収束した。発散も振動もしていない。それでも推定は外れた。</strong>
-  LOSO-B は真の有病率 28.4% に対し EM の推定 14.6%、
-  LOSO-A は真値 20.6% に対し 6.6%。
-  どちらも 14 ポイント近い過小推定である。結果として当たるオフセットも小さすぎ
-  （LOSO-B で EM +0.15、必要な値は +1.46）、
-  LOSO-A に至っては -1.33 と<strong>符号が逆</strong>になる。
-  ECE は分布外全体で 0.104 → 0.128 と<strong>悪化した</strong>。</p>
-  <p>実装の誤りではない。<strong>分布内のユニットでは EM の推定は正確である</strong>
-  （真値 18.0% 前後に対し誤差 0〜3 ポイント）。単体テストでも、
-  p(x|y) を固定して有病率だけ動かした合成データなら EM は正しく回収する。
-  <strong>外れるのは分布外のときだけ</strong>だ。</p>
-  <p>理由は EM の仮定にある。EM が想定するのは<strong>ラベルシフト</strong>——
-  クラス条件付き分布 p(x|y) は変わらず、事前確率 p(y) だけが動く状況である。
-  ところがここで起きているのは施設の変更であり、<strong>撮像装置もプロトコルも患者層も変わる。
-  p(x|y) 自体が動いている。</strong>その結果モデルの出力は有病率とは無関係に押し下げられる。
-  実際 LOSO-B の test では<strong>予測確率の平均が 12.3%、真の有病率は 28.4%</strong> だった。
-  EM はこの押し下げられた分布を「陽性が少ない証拠」と読み、
-  <strong>有病率が上がっているのに下がったと結論する</strong>。</p>
-  <p>根本にあるのは循環である。<strong>EM が使える唯一の信号は、まさにシフトによって歪められた
-  予測確率の分布そのものだ。</strong>歪みを、歪んだものから推定することはできない。
-  ラベルはこの循環の外にあるから効く——前節の N 例曲線が効いたのはそのためであり、
-  EM が効かないのも同じ理由である。</p>
-  <p>結論として、<strong>ゼロショットでの較正回復はこの設定では成立しない。
-  target 施設の少数ラベルが要る。</strong>上の図の EM の水平線は
-  0.141 で、ラベル 10 例の点（0.103）にも届かない。
+  target の有病率を推定する手法</strong>である。27ラン全てに適用した。</p>
+  <p><span class="lead">実測</span>外れた。LOSO-B は真の有病率 28.4% に対し
+  EM の推定 <strong>14.6%</strong>、LOSO-A は真値 20.6% に対し
+  <strong>6.6%</strong>——どちらも 14 ポイント近い過小推定である。
+  当たるオフセットも小さすぎ（LOSO-B で +0.15、必要な値は +1.46）、
+  LOSO-A では -1.33 と<strong>符号が逆</strong>になる。
+  分布外の ECE は 0.104 → <strong>0.128 と悪化した</strong>。</p>
+  <p><span class="lead">反証の排除</span>実装の誤りでも、サンプル不足でも、数値の不安定でもない。
+  <strong>27/27 ランで収束した</strong>（発散も振動もなし）。
+  <strong>分布内では推定が正確</strong>で、真値 18% 前後に対し誤差 0〜3 ポイントに収まる。
+  <strong>合成データでは回収できる</strong>——p(x|y) を固定して有病率を 12% → 30% に動かした設定では
+  EM は正しく 30% を返す（単体テスト）。
+  <strong>ラベルなし症例数を増やしても改善しない</strong>：LOSO-B の推定は n=20 で 18.8% ± 15.3、
+  n=200 で 14.6% ± 4.1 と、ばらつきが縮むだけで<strong>間違った値に精度よく収束する</strong>。
+  系統誤差であって分散の問題ではない。残るのは仮定の破れだけである。</p>
+  <p><span class="lead">原因</span>施設が変われば撮像装置もプロトコルも患者層も変わる。
+  <strong>p(x|y) 自体が動いており、ラベルシフトの仮定が成立していない。</strong>
+  決定的な数字はこれである——<strong>LOSO-B の test では予測確率の平均が 12.3%、真の有病率は 28.4%</strong>。
+  真の有病率が<em>上がっている</em>のにモデルの出力は<em>押し下げられている</em>。
+  ラベルシフトなら両者は同じ方向に動くはずで、逆方向に動いた時点で仮定は否定されている。
+  EM はこの押し下げられた分布を「陽性が少ない証拠」と読み、有病率が下がったと結論する。</p>
+  <p><span class="lead">一般化</span>失敗は構造的である。
+  <strong>EM が使える唯一の信号は、まさにシフトによって歪められた予測確率の分布そのものだ。
+  歪みを、歪んだものから推定することはできない。</strong>
+  ラベルはこの循環の外にある。前節の N 例曲線が効いた理由と、EM が効かない理由は、同じ構造から出てくる。
+  同じことは予測分布のみに依拠する他のゼロショット較正——出力エントロピーや確信度ヒストグラムに基づく手法——
+  にも当てはまるはずである。</p>
+  <p><span class="lead">結論</span><strong>ゼロショットでの較正回復はこの設定では成立しない。
+  target 施設の少数ラベルが要る。</strong>上の図で EM の水平線は 0.141 にあり、
+  ラベル 10 例の点（0.103）にすら届かない。
   <strong>ラベル無しの推定は、ラベル 10 例分の価値にも満たない。</strong></p>
   <div class="tablewrap"><table><caption>EM の有病率推定（ラベル不使用、3 seed 平均）</caption>
     <thead><tr><th scope="col">ユニット</th><th scope="col">訓練時</th><th scope="col">真の値</th>
     <th scope="col">EM 推定</th><th scope="col">誤差</th><th scope="col">ECE 生 → EM</th></tr></thead>
     <tbody><tr><th scope="row">field（3T）</th><td class="n">28.2%</td><td class="n">27.2%</td><td class="n">20.5%</td><td class="n">-6.6pt</td><td class="n">0.088 → 0.115</td></tr><tr><th scope="row">LOSO-A（施設）</th><td class="n">16.7%</td><td class="n">20.6%</td><td class="n">6.6%</td><td class="n">-14.0pt</td><td class="n">0.082 → 0.141</td></tr><tr><th scope="row">LOSO-B（施設）</th><td class="n">11.8%</td><td class="n">28.4%</td><td class="n">14.6%</td><td class="n">-13.8pt</td><td class="n">0.162 → 0.141</td></tr><tr><th scope="row">vendor（Philips）</th><td class="n">26.0%</td><td class="n">35.0%</td><td class="n">38.8%</td><td class="n">+3.8pt</td><td class="n">0.085 → 0.114</td></tr><tr><th scope="row">random fold 0</th><td class="n">18.3%</td><td class="n">18.0%</td><td class="n">21.4%</td><td class="n">+3.3pt</td><td class="n">0.046 → 0.079</td></tr><tr><th scope="row">random fold 1</th><td class="n">17.9%</td><td class="n">18.0%</td><td class="n">15.9%</td><td class="n">-2.2pt</td><td class="n">0.035 → 0.045</td></tr><tr><th scope="row">random fold 2</th><td class="n">17.9%</td><td class="n">18.0%</td><td class="n">18.0%</td><td class="n">-0.0pt</td><td class="n">0.047 → 0.063</td></tr><tr><th scope="row">random fold 3</th><td class="n">18.3%</td><td class="n">17.7%</td><td class="n">15.3%</td><td class="n">-2.5pt</td><td class="n">0.046 → 0.045</td></tr><tr><th scope="row">random fold 4</th><td class="n">17.6%</td><td class="n">18.3%</td><td class="n">17.0%</td><td class="n">-1.4pt</td><td class="n">0.047 → 0.064</td></tr></tbody></table></div>
+</section>
+
+<section class="finding">
+  <p class="eyebrow">運用 — いつ補正してよいか</p>
+  <h2 class="serif">平均の利得だけでは足りない。害を出す確率で決める</h2>
+  <p>N 例曲線が示すのは平均の利得である。だが公開ツールに必要なのはもう一方の数字——
+  <strong>補正がかえって悪化させる確率</strong>だ。N が小さいとオフセットの推定は荒く、
+  符号を外せば補正は害になる。EM の LOSO-A がまさにその実例で、
+  符号を逆に推定して ECE を 0.082 → 0.141 に悪化させた。</p>
+  <p>そこで各 N について、<strong>補正後の ECE が補正なしを上回った割合</strong>を数えた。
+  あわせて配備可能な判断基準も評価した——<strong>N 例を復元抽出し直してオフセットを推定し直し、
+  そのばらつき（SE）の 2 倍を |オフセット| が超えたときだけ補正する</strong>というルールである。
+  施設が手元に持っている情報だけで判定できる。</p>
+  <div class="tablewrap"><table><caption>補正が害になる確率と、見送りルールの効果（50回 × 3 seed）</caption>
+    <thead><tr><th scope="col">ユニット</th><th scope="col">N</th><th scope="col">悪化する確率</th>
+    <th scope="col">ルール適用後</th><th scope="col">見送り率</th><th scope="col">ECE 改善</th>
+    <th scope="col">悪化時の幅</th></tr></thead><tbody><tr><th scope="row">LOSO-B</th><td class="n">10</td><td class="n">9%</td><td class="n">6%</td><td class="n">70%</td><td class="n">+0.072</td><td class="n">0.035</td></tr><tr><th scope="row">LOSO-B</th><td class="n">20</td><td class="n">4%</td><td class="n">3%</td><td class="n">46%</td><td class="n">+0.085</td><td class="n">0.060</td></tr><tr><th scope="row">LOSO-B</th><td class="n">50</td><td class="n">0%</td><td class="n">0%</td><td class="n">10%</td><td class="n">+0.096</td><td class="n">0.000</td></tr><tr><th scope="row">LOSO-B</th><td class="n">100</td><td class="n">0%</td><td class="n">0%</td><td class="n">1%</td><td class="n">+0.105</td><td class="n">0.000</td></tr><tr><th scope="row">LOSO-B</th><td class="n">200</td><td class="n">0%</td><td class="n">0%</td><td class="n">0%</td><td class="n">+0.103</td><td class="n">0.000</td></tr><tr><th scope="row">LOSO-A</th><td class="n">10</td><td class="n">46%</td><td class="n">17%</td><td class="n">80%</td><td class="n">-0.009</td><td class="n">0.055</td></tr><tr><th scope="row">LOSO-A</th><td class="n">20</td><td class="n">32%</td><td class="n">14%</td><td class="n">76%</td><td class="n">+0.009</td><td class="n">0.046</td></tr><tr><th scope="row">LOSO-A</th><td class="n">50</td><td class="n">16%</td><td class="n">10%</td><td class="n">49%</td><td class="n">+0.028</td><td class="n">0.013</td></tr><tr><th scope="row">LOSO-A</th><td class="n">100</td><td class="n">7%</td><td class="n">6%</td><td class="n">33%</td><td class="n">+0.034</td><td class="n">0.018</td></tr><tr><th scope="row">LOSO-A</th><td class="n">200</td><td class="n">13%</td><td class="n">13%</td><td class="n">9%</td><td class="n">+0.030</td><td class="n">0.017</td></tr></tbody></table></div>
+  <p><strong>シフトが大きいユニットでは補正はほぼ安全である。</strong>LOSO-B は N=10 でも悪化率 9%、
+  N=50 以上では 0% で、改善幅も 0.096 と大きい。
+  <strong>危ないのはシフトが小さいときだ。</strong>LOSO-A は N=10 で悪化率 46%——
+  ほぼコイン投げで、期待利得は -0.009 とマイナスである。
+  補正すべき量が小さいほど、推定誤差が相対的に大きくなるためで、道理ではある。</p>
+  <p>見送りルールはこの危ない側を守る。LOSO-A の悪化率は N=10 で 46% → 17%、
+  N=20 で 32% → 14% に下がる。
+  代償として、シフトが大きいときには過剰に見送る（LOSO-B の N=10 で 70% 見送り、
+  利得は 0.072 → 0.017 に減る）。
+  <strong>だが配備時にはどちらの状況にいるか分からない。</strong>取りこぼしより害の回避を優先するのが妥当だと考える。</p>
+  <p class="eyebrow" style="margin-top:8px">ポータルの運用ルール（案）</p>
+  <ul class="rules">
+    <li><b>N &lt; 20</b><span>補正しない。確定診断例が 20 例に満たない施設では、
+      推定オフセットの SE が 1.43 前後あり、期待利得が負になり得る。
+      確率値は補正なしで提供し、但し書きを添える。</span></li>
+    <li><b>20 ≤ N &lt; 50</b><span>ルールが発火したときだけ補正する。
+      |オフセット| がブートストラップ SE の 2 倍を超えない限り適用しない。
+      この帯では見送りが多数派になる（LOSO-A で 76%）が、それが正しい挙動である。</span></li>
+    <li><b>N ≥ 50</b><span>補正を既定にし、ルールはガードとして残す。
+      悪化率は 10% 以下、改善幅は LOSO-B で 0.096。
+      それでも悪化したときの幅は 0.013 程度で、破滅的ではない。</span></li>
+    <li><b>常時</b><span>推定オフセットとその SE、および補正の適用可否を画面に出す。
+      補正が効いているかどうかを利用者が知らないまま確率値を読む状態を作らない。</span></li>
+  </ul>
+  <p class="eyebrow" style="margin-top:8px">補正なしで提供する場合の但し書き（案）</p>
+  <p class="callout">この確率値は<strong>他施設のデータで学習したモデル</strong>によるものです。
+  当施設の IDH 変異頻度が学習データと異なる場合、確率値は<strong>系統的にずれます</strong>。
+  検証では、真の陽性率が 28.4% の施設で予測確率の平均が 12.3% と低く出ました。
+  <strong>どの症例がより疑わしいかという順位付けは保たれます</strong>が
+  （AUC は施設が変わっても 0.85〜0.87 を維持）、
+  <strong>確率値そのものを閾値判断に用いないでください</strong>。
+  当施設の確定例を 20 例以上登録いただくと、施設ごとの補正が有効になります。</p>
 </section>
 
 <section class="finding">
