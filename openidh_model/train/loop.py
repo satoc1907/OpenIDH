@@ -147,8 +147,14 @@ def train_fold(paths, cfg, split_file, fold_id=None, seed=0, log=print):
     val_loader = make_loader(val_ds, cfg, shuffle=False)
 
     model = OpenIDH(backbone=cfg["model"]["backbone"], weights_dir=paths.weights_dir).to(device)
-    opt = torch.optim.AdamW(model.parameters(), lr=cfg["train"]["lr"],
+    # lr_trunk/lr_head default to lr, which reproduces the single-rate optimizer
+    lr = cfg["train"]["lr"]
+    lr_trunk = float(cfg["train"].get("lr_trunk") or lr)
+    lr_head = float(cfg["train"].get("lr_head") or lr)
+    opt = torch.optim.AdamW(model.param_groups(lr_trunk, lr_head), lr=lr,
                             weight_decay=cfg["train"]["weight_decay"])
+    if lr_trunk != lr_head:
+        log(f"lr split: trunk={lr_trunk:g} head={lr_head:g}")
     gen = torch.Generator(device=device); gen.manual_seed(seed)
 
     lam_max = cfg["loss"]["lambda_reg_max"]; t_anneal = cfg["loss"]["t_anneal"]

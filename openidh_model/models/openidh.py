@@ -59,6 +59,22 @@ class OpenIDH(nn.Module):
         ev["tabular"] = self.head_tabular(tabular)
         return ev
 
+    def param_groups(self, lr_trunk: float, lr_head: float) -> list[dict]:
+        """Split the optimizer by role: pretrained trunks vs freshly-initialised heads.
+
+        The trunks come from ImageNet-21k weights and only need nudging; the five
+        evidence heads and the tabular MLP start from scratch and are 8k parameters
+        against 44M, so a single learning rate tuned for the trunks leaves them
+        barely trained — the tabular head in particular. Groups are emitted in
+        `parameters()` order, so passing the same value for both reproduces the
+        single-rate optimizer exactly.
+        """
+        trunk = list(self.trunk_single.parameters()) + list(self.trunk_unified.parameters())
+        head = (list(self.heads_single.parameters()) + list(self.head_unified.parameters())
+                + list(self.head_tabular.parameters()))
+        return [{"params": trunk, "lr": lr_trunk, "name": "trunk"},
+                {"params": head, "lr": lr_head, "name": "head"}]
+
     def num_parameters(self) -> int:
         return sum(p.numel() for p in self.parameters())
 

@@ -1,0 +1,11 @@
+# Experiment: give the freshly-initialised heads their own learning rate.
+# Diffs from train.yaml only (spec §11).
+#
+# Motivation: the tabular head contributes evidence 1.26 against 6-12 for the
+# image heads, i.e. age is effectively unused — while an age-only logistic
+# regression beats the whole model out of distribution (AUC 0.889 vs 0.860).
+# The heads are 8k parameters trained at a rate chosen for 44M of pretrained
+# trunk, so the hypothesis is that they are simply undertrained.
+train:
+  lr_trunk: 1.0e-4      # pretrained ViT trunks — unchanged from train.yaml
+  lr_head: 3.0e-3       # 3x variant — 5 evidence heads + tabular MLP

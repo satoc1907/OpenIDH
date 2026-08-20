@@ -258,3 +258,31 @@ def test_em_correction_preserves_ranking():
     out = em_prior_shift(a / (a + b), pi_source=0.15)
     d = check_ranking_invariant(a, b, y, offset=out["offset"])
     assert all(abs(v) < 1e-9 for v in d.values())
+
+
+# ── per-group learning rates (tabular head experiment) ───────────────────────
+def test_param_groups_partition_the_model(model):
+    """Every parameter lands in exactly one group, in parameters() order."""
+    g = model.param_groups(1e-4, 1e-3)
+    ids = [id(p) for grp in g for p in grp["params"]]
+    assert len(ids) == len(set(ids)), "a parameter appears twice"
+    assert set(ids) == {id(p) for p in model.parameters()}
+    assert ids == [id(p) for p in model.parameters()], "group order must follow parameters()"
+    assert [grp["lr"] for grp in g] == [1e-4, 1e-3]
+
+
+def test_equal_rates_reproduce_the_single_group_optimizer(model):
+    """Unset lr_trunk/lr_head must leave the old optimizer behaviour untouched."""
+    import torch
+    a = torch.optim.AdamW(model.param_groups(1e-4, 1e-4), lr=1e-4, weight_decay=0.05)
+    b = torch.optim.AdamW(model.parameters(), lr=1e-4, weight_decay=0.05)
+    fa = [p for g in a.param_groups for p in g["params"]]
+    fb = [p for g in b.param_groups for p in g["params"]]
+    assert [id(p) for p in fa] == [id(p) for p in fb]
+    assert all(g["lr"] == 1e-4 for g in a.param_groups)
+
+
+def test_head_group_holds_the_tabular_head(model):
+    head_ids = {id(p) for p in model.param_groups(1e-4, 1e-3)[1]["params"]}
+    assert {id(p) for p in model.head_tabular.parameters()} <= head_ids
+    assert {id(p) for p in model.trunk_single.parameters()}.isdisjoint(head_ids)
