@@ -33,13 +33,17 @@ def apply_affine(alpha, beta, T: float = 1.0, offset: float = 0.0):
     """z -> z/T + offset, keeping S = alpha + beta fixed.
 
     T alone is temperature scaling; offset alone is a prior/base-rate correction;
-    both together is Platt scaling. Every variant is monotone in z, so none of
-    them can move AUC or AUPRC.
+    both together is Platt scaling. With scalar parameters every variant is
+    monotone in z, so none of them can move AUC or AUPRC.
+
+    `offset` may also be per-subject (an array). That is no longer a single
+    monotone map — subjects are shifted by different amounts, so the ranking CAN
+    change and AUC with it. Check it rather than assume it.
     """
     a = np.asarray(alpha, dtype=np.float64)
     b = np.asarray(beta, dtype=np.float64)
     S = a + b
-    p = 1.0 / (1.0 + np.exp(-(to_logit(a, b) / float(T) + float(offset))))
+    p = 1.0 / (1.0 + np.exp(-(to_logit(a, b) / float(T) + np.asarray(offset, dtype=np.float64))))
     return p * S, S - p * S
 
 
