@@ -1,0 +1,39 @@
+{
+  "split_file": "splits_loso_foldB.csv",
+  "fold_id": null,
+  "seed": 0,
+  "train_yaml": "train.lrsplit3.yaml",
+  "best_epoch": 6,
+  "best_val_nll": 0.19910369016677543,
+  "age_mean": 60.03417487684729,
+  "age_std": 14.169821655467059,
+  "n_train": 812,
+  "n_val": 204,
+  "n_test": 619,
+  "test_metrics": {
+    "nll": 0.5279549353745244,
+    "brier": 0.15767063484802496,
+    "ece": 0.14287162227542574,
+    "mean_S": 64.16903164968352,
+    "median_S": 64.35577583312988,
+    "auc": 0.8505412476913606,
+    "auprc": 0.7446732718876354
+  },
+  "test_monitor": {
+    "median_S": 64.35577392578125,
+    "S_correct_median": 68.29850769042969,
+    "S_wrong_median": 51.611114501953125,
+    "evidence_balance": {
+      "T1": 8.835063934326172,
+      "T2": 11.93480110168457,
+      "FLAIR": 12.726755142211914,
+      "T1c": 12.477437019348145,
+      "unified": 7.393258094787598,
+      "tabular": 8.801715850830078
+    },
+    "fused_data": 0.15923048370489204,
+    "fused_reg": 1.0105319419854677,
+    "reg_over_data": 6.3463472475429095,
+    "uncertainty_ok": true
+  }
+}
