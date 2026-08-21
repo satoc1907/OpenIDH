@@ -120,31 +120,45 @@ def make_loader(ds, cfg, shuffle: bool):
     # NOT persistent_workers: a persistent iterator draws the worker base seed only
     # once instead of once per epoch, which shifts the global RNG stream and changes
     # the shuffle order from epoch 1 on (measured: smoke diverges at epoch 1).
-    pf = int(cfg["train"].get("prefetch_factor", 2) or 2)
+    pf = int(cfg["train"].get("prefetch_factor", 1) or 1)
     extra = {"prefetch_factor": pf} if nw > 0 else {}
     if nw > 0:
-        _set_sharing_strategy()
+        _warn_if_shm_tight(cfg, nw, pf)
     return DataLoader(ds, batch_size=cfg["train"]["batch_size"], shuffle=shuffle,
                       num_workers=nw, **extra)
 
 
-def _set_sharing_strategy() -> None:
-    """Hand worker batches over via files rather than /dev/shm.
+def _shm_budget(cfg, nw: int, pf: int) -> tuple[float, float]:
+    """(bytes of image tensors in flight, bytes free in /dev/shm)."""
+    import shutil
 
-    The cluster container runs with --shm-size=1g, while 8 workers x prefetch 4 put
-    up to 2.5GB of image tensors in flight (a batch of 32 is 77MB: 4 modalities x
-    3x224x224 float32). Torch's default 'file_descriptor' strategy backs those
-    handoffs with POSIX shared memory, so a run dies partway through with
-    "unable to allocate shared memory" — which is what killed lrsplit1_foldB_s0
-    while its two siblings happened to survive. Set OPENIDH_SHARING_STRATEGY to
-    override; 'file_descriptor' restores the default.
+    per_subject = len(MODALITIES) * 3 * cfg["data"]["image_size"] ** 2 * 4   # float32
+    in_flight = nw * pf * cfg["train"]["batch_size"] * per_subject
+    try:
+        free = float(shutil.disk_usage("/dev/shm").free)
+    except OSError:
+        free = float("inf")
+    return float(in_flight), free
+
+
+def _warn_if_shm_tight(cfg, nw: int, pf: int) -> None:
+    """Worker batches are handed over through /dev/shm, which the cluster container
+    caps at 1GB (--shm-size=1g). Exceed it and the run dies partway through with
+    "unable to allocate shared memory" — non-deterministically, so sibling seeds can
+    survive while one does not. BOTH of torch's sharing strategies allocate there
+    (file_system was tried and failed the same way), so the only real lever is how
+    much is in flight: num_workers x prefetch_factor x batch_size x 2.4MB/subject.
+    Surfaced at startup rather than twenty minutes in.
     """
-    import os
+    import warnings
 
-    import torch.multiprocessing as mp
-    want = os.environ.get("OPENIDH_SHARING_STRATEGY", "file_system")
-    if want in mp.get_all_sharing_strategies() and mp.get_sharing_strategy() != want:
-        mp.set_sharing_strategy(want)
+    need, free = _shm_budget(cfg, nw, pf)
+    if need > 0.8 * free:
+        warnings.warn(
+            f"dataloader may exhaust /dev/shm: {need/1e6:.0f}MB in flight "
+            f"({nw} workers x prefetch {pf} x batch {cfg['train']['batch_size']}) "
+            f"against {free/1e6:.0f}MB free — lower train.prefetch_factor or "
+            f"train.num_workers", RuntimeWarning, stacklevel=2)
 
 
 def train_fold(paths, cfg, split_file, fold_id=None, seed=0, log=print):

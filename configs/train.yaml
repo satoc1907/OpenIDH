@@ -26,9 +26,9 @@ train:
   num_workers: 8                 # dataloading (5 gunzipped NIfTI/subject) is the
                                  # bottleneck on the cluster, not the GPU. Does not
                                  # change data order; see make_loader(). 0 = single process.
-  prefetch_factor: 2             # batches in flight per worker. 8x4 needed 2.5GB of
-                                 # shared memory against the container's 1GB and killed
-                                 # a run; 8x2 halves it. Does not affect results.
+  prefetch_factor: 1             # batches in flight per worker. 8x2 still needed 1.2GB
+                                 # against the container's 1GB /dev/shm and a run still died;
+                                 # 8x1 is 0.6GB. Does not affect results.
 
 data:
   split_file: splits_loso_foldA.csv
