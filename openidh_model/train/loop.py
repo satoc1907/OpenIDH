@@ -120,9 +120,31 @@ def make_loader(ds, cfg, shuffle: bool):
     # NOT persistent_workers: a persistent iterator draws the worker base seed only
     # once instead of once per epoch, which shifts the global RNG stream and changes
     # the shuffle order from epoch 1 on (measured: smoke diverges at epoch 1).
-    extra = {"prefetch_factor": 4} if nw > 0 else {}
+    pf = int(cfg["train"].get("prefetch_factor", 2) or 2)
+    extra = {"prefetch_factor": pf} if nw > 0 else {}
+    if nw > 0:
+        _set_sharing_strategy()
     return DataLoader(ds, batch_size=cfg["train"]["batch_size"], shuffle=shuffle,
                       num_workers=nw, **extra)
+
+
+def _set_sharing_strategy() -> None:
+    """Hand worker batches over via files rather than /dev/shm.
+
+    The cluster container runs with --shm-size=1g, while 8 workers x prefetch 4 put
+    up to 2.5GB of image tensors in flight (a batch of 32 is 77MB: 4 modalities x
+    3x224x224 float32). Torch's default 'file_descriptor' strategy backs those
+    handoffs with POSIX shared memory, so a run dies partway through with
+    "unable to allocate shared memory" — which is what killed lrsplit1_foldB_s0
+    while its two siblings happened to survive. Set OPENIDH_SHARING_STRATEGY to
+    override; 'file_descriptor' restores the default.
+    """
+    import os
+
+    import torch.multiprocessing as mp
+    want = os.environ.get("OPENIDH_SHARING_STRATEGY", "file_system")
+    if want in mp.get_all_sharing_strategies() and mp.get_sharing_strategy() != want:
+        mp.set_sharing_strategy(want)
 
 
 def train_fold(paths, cfg, split_file, fold_id=None, seed=0, log=print):
