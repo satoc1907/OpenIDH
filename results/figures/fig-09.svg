@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" width="760" height="300" role="img"><title>学習率分離：seed 対応の変化</title><style>svg{font-family:system-ui,-apple-system,"Segoe UI","Hiragino Sans","Yu Gothic UI","Noto Sans JP",sans-serif;background:#fbfcfc} text{fill:#10161a}
+.grid{stroke:#e2e7e9; stroke-width:1}
+.sep{stroke:#dbe1e4; stroke-width:1; stroke-dasharray:3 3}
+.tick{font-size:11px; fill:#7b8a92; font-variant-numeric:tabular-nums}
+.pnl{font-size:12.5px; fill:#4d5b63; letter-spacing:.02em}
+.rowlab{font-size:12.5px; fill:#10161a; font-family:inherit}
+.runlab{font-size:10.5px; fill:#7b8a92}
+.val{font-size:11.5px; fill:#4d5b63; font-variant-numeric:tabular-nums}
+.val.sm{font-size:10.5px}
+.note{font-size:11.5px; fill:#7b8a92}
+.dot.ood{fill:#eb6834}
+.dot.ind{fill:#2a78d6}
+.dot{stroke:#fbfcfc; stroke-width:2}
+.dot.soft{opacity:.85}
+.ring.ood{stroke:#eb6834}
+.ring.ind{stroke:#2a78d6}
+.ring{fill:#fbfcfc; stroke-width:2}
+.whisk.ood,.conn.ood{stroke:#eb6834}
+.whisk.ind,.conn.ind{stroke:#2a78d6}
+.whisk{stroke-width:2; opacity:.5}
+.conn{stroke-width:2; opacity:.42}
+.bar.ood{fill:#eb6834}
+.bar.ind{fill:#2a78d6}
+.dot.acc{fill:#1baf7a}
+.ring.acc{stroke:#1baf7a}
+.diamond{stroke:#fbfcfc; stroke-width:2}
+.diamond.ood{fill:#eb6834}
+.diamond.ind{fill:#2a78d6}
+.rel{fill:none; stroke-width:2; opacity:.85}
+.rel.ood{stroke:#eb6834}
+.rel.ind{stroke:#2a78d6}
+.rel.acc{stroke:#1baf7a}
+.ideal{stroke:#7b8a92; stroke-width:1.5; stroke-dasharray:5 4}
+.refline{stroke-width:1.5; stroke-dasharray:5 4; opacity:.75}
+.refline.ood{stroke:#eb6834}
+.refline.ind{stroke:#2a78d6}
+.refline.muted{stroke:#7b8a92}
+.refline.acc{stroke:#1baf7a; stroke-dasharray:none; stroke-width:2.5}
+.dirlab.muted{fill:#7b8a92}
+.band{opacity:.15; stroke:none}
+.band.ood{fill:#eb6834}
+.dirlab{font-size:11.5px; font-family:inherit}
+.dirlab.ood{fill:#eb6834}
+.dirlab.ind{fill:#2a78d6}
+.dirlab.acc{fill:#1baf7a}
+.unused{fill:rgba(16,22,26,.045)}
+.hit{fill:transparent}
+.mk{cursor:default}
+.mk:hover .dot,.mk:hover .bar{filter:brightness(1.12)}</style><rect width="760" height="300" fill="#fbfcfc"/><title>学習率分離：seed 対応の変化</title><text class="pnl" x="30" y="26">tabular evidence</text><line class="grid" x1="44" y1="244.0" x2="234" y2="244.0"/><text class="tick" x="40" y="248.0" text-anchor="end">0.0</text><line class="grid" x1="44" y1="148.0" x2="234" y2="148.0"/><text class="tick" x="40" y="152.0" text-anchor="end">8.0</text><line class="grid" x1="44" y1="52.0" x2="234" y2="52.0"/><text class="tick" x="40" y="56.0" text-anchor="end">16.0</text><text class="tick" x="56.0" y="264.0" text-anchor="middle">lr 1e-4</text><text class="tick" x="138.0" y="264.0" text-anchor="middle">lr 1e-3</text><text class="tick" x="220.0" y="264.0" text-anchor="middle">lr 3e-3</text><polyline class="rel ood" points="56.0,228.1 138.0,194.3 220.0,138.4"/><g class="mk" data-tip="seed 0 · lr 1e-4 · tabular evidence 1.3"><circle class="dot ood" cx="56.0" cy="228.1" r="4.4"/></g><g class="mk" data-tip="seed 0 · lr 1e-3 · tabular evidence 4.1"><circle class="dot ood" cx="138.0" cy="194.3" r="4.4"/></g><g class="mk" data-tip="seed 0 · lr 3e-3 · tabular evidence 8.8"><circle class="dot ood" cx="220.0" cy="138.4" r="4.4"/></g><polyline class="rel ood" points="56.0,228.8 138.0,181.7 220.0,155.1"/><g class="mk" data-tip="seed 1 · lr 1e-4 · tabular evidence 1.3"><circle class="dot ood" cx="56.0" cy="228.8" r="4.4"/></g><g class="mk" data-tip="seed 1 · lr 1e-3 · tabular evidence 5.2"><circle class="dot ood" cx="138.0" cy="181.7" r="4.4"/></g><g class="mk" data-tip="seed 1 · lr 3e-3 · tabular evidence 7.4"><circle class="dot ood" cx="220.0" cy="155.1" r="4.4"/></g><polyline class="rel ood" points="56.0,228.6 138.0,179.0 220.0,68.3"/><g class="mk" data-tip="seed 2 · lr 1e-4 · tabular evidence 1.3"><circle class="dot ood" cx="56.0" cy="228.6" r="4.4"/></g><g class="mk" data-tip="seed 2 · lr 1e-3 · tabular evidence 5.4"><circle class="dot ood" cx="138.0" cy="179.0" r="4.4"/></g><g class="mk" data-tip="seed 2 · lr 3e-3 · tabular evidence 14.6"><circle class="dot ood" cx="220.0" cy="68.3" r="4.4"/></g><text class="pnl" x="274" y="26">感度 @0.5</text><line class="grid" x1="288" y1="244.0" x2="478" y2="244.0"/><text class="tick" x="284" y="248.0" text-anchor="end">0%</text><line class="grid" x1="288" y1="148.0" x2="478" y2="148.0"/><text class="tick" x="284" y="152.0" text-anchor="end">20%</text><line class="grid" x1="288" y1="52.0" x2="478" y2="52.0"/><text class="tick" x="284" y="56.0" text-anchor="end">40%</text><text class="tick" x="300.0" y="264.0" text-anchor="middle">lr 1e-4</text><text class="tick" x="382.0" y="264.0" text-anchor="middle">lr 1e-3</text><text class="tick" x="464.0" y="264.0" text-anchor="middle">lr 3e-3</text><polyline class="rel ood" points="300.0,200.4 382.0,154.0 464.0,110.4"/><g class="mk" data-tip="seed 0 · lr 1e-4 · 感度 @0.5 9%"><circle class="dot ood" cx="300.0" cy="200.4" r="4.4"/></g><g class="mk" data-tip="seed 0 · lr 1e-3 · 感度 @0.5 19%"><circle class="dot ood" cx="382.0" cy="154.0" r="4.4"/></g><g class="mk" data-tip="seed 0 · lr 3e-3 · 感度 @0.5 28%"><circle class="dot ood" cx="464.0" cy="110.4" r="4.4"/></g><polyline class="rel ood" points="300.0,200.4 382.0,96.7 464.0,110.4"/><g class="mk" data-tip="seed 1 · lr 1e-4 · 感度 @0.5 9%"><circle class="dot ood" cx="300.0" cy="200.4" r="4.4"/></g><g class="mk" data-tip="seed 1 · lr 1e-3 · 感度 @0.5 31%"><circle class="dot ood" cx="382.0" cy="96.7" r="4.4"/></g><g class="mk" data-tip="seed 1 · lr 3e-3 · 感度 @0.5 28%"><circle class="dot ood" cx="464.0" cy="110.4" r="4.4"/></g><polyline class="rel ood" points="300.0,184.0 382.0,164.9 464.0,102.2"/><g class="mk" data-tip="seed 2 · lr 1e-4 · 感度 @0.5 12%"><circle class="dot ood" cx="300.0" cy="184.0" r="4.4"/></g><g class="mk" data-tip="seed 2 · lr 1e-3 · 感度 @0.5 16%"><circle class="dot ood" cx="382.0" cy="164.9" r="4.4"/></g><g class="mk" data-tip="seed 2 · lr 3e-3 · 感度 @0.5 30%"><circle class="dot ood" cx="464.0" cy="102.2" r="4.4"/></g><text class="pnl" x="518" y="26">AUC</text><line class="grid" x1="532" y1="244.0" x2="722" y2="244.0"/><text class="tick" x="528" y="248.0" text-anchor="end">0.800</text><line class="grid" x1="532" y1="148.0" x2="722" y2="148.0"/><text class="tick" x="528" y="152.0" text-anchor="end">0.860</text><line class="grid" x1="532" y1="52.0" x2="722" y2="52.0"/><text class="tick" x="528" y="56.0" text-anchor="end">0.920</text><text class="tick" x="544.0" y="264.0" text-anchor="middle">lr 1e-4</text><text class="tick" x="626.0" y="264.0" text-anchor="middle">lr 1e-3</text><text class="tick" x="708.0" y="264.0" text-anchor="middle">lr 3e-3</text><polyline class="rel ood" points="544.0,164.5 626.0,117.1 708.0,163.1"/><g class="mk" data-tip="seed 0 · lr 1e-4 · AUC 0.850"><circle class="dot ood" cx="544.0" cy="164.5" r="4.4"/></g><g class="mk" data-tip="seed 0 · lr 1e-3 · AUC 0.879"><circle class="dot ood" cx="626.0" cy="117.1" r="4.4"/></g><g class="mk" data-tip="seed 0 · lr 3e-3 · AUC 0.851"><circle class="dot ood" cx="708.0" cy="163.1" r="4.4"/></g><polyline class="rel ood" points="544.0,123.9 626.0,122.7 708.0,142.4"/><g class="mk" data-tip="seed 1 · lr 1e-4 · AUC 0.875"><circle class="dot ood" cx="544.0" cy="123.9" r="4.4"/></g><g class="mk" data-tip="seed 1 · lr 1e-3 · AUC 0.876"><circle class="dot ood" cx="626.0" cy="122.7" r="4.4"/></g><g class="mk" data-tip="seed 1 · lr 3e-3 · AUC 0.863"><circle class="dot ood" cx="708.0" cy="142.4" r="4.4"/></g><polyline class="rel ood" points="544.0,184.5 626.0,193.0 708.0,83.9"/><g class="mk" data-tip="seed 2 · lr 1e-4 · AUC 0.837"><circle class="dot ood" cx="544.0" cy="184.5" r="4.4"/></g><g class="mk" data-tip="seed 2 · lr 1e-3 · AUC 0.832"><circle class="dot ood" cx="626.0" cy="193.0" r="4.4"/></g><g class="mk" data-tip="seed 2 · lr 3e-3 · AUC 0.900"><circle class="dot ood" cx="708.0" cy="83.9" r="4.4"/></g></svg>

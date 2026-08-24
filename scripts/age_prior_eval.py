@@ -144,6 +144,50 @@ def evaluate(paths, runs_dir: Path, quadratic: bool = False) -> list[dict]:
     return out
 
 
+def auc_table(paths, runs_dir: Path) -> list[dict]:
+    """Age alone vs the image model vs their sum, per fold-unit.
+
+    The age model never sees the target site's labels: it is fitted on the training
+    split and applied to the test ages. The combined score adds the age log-odds to
+    the fused image logit — a naive-Bayes style fusion, not a retrained model.
+    """
+    from sklearn.metrics import roc_auc_score
+
+    subj = subject_table(paths).dropna(subset=["age"])
+    units = [("LOSO-A", "splits_loso_foldA.csv", None, "foldA", "OOD"),
+             ("LOSO-B", "splits_loso_foldB.csv", None, "foldB", "OOD"),
+             ("vendor Philips", "splits_vendor_philips.csv", None, "vendor", "OOD"),
+             ("field 3T", "splits_field.csv", None, "field", "OOD")]
+    units += [(f"random f{i}", "splits_random_5fold.csv", i, f"rand{i}", "in-dist")
+              for i in range(5)]
+    out = []
+    for label, f, fid, tag, kind in units:
+        sp = pd.read_csv(paths.splits_dir / f)
+        if fid is not None:
+            sp = sp[sp["fold_id"].astype(str) == str(fid)]
+        sp = sp.merge(subj[["subject_id", "age"]], on="subject_id", how="left").dropna(subset=["age"])
+        sp["mut"] = (sp["idh"].astype(str).str.strip() == "Mut").astype(int)
+        tr, te = sp[sp.split_role == "train"], sp[sp.split_role == "test"]
+        pi_of = _fit_age_model(tr["age"].to_numpy(float), tr["mut"].to_numpy(int), False)
+        auc_age = float(roc_auc_score(te["mut"], pi_of(te["age"].to_numpy(float))))
+        img, comb = [], []
+        for seed in range(3):
+            pf = runs_dir / f"{tag}_s{seed}" / "predictions.csv"
+            if not pf.is_file():
+                continue
+            t = pd.read_csv(pf)
+            t = t[t.role == "test"].merge(subj[["subject_id", "age"]], on="subject_id", how="left")
+            z = np.log(t["alpha"] / t["beta"]).to_numpy()
+            pi = pi_of(t["age"].to_numpy(float))
+            za = np.log(pi / (1 - pi)) - _lo(float(tr["mut"].mean()))
+            img.append(roc_auc_score(t["y_true"], z))
+            comb.append(roc_auc_score(t["y_true"], z + za))
+        out.append({"label": label, "kind": kind, "n_test": len(te),
+                    "auc_age": auc_age, "auc_image": float(np.mean(img)),
+                    "auc_combined": float(np.mean(comb))})
+    return out
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--runs-dir", default=str(_ROOT / "runs"))
@@ -223,7 +267,9 @@ def main() -> None:
 
     if a.json:
         Path(a.json).write_text(json.dumps({"site_stats": st, "linear": res[False],
-                                            "quadratic": res[True]}, indent=2, default=float))
+                                            "quadratic": res[True],
+                                            "auc_table": auc_table(paths, runs_dir)},
+                                           indent=2, default=float))
         print(f"\nwrote {a.json}")
 
 

@@ -202,7 +202,7 @@ footer code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; co
     <div><dt>構成</dt><dd>9 fold-unit × 3 seed = 27 ラン</dd></div>
     <div><dt>実行環境</dt><dd>A100-SXM4-40GB / 1 GPU per job</dd></div>
     <div><dt>不確実性チェック</dt><dd>27 / 27 合格</dd></div>
-    <div><dt>commit</dt><dd>cb33911</dd></div>
+    <div><dt>commit</dt><dd>e2d2994</dd></div>
   </dl>
 </header>
 
@@ -528,6 +528,115 @@ footer code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; co
   </figure>
 </section>
 
+
+<section class="finding">
+  <p class="eyebrow">所見 — シフトに耐える特徴</p>
+  <h2 class="serif">年齢1変数のロジスティック回帰が、分布外では画像モデルを上回る</h2>
+  <p>EM が失敗したのは、入力がシフトで歪んだ予測分布しかなかったからだった。
+  年齢はその輪の外にある——<strong>ネットワークを通らないので装置に歪められない</strong>。
+  そこで訓練サイトで年齢→IDH のロジスティック回帰 π(a) を当て、
+  target サイトの<strong>年齢分布</strong>を通すことで、ラベル 0 例のまま有病率を推定できるか試した。
+  その過程で、比較のために年齢だけの識別性能も測った。</p>
+  <p>結果は予想外だった。<strong>分布外の4ユニット全てで、年齢1変数が
+  44M パラメータのマルチモーダル画像モデルを上回った</strong>
+  （平均 0.889 対 0.860）。
+  分布内ではほぼ互角である（0.898 対 0.906）。</p>
+  <p><strong>これは「画像に価値がない」という話ではない。</strong>読み方はこうである——
+  <strong>年齢はシフトで劣化しない（0.898 → 0.889）が、
+  画像は劣化する（0.906 → 0.860）。</strong>
+  分布外で順位が入れ替わるのは、年齢が強くなるからではなく画像が弱くなるからだ。
+  そして両者を足すと常に単独を上回る（分布外 0.910）。
+  <strong>画像の正味の寄与は、年齢への上乗せ +0.021
+  として測るのが正確である。</strong></p>
+  <p>多くの先行研究は年齢ベースラインを併記していない。
+  <strong>本研究の立場は、それを報告したうえで上乗せ分を定量化することにある。</strong>
+  現行モデルはその上乗せを取り出せていない——tabular head の evidence は 1.26、
+  他ヘッドの 6〜12 に対して一桁小さく、<strong>年齢は実質的に使われていない</strong>。
+  この点は次節の実験で追った。</p>
+  <figure class="figure">
+    <div class="legend">
+      <span style="color:var(--ood)"><i style="background:var(--ood)"></i>画像モデル</span>
+      <span style="color:var(--ind)"><i style="background:var(--ind)"></i>年齢のみ</span>
+      <span style="color:var(--ser3)"><i style="background:var(--ser3);border-radius:2px"></i>画像+年齢</span>
+    </div>
+    <svg viewBox="0 0 760 368" role="img" width="100%" aria-label="年齢のみ・画像モデル・両者を足した場合の AUC 比較"><title>年齢のみ vs 画像モデル</title><line class="grid" x1="150.0" y1="32" x2="150.0" y2="320"/><text class="tick" x="150.0" y="336" text-anchor="middle">0.80</text><line class="grid" x1="321.3" y1="32" x2="321.3" y2="320"/><text class="tick" x="321.3" y="336" text-anchor="middle">0.85</text><line class="grid" x1="492.7" y1="32" x2="492.7" y2="320"/><text class="tick" x="492.7" y="336" text-anchor="middle">0.90</text><line class="grid" x1="664.0" y1="32" x2="664.0" y2="320"/><text class="tick" x="664.0" y="336" text-anchor="middle">0.95</text><text class="tick" x="407.0" y="354" text-anchor="middle">AUC（test）</text><text class="rowlab" x="136" y="65.0" text-anchor="end">LOSO-A（施設）</text><line class="conn ind" x1="340.6" y1="61.0" x2="557.4" y2="61.0"/><g class="mk" data-tip="LOSO-A · 画像モデル AUC 0.856"><circle class="dot ood" cx="340.6" cy="61.0" r="5"/><rect class="hit" x="331.6" y="49.0" width="18" height="24"/></g><g class="mk" data-tip="LOSO-A · 年齢のみ AUC 0.904"><circle class="dot ind" cx="507.9" cy="61.0" r="5"/><rect class="hit" x="498.9" y="49.0" width="18" height="24"/></g><g class="mk" data-tip="LOSO-A · 画像+年齢 AUC 0.919"><rect class="diamond acc" x="553.0" y="56.6" width="8.8" height="8.8" transform="rotate(45 557.4 61.0)"/><rect class="hit" x="548.4" y="49.0" width="18" height="24"/></g><text class="val" x="678" y="65.0">+0.049</text><text class="rowlab" x="136" y="95.0" text-anchor="end">LOSO-B（施設）</text><line class="conn ind" x1="335.0" y1="91.0" x2="517.4" y2="91.0"/><g class="mk" data-tip="LOSO-B · 画像モデル AUC 0.854"><circle class="dot ood" cx="335.0" cy="91.0" r="5"/><rect class="hit" x="326.0" y="79.0" width="18" height="24"/></g><g class="mk" data-tip="LOSO-B · 年齢のみ AUC 0.880"><circle class="dot ind" cx="425.3" cy="91.0" r="5"/><rect class="hit" x="416.3" y="79.0" width="18" height="24"/></g><g class="mk" data-tip="LOSO-B · 画像+年齢 AUC 0.907"><rect class="diamond acc" x="513.0" y="86.6" width="8.8" height="8.8" transform="rotate(45 517.4 91.0)"/><rect class="hit" x="508.4" y="79.0" width="18" height="24"/></g><text class="val" x="678" y="95.0">+0.026</text><text class="rowlab" x="136" y="125.0" text-anchor="end">vendor（Philips）</text><line class="conn ind" x1="380.9" y1="121.0" x2="560.2" y2="121.0"/><g class="mk" data-tip="vendor Philips · 画像モデル AUC 0.867"><circle class="dot ood" cx="380.9" cy="121.0" r="5"/><rect class="hit" x="371.9" y="109.0" width="18" height="24"/></g><g class="mk" data-tip="vendor Philips · 年齢のみ AUC 0.905"><circle class="dot ind" cx="509.9" cy="121.0" r="5"/><rect class="hit" x="500.9" y="109.0" width="18" height="24"/></g><g class="mk" data-tip="vendor Philips · 画像+年齢 AUC 0.920"><rect class="diamond acc" x="555.8" y="116.6" width="8.8" height="8.8" transform="rotate(45 560.2 121.0)"/><rect class="hit" x="551.2" y="109.0" width="18" height="24"/></g><text class="val" x="678" y="125.0">+0.038</text><text class="rowlab" x="136" y="155.0" text-anchor="end">field（3T）</text><line class="conn ind" x1="359.5" y1="151.0" x2="478.1" y2="151.0"/><g class="mk" data-tip="field 3T · 画像モデル AUC 0.861"><circle class="dot ood" cx="359.5" cy="151.0" r="5"/><rect class="hit" x="350.5" y="139.0" width="18" height="24"/></g><g class="mk" data-tip="field 3T · 年齢のみ AUC 0.868"><circle class="dot ind" cx="382.3" cy="151.0" r="5"/><rect class="hit" x="373.3" y="139.0" width="18" height="24"/></g><g class="mk" data-tip="field 3T · 画像+年齢 AUC 0.896"><rect class="diamond acc" x="473.7" y="146.6" width="8.8" height="8.8" transform="rotate(45 478.1 151.0)"/><rect class="hit" x="469.1" y="139.0" width="18" height="24"/></g><text class="val" x="678" y="155.0">+0.007</text><line class="sep" x1="6" y1="166.0" x2="680" y2="166.0"/><text class="rowlab" x="136" y="185.0" text-anchor="end">random fold 0</text><line class="conn ind" x1="415.0" y1="181.0" x2="589.9" y2="181.0"/><g class="mk" data-tip="random f0 · 画像モデル AUC 0.917"><circle class="dot ood" cx="552.0" cy="181.0" r="5"/><rect class="hit" x="543.0" y="169.0" width="18" height="24"/></g><g class="mk" data-tip="random f0 · 年齢のみ AUC 0.877"><circle class="dot ind" cx="415.0" cy="181.0" r="5"/><rect class="hit" x="406.0" y="169.0" width="18" height="24"/></g><g class="mk" data-tip="random f0 · 画像+年齢 AUC 0.928"><rect class="diamond acc" x="585.5" y="176.6" width="8.8" height="8.8" transform="rotate(45 589.9 181.0)"/><rect class="hit" x="580.9" y="169.0" width="18" height="24"/></g><text class="val" x="678" y="185.0">-0.040</text><text class="rowlab" x="136" y="215.0" text-anchor="end">random fold 1</text><line class="conn ind" x1="462.8" y1="211.0" x2="529.5" y2="211.0"/><g class="mk" data-tip="random f1 · 画像モデル AUC 0.898"><circle class="dot ood" cx="484.2" cy="211.0" r="5"/><rect class="hit" x="475.2" y="199.0" width="18" height="24"/></g><g class="mk" data-tip="random f1 · 年齢のみ AUC 0.891"><circle class="dot ind" cx="462.8" cy="211.0" r="5"/><rect class="hit" x="453.8" y="199.0" width="18" height="24"/></g><g class="mk" data-tip="random f1 · 画像+年齢 AUC 0.911"><rect class="diamond acc" x="525.1" y="206.6" width="8.8" height="8.8" transform="rotate(45 529.5 211.0)"/><rect class="hit" x="520.5" y="199.0" width="18" height="24"/></g><text class="val" x="678" y="215.0">-0.006</text><text class="rowlab" x="136" y="245.0" text-anchor="end">random fold 2</text><line class="conn ind" x1="453.5" y1="241.0" x2="560.4" y2="241.0"/><g class="mk" data-tip="random f2 · 画像モデル AUC 0.900"><circle class="dot ood" cx="493.5" cy="241.0" r="5"/><rect class="hit" x="484.5" y="229.0" width="18" height="24"/></g><g class="mk" data-tip="random f2 · 年齢のみ AUC 0.889"><circle class="dot ind" cx="453.5" cy="241.0" r="5"/><rect class="hit" x="444.5" y="229.0" width="18" height="24"/></g><g class="mk" data-tip="random f2 · 画像+年齢 AUC 0.920"><rect class="diamond acc" x="556.0" y="236.6" width="8.8" height="8.8" transform="rotate(45 560.4 241.0)"/><rect class="hit" x="551.4" y="229.0" width="18" height="24"/></g><text class="val" x="678" y="245.0">-0.012</text><text class="rowlab" x="136" y="275.0" text-anchor="end">random fold 3</text><line class="conn ind" x1="516.3" y1="271.0" x2="681.9" y2="271.0"/><g class="mk" data-tip="random f3 · 画像モデル AUC 0.907"><circle class="dot ood" cx="516.3" cy="271.0" r="5"/><rect class="hit" x="507.3" y="259.0" width="18" height="24"/></g><g class="mk" data-tip="random f3 · 年齢のみ AUC 0.926"><circle class="dot ind" cx="582.0" cy="271.0" r="5"/><rect class="hit" x="573.0" y="259.0" width="18" height="24"/></g><g class="mk" data-tip="random f3 · 画像+年齢 AUC 0.955"><rect class="diamond acc" x="677.5" y="266.6" width="8.8" height="8.8" transform="rotate(45 681.9 271.0)"/><rect class="hit" x="672.9" y="259.0" width="18" height="24"/></g><text class="val" x="678" y="275.0">+0.019</text><text class="rowlab" x="136" y="305.0" text-anchor="end">random fold 4</text><line class="conn ind" x1="516.8" y1="301.0" x2="616.2" y2="301.0"/><g class="mk" data-tip="random f4 · 画像モデル AUC 0.907"><circle class="dot ood" cx="516.8" cy="301.0" r="5"/><rect class="hit" x="507.8" y="289.0" width="18" height="24"/></g><g class="mk" data-tip="random f4 · 年齢のみ AUC 0.907"><circle class="dot ind" cx="518.0" cy="301.0" r="5"/><rect class="hit" x="509.0" y="289.0" width="18" height="24"/></g><g class="mk" data-tip="random f4 · 画像+年齢 AUC 0.936"><rect class="diamond acc" x="611.8" y="296.6" width="8.8" height="8.8" transform="rotate(45 616.2 301.0)"/><rect class="hit" x="607.2" y="289.0" width="18" height="24"/></g><text class="val" x="678" y="305.0">+0.000</text></svg>
+    <figcaption>右端は「年齢のみ − 画像モデル」。年齢モデルは訓練サイトで当てて test の年齢に適用しており、
+    target のラベルは使っていない。破線より上が分布外。</figcaption>
+  </figure>
+  <p class="eyebrow" style="margin-top:8px">ゼロショット較正としての年齢</p>
+  <p>有病率の推定としては<strong>部分的に成功した</strong>。LOSO-A では有病率シフトの
+  <strong>81%</strong>（2次項を入れると 90%）を説明し、
+  LOSO-B では <strong>46%</strong> にとどまる。
+  LOSO-B が伸びないのは年齢のせいではない——<strong>train に含まれる UPenn が GBM 限定コホートで
+  変異率 3.1%</strong> であり、これはグレード構成であって年齢ではないからだ。</p>
+  <p>より根本的な限界がある。<strong>UCSF と UTSW の年齢分布は統計的に区別できない</strong>
+  （KS D=0.053, p=0.41）のに、有病率は
+  20.6% と 28.4% で 7.9 ポイント違う。
+  年齢帯を揃えても差は残る（50代で 8.2% 対 19.2%）。
+  <strong>年齢で説明できない有病率差が実在する</strong>ということであり、
+  外部疫学データ（CBTRUS 等）で π(a) を置き換えても、
+  ボトルネックは π(a) の精度ではないので<strong>改善は限定的だと考える</strong>。</p>
+  <p>それでも <strong>EM とは対照的にフェイルセーフである。</strong>
+  EM は符号を外して ECE を悪化させたが、年齢ベース補正は
+  <strong>年齢で説明できる分しか動かないので方向を間違えない</strong>。
+  適用にあたっては、<strong>target サイトの年齢分布が訓練サイトと有意に違うことを
+  KS 検定で確認してから当てる</strong>のが妥当である（違わなければ動かす理由がない）。
+  ただしこの手法は<strong>年齢×IDH 関係のサイト不変性に依存する</strong>。
+  米国3施設では成立したが、小児例や他地域では別途検証が要る。</p>
+  <div class="tablewrap"><table><caption>年齢のみ vs 画像モデル（test、3 seed 平均）</caption>
+    <thead><tr><th scope="col">ユニット</th><th scope="col">条件</th><th scope="col">年齢のみ</th>
+    <th scope="col">画像モデル</th><th scope="col">画像+年齢</th><th scope="col">差</th></tr></thead>
+    <tbody><tr><th scope="row">LOSO-A（施設）</th><td>分布外</td><td class="n">0.904</td><td class="n">0.856</td><td class="n">0.919</td><td class="n">+0.049</td></tr><tr><th scope="row">LOSO-B（施設）</th><td>分布外</td><td class="n">0.880</td><td class="n">0.854</td><td class="n">0.907</td><td class="n">+0.026</td></tr><tr><th scope="row">vendor（Philips）</th><td>分布外</td><td class="n">0.905</td><td class="n">0.867</td><td class="n">0.920</td><td class="n">+0.038</td></tr><tr><th scope="row">field（3T）</th><td>分布外</td><td class="n">0.868</td><td class="n">0.861</td><td class="n">0.896</td><td class="n">+0.007</td></tr><tr><th scope="row">random fold 0</th><td>分布内</td><td class="n">0.877</td><td class="n">0.917</td><td class="n">0.928</td><td class="n">-0.040</td></tr><tr><th scope="row">random fold 1</th><td>分布内</td><td class="n">0.891</td><td class="n">0.898</td><td class="n">0.911</td><td class="n">-0.006</td></tr><tr><th scope="row">random fold 2</th><td>分布内</td><td class="n">0.889</td><td class="n">0.900</td><td class="n">0.920</td><td class="n">-0.012</td></tr><tr><th scope="row">random fold 3</th><td>分布内</td><td class="n">0.926</td><td class="n">0.907</td><td class="n">0.955</td><td class="n">+0.019</td></tr><tr><th scope="row">random fold 4</th><td>分布内</td><td class="n">0.907</td><td class="n">0.907</td><td class="n">0.936</td><td class="n">+0.000</td></tr></tbody></table></div>
+</section>
+
+
+<section class="finding">
+  <p class="eyebrow">実験 — ヘッドの学習率</p>
+  <h2 class="serif">年齢が使われていなかったのは学習率のせいだった。ただし治ったのは感度だけ</h2>
+  <p>tabular head は 4,482 パラメータ、evidence heads を合わせても 8,332 で、
+  <strong>44M の事前学習済み trunk と同じ学習率で回っていた</strong>。仮説は単純な学習不足である。
+  optimizer を trunk と head に分け、head だけ 10倍・30倍にして LOSO-B × 3 seed で確かめた。</p>
+  <p><strong>狙った量は動いた。</strong>tabular evidence は
+  1.29 → 4.92 → 10.28
+  と単調に増え、3 seed とも同方向である。独立な確認も取れた——
+  inner-val でヘッド別の重みを最尤推定すると、<strong>変更前は「tabular を 7〜20倍にせよ」だったのが、
+  3e-3 の後は「≈0.9、そのままでよい」に変わる</strong>。音量が適正になったということだ。</p>
+  <p><strong>閾値 0.5 での感度も一貫して改善した。</strong>
+  10.2% → 28.4%、
+  seed 別の変化は +18.7 / +18.7 / +17.0 ポイントで、
+  <strong>3 seed とも +17〜19pt に収まる</strong>。特異度の低下は
+  0.8pt のみ。
+  誤答時 S &lt; 正答時 S も全設定で 3/3 維持された。</p>
+  <p><strong>しかし AUC は動いたと言えない。</strong>平均は
+  0.854 → 0.871 と +0.017 だが、
+  seed 別の変化は +0.001 / -0.012 / +0.063 と符号が揃わず、
+  <strong>設定内の seed 間 sd 0.026 のほうが平均効果より大きい</strong>。
+  平均を押し上げているのは1 seed だけである。<strong>n=3 では AUC への効果は検出できない。</strong></p>
+  <p>順位が動かず確率の位置だけが動いたのは筋が通っている。
+  tabular head を大きくすることは<strong>融合ロジット全体を平行移動させる効果が主で、
+  順位の入れ替えは副次的</strong>だからだ。言い換えれば、
+  <strong>この介入は「学習によって内部化された切片補正」</strong>であり、
+  前節の年齢ベース切片補正と同じ方向の効果を、後付けではなくモデルの中で実現している。</p>
+  <figure class="figure">
+    <svg viewBox="0 0 760 300" role="img" width="100%" aria-label="ヘッド学習率を上げたときの seed 対応での変化"><title>学習率分離：seed 対応の変化</title><text class="pnl" x="30" y="26">tabular evidence</text><line class="grid" x1="44" y1="244.0" x2="234" y2="244.0"/><text class="tick" x="40" y="248.0" text-anchor="end">0.0</text><line class="grid" x1="44" y1="148.0" x2="234" y2="148.0"/><text class="tick" x="40" y="152.0" text-anchor="end">8.0</text><line class="grid" x1="44" y1="52.0" x2="234" y2="52.0"/><text class="tick" x="40" y="56.0" text-anchor="end">16.0</text><text class="tick" x="56.0" y="264.0" text-anchor="middle">lr 1e-4</text><text class="tick" x="138.0" y="264.0" text-anchor="middle">lr 1e-3</text><text class="tick" x="220.0" y="264.0" text-anchor="middle">lr 3e-3</text><polyline class="rel ood" points="56.0,228.1 138.0,194.3 220.0,138.4"/><g class="mk" data-tip="seed 0 · lr 1e-4 · tabular evidence 1.3"><circle class="dot ood" cx="56.0" cy="228.1" r="4.4"/><rect class="hit" x="47.0" y="219.1" width="18" height="18"/></g><g class="mk" data-tip="seed 0 · lr 1e-3 · tabular evidence 4.1"><circle class="dot ood" cx="138.0" cy="194.3" r="4.4"/><rect class="hit" x="129.0" y="185.3" width="18" height="18"/></g><g class="mk" data-tip="seed 0 · lr 3e-3 · tabular evidence 8.8"><circle class="dot ood" cx="220.0" cy="138.4" r="4.4"/><rect class="hit" x="211.0" y="129.4" width="18" height="18"/></g><polyline class="rel ood" points="56.0,228.8 138.0,181.7 220.0,155.1"/><g class="mk" data-tip="seed 1 · lr 1e-4 · tabular evidence 1.3"><circle class="dot ood" cx="56.0" cy="228.8" r="4.4"/><rect class="hit" x="47.0" y="219.8" width="18" height="18"/></g><g class="mk" data-tip="seed 1 · lr 1e-3 · tabular evidence 5.2"><circle class="dot ood" cx="138.0" cy="181.7" r="4.4"/><rect class="hit" x="129.0" y="172.7" width="18" height="18"/></g><g class="mk" data-tip="seed 1 · lr 3e-3 · tabular evidence 7.4"><circle class="dot ood" cx="220.0" cy="155.1" r="4.4"/><rect class="hit" x="211.0" y="146.1" width="18" height="18"/></g><polyline class="rel ood" points="56.0,228.6 138.0,179.0 220.0,68.3"/><g class="mk" data-tip="seed 2 · lr 1e-4 · tabular evidence 1.3"><circle class="dot ood" cx="56.0" cy="228.6" r="4.4"/><rect class="hit" x="47.0" y="219.6" width="18" height="18"/></g><g class="mk" data-tip="seed 2 · lr 1e-3 · tabular evidence 5.4"><circle class="dot ood" cx="138.0" cy="179.0" r="4.4"/><rect class="hit" x="129.0" y="170.0" width="18" height="18"/></g><g class="mk" data-tip="seed 2 · lr 3e-3 · tabular evidence 14.6"><circle class="dot ood" cx="220.0" cy="68.3" r="4.4"/><rect class="hit" x="211.0" y="59.3" width="18" height="18"/></g><text class="pnl" x="274" y="26">感度 @0.5</text><line class="grid" x1="288" y1="244.0" x2="478" y2="244.0"/><text class="tick" x="284" y="248.0" text-anchor="end">0%</text><line class="grid" x1="288" y1="148.0" x2="478" y2="148.0"/><text class="tick" x="284" y="152.0" text-anchor="end">20%</text><line class="grid" x1="288" y1="52.0" x2="478" y2="52.0"/><text class="tick" x="284" y="56.0" text-anchor="end">40%</text><text class="tick" x="300.0" y="264.0" text-anchor="middle">lr 1e-4</text><text class="tick" x="382.0" y="264.0" text-anchor="middle">lr 1e-3</text><text class="tick" x="464.0" y="264.0" text-anchor="middle">lr 3e-3</text><polyline class="rel ood" points="300.0,200.4 382.0,154.0 464.0,110.4"/><g class="mk" data-tip="seed 0 · lr 1e-4 · 感度 @0.5 9%"><circle class="dot ood" cx="300.0" cy="200.4" r="4.4"/><rect class="hit" x="291.0" y="191.4" width="18" height="18"/></g><g class="mk" data-tip="seed 0 · lr 1e-3 · 感度 @0.5 19%"><circle class="dot ood" cx="382.0" cy="154.0" r="4.4"/><rect class="hit" x="373.0" y="145.0" width="18" height="18"/></g><g class="mk" data-tip="seed 0 · lr 3e-3 · 感度 @0.5 28%"><circle class="dot ood" cx="464.0" cy="110.4" r="4.4"/><rect class="hit" x="455.0" y="101.4" width="18" height="18"/></g><polyline class="rel ood" points="300.0,200.4 382.0,96.7 464.0,110.4"/><g class="mk" data-tip="seed 1 · lr 1e-4 · 感度 @0.5 9%"><circle class="dot ood" cx="300.0" cy="200.4" r="4.4"/><rect class="hit" x="291.0" y="191.4" width="18" height="18"/></g><g class="mk" data-tip="seed 1 · lr 1e-3 · 感度 @0.5 31%"><circle class="dot ood" cx="382.0" cy="96.7" r="4.4"/><rect class="hit" x="373.0" y="87.7" width="18" height="18"/></g><g class="mk" data-tip="seed 1 · lr 3e-3 · 感度 @0.5 28%"><circle class="dot ood" cx="464.0" cy="110.4" r="4.4"/><rect class="hit" x="455.0" y="101.4" width="18" height="18"/></g><polyline class="rel ood" points="300.0,184.0 382.0,164.9 464.0,102.2"/><g class="mk" data-tip="seed 2 · lr 1e-4 · 感度 @0.5 12%"><circle class="dot ood" cx="300.0" cy="184.0" r="4.4"/><rect class="hit" x="291.0" y="175.0" width="18" height="18"/></g><g class="mk" data-tip="seed 2 · lr 1e-3 · 感度 @0.5 16%"><circle class="dot ood" cx="382.0" cy="164.9" r="4.4"/><rect class="hit" x="373.0" y="155.9" width="18" height="18"/></g><g class="mk" data-tip="seed 2 · lr 3e-3 · 感度 @0.5 30%"><circle class="dot ood" cx="464.0" cy="102.2" r="4.4"/><rect class="hit" x="455.0" y="93.2" width="18" height="18"/></g><text class="pnl" x="518" y="26">AUC</text><line class="grid" x1="532" y1="244.0" x2="722" y2="244.0"/><text class="tick" x="528" y="248.0" text-anchor="end">0.800</text><line class="grid" x1="532" y1="148.0" x2="722" y2="148.0"/><text class="tick" x="528" y="152.0" text-anchor="end">0.860</text><line class="grid" x1="532" y1="52.0" x2="722" y2="52.0"/><text class="tick" x="528" y="56.0" text-anchor="end">0.920</text><text class="tick" x="544.0" y="264.0" text-anchor="middle">lr 1e-4</text><text class="tick" x="626.0" y="264.0" text-anchor="middle">lr 1e-3</text><text class="tick" x="708.0" y="264.0" text-anchor="middle">lr 3e-3</text><polyline class="rel ood" points="544.0,164.5 626.0,117.1 708.0,163.1"/><g class="mk" data-tip="seed 0 · lr 1e-4 · AUC 0.850"><circle class="dot ood" cx="544.0" cy="164.5" r="4.4"/><rect class="hit" x="535.0" y="155.5" width="18" height="18"/></g><g class="mk" data-tip="seed 0 · lr 1e-3 · AUC 0.879"><circle class="dot ood" cx="626.0" cy="117.1" r="4.4"/><rect class="hit" x="617.0" y="108.1" width="18" height="18"/></g><g class="mk" data-tip="seed 0 · lr 3e-3 · AUC 0.851"><circle class="dot ood" cx="708.0" cy="163.1" r="4.4"/><rect class="hit" x="699.0" y="154.1" width="18" height="18"/></g><polyline class="rel ood" points="544.0,123.9 626.0,122.7 708.0,142.4"/><g class="mk" data-tip="seed 1 · lr 1e-4 · AUC 0.875"><circle class="dot ood" cx="544.0" cy="123.9" r="4.4"/><rect class="hit" x="535.0" y="114.9" width="18" height="18"/></g><g class="mk" data-tip="seed 1 · lr 1e-3 · AUC 0.876"><circle class="dot ood" cx="626.0" cy="122.7" r="4.4"/><rect class="hit" x="617.0" y="113.7" width="18" height="18"/></g><g class="mk" data-tip="seed 1 · lr 3e-3 · AUC 0.863"><circle class="dot ood" cx="708.0" cy="142.4" r="4.4"/><rect class="hit" x="699.0" y="133.4" width="18" height="18"/></g><polyline class="rel ood" points="544.0,184.5 626.0,193.0 708.0,83.9"/><g class="mk" data-tip="seed 2 · lr 1e-4 · AUC 0.837"><circle class="dot ood" cx="544.0" cy="184.5" r="4.4"/><rect class="hit" x="535.0" y="175.5" width="18" height="18"/></g><g class="mk" data-tip="seed 2 · lr 1e-3 · AUC 0.832"><circle class="dot ood" cx="626.0" cy="193.0" r="4.4"/><rect class="hit" x="617.0" y="184.0" width="18" height="18"/></g><g class="mk" data-tip="seed 2 · lr 3e-3 · AUC 0.900"><circle class="dot ood" cx="708.0" cy="83.9" r="4.4"/><rect class="hit" x="699.0" y="74.9" width="18" height="18"/></g></svg>
+    <figcaption>線が1 seed。左と中央は3本とも同じ向きに動くが、右（AUC）は揃わない。
+    これが「効いた指標」と「判定できない指標」の違いである。</figcaption>
+  </figure>
+  <div class="tablewrap"><table><caption>LOSO-B、seed 別（左から tabular evidence / AUC / 感度@0.5）</caption>
+    <thead><tr><th scope="col">設定</th>
+    <th scope="col">ev s0</th><th scope="col">ev s1</th><th scope="col">ev s2</th>
+    <th scope="col">AUC s0</th><th scope="col">AUC s1</th><th scope="col">AUC s2</th>
+    <th scope="col">感度 s0</th><th scope="col">感度 s1</th><th scope="col">感度 s2</th></tr></thead>
+    <tbody><tr><th scope="row">lr 1e-4（既定）</th><td class="n">1.33</td><td class="n">1.27</td><td class="n">1.29</td><td class="n">0.850</td><td class="n">0.875</td><td class="n">0.837</td><td class="n">9.1%</td><td class="n">9.1%</td><td class="n">12.5%</td></tr><tr><th scope="row">lr 1e-3</th><td class="n">4.14</td><td class="n">5.19</td><td class="n">5.42</td><td class="n">0.879</td><td class="n">0.876</td><td class="n">0.832</td><td class="n">18.8%</td><td class="n">30.7%</td><td class="n">16.5%</td></tr><tr><th scope="row">lr 3e-3</th><td class="n">8.80</td><td class="n">7.41</td><td class="n">14.64</td><td class="n">0.851</td><td class="n">0.863</td><td class="n">0.900</td><td class="n">27.8%</td><td class="n">27.8%</td><td class="n">29.5%</td></tr></tbody></table></div>
+  <p class="eyebrow" style="margin-top:8px">未解決</p>
+  <p>個別シーケンスのヘッド（T1 / T2 / FLAIR）は単独 AUC 0.53〜0.72 と弱く、
+  inner-val で重みを学習させると<strong>ほぼ全ランで下限に張り付く</strong>——
+  最適化はこれらを捨てたがっている。それでも evidence を 10 前後ずつ出し続けており、
+  強いヘッドを希釈している。<strong>AUC の残差はここにある可能性が高い。</strong>
+  次の判断は、(1) seed を増やして AUC への効果の有無を確定させるか、
+  (2) 個別シーケンスヘッドの整理に進むか、である。</p>
+</section>
+
 <section class="finding">
   <p class="eyebrow">所見 — 学習の実態</p>
   <h2 class="serif">200 epoch を用意したが、実際に使われたのは平均 8 epoch だった</h2>
@@ -583,7 +692,7 @@ footer code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; co
     if(m&&m.dataset.tip){show(e,m.dataset.tip);}else{tip.classList.remove('on');}
   });
   document.addEventListener('pointerleave',function(){tip.classList.remove('on');});
-  // print/PDF: a collapsed <details> would silently drop the raw 27-run table
+  // print/PDF: a collapsed disclosure would silently drop the raw 27-run table
   var opened=[];
   addEventListener('beforeprint',function(){
     opened=[].slice.call(document.querySelectorAll('details:not([open])'));

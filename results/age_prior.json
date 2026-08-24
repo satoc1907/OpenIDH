@@ -1233,5 +1233,79 @@
         "fp": 42
       }
     }
+  ],
+  "auc_table": [
+    {
+      "label": "LOSO-A",
+      "kind": "OOD",
+      "n_test": 501,
+      "auc_age": 0.9044372347172758,
+      "auc_image": 0.8556130165390057,
+      "auc_combined": 0.9188987006228554
+    },
+    {
+      "label": "LOSO-B",
+      "kind": "OOD",
+      "n_test": 619,
+      "auc_age": 0.8803419351528833,
+      "auc_image": 0.8539956563376428,
+      "auc_combined": 0.907214070729872
+    },
+    {
+      "label": "vendor Philips",
+      "kind": "OOD",
+      "n_test": 140,
+      "auc_age": 0.9050235478806907,
+      "auc_image": 0.8673843163639082,
+      "auc_combined": 0.9197129401211034
+    },
+    {
+      "label": "field 3T",
+      "kind": "OOD",
+      "n_test": 195,
+      "auc_age": 0.867791655593941,
+      "auc_image": 0.8611480201966516,
+      "auc_combined": 0.8957392151652052
+    },
+    {
+      "label": "random f0",
+      "kind": "in-dist",
+      "n_test": 327,
+      "auc_age": 0.8773399949405514,
+      "auc_image": 0.9173201787671811,
+      "auc_combined": 0.9283666413694242
+    },
+    {
+      "label": "random f1",
+      "kind": "in-dist",
+      "n_test": 327,
+      "auc_age": 0.8912850999241083,
+      "auc_image": 0.8975250864322456,
+      "auc_combined": 0.9107428956910364
+    },
+    {
+      "label": "random f2",
+      "kind": "in-dist",
+      "n_test": 327,
+      "auc_age": 0.8885656463445484,
+      "auc_image": 0.9002445400118054,
+      "auc_combined": 0.9197655788852348
+    },
+    {
+      "label": "random f3",
+      "kind": "in-dist",
+      "n_test": 327,
+      "auc_age": 0.9260671708755288,
+      "auc_image": 0.9068922787676793,
+      "auc_combined": 0.9552194163141478
+    },
+    {
+      "label": "random f4",
+      "kind": "in-dist",
+      "n_test": 327,
+      "auc_age": 0.9073970037453184,
+      "auc_image": 0.9070536828963794,
+      "auc_combined": 0.9360590928006657
+    }
   ]
 }

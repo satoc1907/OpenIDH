@@ -49,6 +49,37 @@ HAS_ORACLE = HAS_CAL and all("test_prior_oracle" in c for c in CAL.values())
 _pf = [_RD / r["run"] / "predictions.csv" for r in ROWS]
 PRED = (pd.concat([pd.read_csv(p) for p in _pf], ignore_index=True)
         if all(p.is_file() for p in _pf) else None)
+AGE = (json.loads((_ROOT / "results" / "age_prior.json").read_text())
+       if (_ROOT / "results" / "age_prior.json").is_file() else None)
+
+
+def _lr_runs():
+    """baseline / lr_head 1e-3 / 3e-3 on LOSO-B, paired by seed."""
+    out = {}
+    for cfg, pre in (("baseline", "foldB"), ("lr1e-3", "lrsplit1_foldB"),
+                     ("lr3e-3", "lrsplit3_foldB")):
+        rs = []
+        for seed in range(3):
+            rj = _RD / f"{pre}_s{seed}" / "result.json"
+            pf = _RD / f"{pre}_s{seed}" / "predictions.csv"
+            if not (rj.is_file() and pf.is_file()):
+                return None
+            r = json.loads(rj.read_text())
+            t = pd.read_csv(pf)
+            t = t[t.role == "test"]
+            pr = (t["alpha"] / (t["alpha"] + t["beta"])).to_numpy()
+            y = t["y_true"].to_numpy()
+            rs.append({"seed": seed, "auc": r["test_metrics"]["auc"],
+                       "ece": r["test_metrics"]["ece"],
+                       "ev_tab": r["test_monitor"]["evidence_balance"]["tabular"],
+                       "unc_ok": r["test_monitor"]["uncertainty_ok"],
+                       "sens": float(((pr > .5) & (y == 1)).sum() / max((y == 1).sum(), 1)),
+                       "spec": float(((pr <= .5) & (y == 0)).sum() / max((y == 0).sum(), 1))})
+        out[cfg] = rs
+    return out
+
+
+LR = _lr_runs()
 KIND = {r["run"]: r["kind"] for r in ROWS}
 LABEL = {r["run"]: r["label"] for r in ROWS}
 
@@ -426,6 +457,86 @@ def fig_sample_size(rows, floor, em=None, target=0.08):
     return "".join(s) + '</svg>'
 
 
+
+# ───────────────────────── figure 9: age vs image AUC ─────────────────────────
+def fig_age_vs_image():
+    rows = AGE["auc_table"]
+    rowh, top, bot, labw = 30, 46, 52, 150
+    H = top + rowh * len(rows) + bot
+    W, plotw = 760, 760 - 150 - 96
+    lo, hi = 0.80, 0.95
+
+    def sx(v): return labw + (v - lo) / (hi - lo) * plotw
+
+    s = [f'<svg viewBox="0 0 {W} {H}" role="img" width="100%" '
+         f'aria-label="年齢のみ・画像モデル・両者を足した場合の AUC 比較">']
+    s.append('<title>年齢のみ vs 画像モデル</title>')
+    for t in (0.80, 0.85, 0.90, 0.95):
+        s.append(f'<line class="grid" x1="{sx(t):.1f}" y1="{top - 14}" x2="{sx(t):.1f}" y2="{H - bot + 4}"/>')
+        s.append(f'<text class="tick" x="{sx(t):.1f}" y="{H - bot + 20}" text-anchor="middle">{t:.2f}</text>')
+    s.append(f'<text class="tick" x="{sx(0.875):.1f}" y="{H - bot + 38}" text-anchor="middle">AUC（test）</text>')
+    for i, r in enumerate(rows):
+        y = top + rowh * i + rowh / 2
+        if i == 4:
+            s.append(f'<line class="sep" x1="6" y1="{y - rowh / 2:.1f}" x2="{W - 80}" y2="{y - rowh / 2:.1f}"/>')
+        s.append(f'<text class="rowlab" x="{labw - 14}" y="{y + 4:.1f}" text-anchor="end">'
+                 f'{esc(JA.get(r["label"], r["label"]))}</text>')
+        s.append(f'<line class="conn ind" x1="{sx(min(r["auc_age"], r["auc_image"])):.1f}" y1="{y:.1f}" '
+                 f'x2="{sx(r["auc_combined"]):.1f}" y2="{y:.1f}"/>')
+        for key, cls, nm in (("auc_image", "ood", "画像モデル"), ("auc_age", "ind", "年齢のみ"),
+                             ("auc_combined", "acc", "画像+年齢")):
+            v = r[key]
+            s.append(f'<g class="mk" data-tip="{esc(f"{r[chr(108)+chr(97)+chr(98)+chr(101)+chr(108)]} · {nm} AUC {v:.3f}")}">')
+            if key == "auc_combined":
+                s.append(f'<rect class="diamond acc" x="{sx(v) - 4.4:.1f}" y="{y - 4.4:.1f}" '
+                         f'width="8.8" height="8.8" transform="rotate(45 {sx(v):.1f} {y:.1f})"/>')
+            else:
+                s.append(f'<circle class="dot {cls}" cx="{sx(v):.1f}" cy="{y:.1f}" r="5"/>')
+            s.append(f'<rect class="hit" x="{sx(v) - 9:.1f}" y="{y - 12:.1f}" width="18" height="24"/>')
+            s.append('</g>')
+        d = r["auc_age"] - r["auc_image"]
+        s.append(f'<text class="val" x="{labw + plotw + 14}" y="{y + 4:.1f}">{d:+.3f}</text>')
+    return "".join(s) + '</svg>'
+
+
+# ───────────────────────── figure 10: lr-split, paired by seed ────────────────
+def fig_lrsplit():
+    cfgs = [("baseline", "lr 1e-4"), ("lr1e-3", "lr 1e-3"), ("lr3e-3", "lr 3e-3")]
+    panels = [("ev_tab", "tabular evidence", 0, 16, "{:.1f}"),
+              ("sens", "感度 @0.5", 0, .40, "{:.0%}"),
+              ("auc", "AUC", .80, .92, "{:.3f}")]
+    W, H, top, bot = 760, 300, 52, 56
+    panw, gap, left = 210, 34, 30
+    ploth = H - top - bot
+
+    s = [f'<svg viewBox="0 0 {W} {H}" role="img" width="100%" '
+         f'aria-label="ヘッド学習率を上げたときの seed 対応での変化">']
+    s.append('<title>学習率分離：seed 対応の変化</title>')
+    for pi, (key, name, lo, hi, fmt) in enumerate(panels):
+        x0 = left + pi * (panw + gap)
+
+        def X(i, x0=x0): return x0 + 26 + i * ((panw - 46) / 2)
+
+        def Y(v, lo=lo, hi=hi): return top + (1 - (min(max(v, lo), hi) - lo) / (hi - lo)) * ploth
+
+        s.append(f'<text class="pnl" x="{x0}" y="{top - 26}">{name}</text>')
+        for t in (lo, (lo + hi) / 2, hi):
+            s.append(f'<line class="grid" x1="{x0 + 14}" y1="{Y(t):.1f}" x2="{x0 + panw - 6}" y2="{Y(t):.1f}"/>')
+            s.append(f'<text class="tick" x="{x0 + 10}" y="{Y(t) + 4:.1f}" text-anchor="end">{fmt.format(t)}</text>')
+        for i, (_, lab) in enumerate(cfgs):
+            s.append(f'<text class="tick" x="{X(i):.1f}" y="{top + ploth + 20:.1f}" text-anchor="middle">{esc(lab)}</text>')
+        for seed in range(3):
+            pts = [(X(i), Y(LR[c][seed][key])) for i, (c, _) in enumerate(cfgs)]
+            s.append(f'<polyline class="rel ood" points="{" ".join(f"{a:.1f},{b:.1f}" for a, b in pts)}"/>')
+            for i, (a, b) in enumerate(pts):
+                v = LR[cfgs[i][0]][seed][key]
+                s.append(f'<g class="mk" data-tip="{esc(f"seed {seed} · {cfgs[i][1]} · {name} {fmt.format(v)}")}">')
+                s.append(f'<circle class="dot ood" cx="{a:.1f}" cy="{b:.1f}" r="4.4"/>')
+                s.append(f'<rect class="hit" x="{a - 9:.1f}" y="{b - 9:.1f}" width="18" height="18"/>')
+                s.append('</g>')
+    return "".join(s) + '</svg>'
+
+
 # ───────────────────────── tables ─────────────────────────────────────────────
 def table_units():
     h = ['<table><caption>ユニット別サマリ（3 seed の平均 ± 標準偏差）</caption><thead><tr>'
@@ -471,6 +582,157 @@ nll_o, _ = ms(OOD, "nll"); nll_i, _ = ms(IND, "nll")
 bri_o, _ = ms(OOD, "brier"); bri_i, _ = ms(IND, "brier")
 best = np.array([r["best_epoch"] for r in ROWS]); ran = np.array([r["epochs_run"] for r in ROWS])
 ok_n = sum(1 for r in ROWS if r["unc_ok"])
+
+
+# ── age as a shift-invariant feature, and the head learning-rate experiment ───
+AGE_SECTION = LR_SECTION = ""
+if AGE:
+    _a = {r["label"]: r for r in AGE["auc_table"]}
+    _ood = [r for r in AGE["auc_table"] if r["kind"] == "OOD"]
+    _ind = [r for r in AGE["auc_table"] if r["kind"] == "in-dist"]
+    _m = lambda rs, k: float(np.mean([r[k] for r in rs]))  # noqa: E731
+    _lin = {r["label"]: r for r in AGE["linear"] if r["label"] == "LOSO-B"}
+    _lb = [r for r in AGE["linear"] if r["label"] == "LOSO-B"]
+    _la = [r for r in AGE["linear"] if r["label"] == "LOSO-A"]
+    _q = [r for r in AGE["quadratic"] if r["label"] == "LOSO-A"]
+    _ks = AGE["site_stats"]["ks"]["UCSF vs UTSW"]
+    _st = AGE["site_stats"]["sites"]
+    _g = lambda rs, k: float(np.mean([r[k] for r in rs]))  # noqa: E731
+    _auctbl = "".join(
+        f'<tr><th scope="row">{esc(JA.get(r["label"], r["label"]))}</th>'
+        f'<td>{"分布外" if r["kind"] == "OOD" else "分布内"}</td>'
+        f'<td class="n">{r["auc_age"]:.3f}</td><td class="n">{r["auc_image"]:.3f}</td>'
+        f'<td class="n">{r["auc_combined"]:.3f}</td>'
+        f'<td class="n">{r["auc_age"] - r["auc_image"]:+.3f}</td></tr>'
+        for r in AGE["auc_table"])
+
+    AGE_SECTION = f"""
+<section class="finding">
+  <p class="eyebrow">所見 — シフトに耐える特徴</p>
+  <h2 class="serif">年齢1変数のロジスティック回帰が、分布外では画像モデルを上回る</h2>
+  <p>EM が失敗したのは、入力がシフトで歪んだ予測分布しかなかったからだった。
+  年齢はその輪の外にある——<strong>ネットワークを通らないので装置に歪められない</strong>。
+  そこで訓練サイトで年齢→IDH のロジスティック回帰 π(a) を当て、
+  target サイトの<strong>年齢分布</strong>を通すことで、ラベル 0 例のまま有病率を推定できるか試した。
+  その過程で、比較のために年齢だけの識別性能も測った。</p>
+  <p>結果は予想外だった。<strong>分布外の4ユニット全てで、年齢1変数が
+  44M パラメータのマルチモーダル画像モデルを上回った</strong>
+  （平均 {_m(_ood, "auc_age"):.3f} 対 {_m(_ood, "auc_image"):.3f}）。
+  分布内ではほぼ互角である（{_m(_ind, "auc_age"):.3f} 対 {_m(_ind, "auc_image"):.3f}）。</p>
+  <p><strong>これは「画像に価値がない」という話ではない。</strong>読み方はこうである——
+  <strong>年齢はシフトで劣化しない（{_m(_ind, "auc_age"):.3f} → {_m(_ood, "auc_age"):.3f}）が、
+  画像は劣化する（{_m(_ind, "auc_image"):.3f} → {_m(_ood, "auc_image"):.3f}）。</strong>
+  分布外で順位が入れ替わるのは、年齢が強くなるからではなく画像が弱くなるからだ。
+  そして両者を足すと常に単独を上回る（分布外 {_m(_ood, "auc_combined"):.3f}）。
+  <strong>画像の正味の寄与は、年齢への上乗せ +{_m(_ood, "auc_combined") - _m(_ood, "auc_age"):.3f}
+  として測るのが正確である。</strong></p>
+  <p>多くの先行研究は年齢ベースラインを併記していない。
+  <strong>本研究の立場は、それを報告したうえで上乗せ分を定量化することにある。</strong>
+  現行モデルはその上乗せを取り出せていない——tabular head の evidence は 1.26、
+  他ヘッドの 6〜12 に対して一桁小さく、<strong>年齢は実質的に使われていない</strong>。
+  この点は次節の実験で追った。</p>
+  <figure class="figure">
+    <div class="legend">
+      <span style="color:var(--ood)"><i style="background:var(--ood)"></i>画像モデル</span>
+      <span style="color:var(--ind)"><i style="background:var(--ind)"></i>年齢のみ</span>
+      <span style="color:var(--ser3)"><i style="background:var(--ser3);border-radius:2px"></i>画像+年齢</span>
+    </div>
+    {fig_age_vs_image()}
+    <figcaption>右端は「年齢のみ − 画像モデル」。年齢モデルは訓練サイトで当てて test の年齢に適用しており、
+    target のラベルは使っていない。破線より上が分布外。</figcaption>
+  </figure>
+  <p class="eyebrow" style="margin-top:8px">ゼロショット較正としての年齢</p>
+  <p>有病率の推定としては<strong>部分的に成功した</strong>。LOSO-A では有病率シフトの
+  <strong>{_g(_la, "explained")*100:.0f}%</strong>（2次項を入れると {_g(_q, "explained")*100:.0f}%）を説明し、
+  LOSO-B では <strong>{_g(_lb, "explained")*100:.0f}%</strong> にとどまる。
+  LOSO-B が伸びないのは年齢のせいではない——<strong>train に含まれる UPenn が GBM 限定コホートで
+  変異率 {_st["UPenn"]["mut_rate"]*100:.1f}%</strong> であり、これはグレード構成であって年齢ではないからだ。</p>
+  <p>より根本的な限界がある。<strong>UCSF と UTSW の年齢分布は統計的に区別できない</strong>
+  （KS D={_ks["D"]:.3f}, p={_ks["p"]:.2f}）のに、有病率は
+  {_st["UCSF"]["mut_rate"]*100:.1f}% と {_st["UTSW"]["mut_rate"]*100:.1f}% で {_st["UTSW"]["mut_rate"]*100 - _st["UCSF"]["mut_rate"]*100:.1f} ポイント違う。
+  年齢帯を揃えても差は残る（50代で 8.2% 対 19.2%）。
+  <strong>年齢で説明できない有病率差が実在する</strong>ということであり、
+  外部疫学データ（CBTRUS 等）で π(a) を置き換えても、
+  ボトルネックは π(a) の精度ではないので<strong>改善は限定的だと考える</strong>。</p>
+  <p>それでも <strong>EM とは対照的にフェイルセーフである。</strong>
+  EM は符号を外して ECE を悪化させたが、年齢ベース補正は
+  <strong>年齢で説明できる分しか動かないので方向を間違えない</strong>。
+  適用にあたっては、<strong>target サイトの年齢分布が訓練サイトと有意に違うことを
+  KS 検定で確認してから当てる</strong>のが妥当である（違わなければ動かす理由がない）。
+  ただしこの手法は<strong>年齢×IDH 関係のサイト不変性に依存する</strong>。
+  米国3施設では成立したが、小児例や他地域では別途検証が要る。</p>
+  <div class="tablewrap"><table><caption>年齢のみ vs 画像モデル（test、3 seed 平均）</caption>
+    <thead><tr><th scope="col">ユニット</th><th scope="col">条件</th><th scope="col">年齢のみ</th>
+    <th scope="col">画像モデル</th><th scope="col">画像+年齢</th><th scope="col">差</th></tr></thead>
+    <tbody>{_auctbl}</tbody></table></div>
+</section>
+"""
+
+if LR:
+    def _pair(cfg, k):
+        return [LR[cfg][s][k] - LR["baseline"][s][k] for s in range(3)]
+
+    def _mean(cfg, k):
+        return float(np.mean([LR[cfg][s][k] for s in range(3)]))
+
+    _sd_auc = float(np.std([LR["lr3e-3"][s]["auc"] for s in range(3)], ddof=1))
+    _d_auc, _d_sens = _pair("lr3e-3", "auc"), _pair("lr3e-3", "sens")
+    _lrtbl = "".join(
+        f'<tr><th scope="row">{nm}</th>'
+        + "".join(f'<td class="n">{LR[c][s]["ev_tab"]:.2f}</td>' for s in range(3))
+        + "".join(f'<td class="n">{LR[c][s]["auc"]:.3f}</td>' for s in range(3))
+        + "".join(f'<td class="n">{LR[c][s]["sens"]*100:.1f}%</td>' for s in range(3))
+        + "</tr>"
+        for c, nm in (("baseline", "lr 1e-4（既定）"), ("lr1e-3", "lr 1e-3"), ("lr3e-3", "lr 3e-3")))
+
+    LR_SECTION = f"""
+<section class="finding">
+  <p class="eyebrow">実験 — ヘッドの学習率</p>
+  <h2 class="serif">年齢が使われていなかったのは学習率のせいだった。ただし治ったのは感度だけ</h2>
+  <p>tabular head は 4,482 パラメータ、evidence heads を合わせても 8,332 で、
+  <strong>44M の事前学習済み trunk と同じ学習率で回っていた</strong>。仮説は単純な学習不足である。
+  optimizer を trunk と head に分け、head だけ 10倍・30倍にして LOSO-B × 3 seed で確かめた。</p>
+  <p><strong>狙った量は動いた。</strong>tabular evidence は
+  {_mean("baseline", "ev_tab"):.2f} → {_mean("lr1e-3", "ev_tab"):.2f} → {_mean("lr3e-3", "ev_tab"):.2f}
+  と単調に増え、3 seed とも同方向である。独立な確認も取れた——
+  inner-val でヘッド別の重みを最尤推定すると、<strong>変更前は「tabular を 7〜20倍にせよ」だったのが、
+  3e-3 の後は「≈0.9、そのままでよい」に変わる</strong>。音量が適正になったということだ。</p>
+  <p><strong>閾値 0.5 での感度も一貫して改善した。</strong>
+  {_mean("baseline", "sens")*100:.1f}% → {_mean("lr3e-3", "sens")*100:.1f}%、
+  seed 別の変化は {" / ".join(f"{d*100:+.1f}" for d in _d_sens)} ポイントで、
+  <strong>3 seed とも +17〜19pt に収まる</strong>。特異度の低下は
+  {(_mean("baseline", "spec") - _mean("lr3e-3", "spec"))*100:.1f}pt のみ。
+  誤答時 S &lt; 正答時 S も全設定で 3/3 維持された。</p>
+  <p><strong>しかし AUC は動いたと言えない。</strong>平均は
+  {_mean("baseline", "auc"):.3f} → {_mean("lr3e-3", "auc"):.3f} と +{_mean("lr3e-3", "auc") - _mean("baseline", "auc"):.3f} だが、
+  seed 別の変化は {" / ".join(f"{d:+.3f}" for d in _d_auc)} と符号が揃わず、
+  <strong>設定内の seed 間 sd {_sd_auc:.3f} のほうが平均効果より大きい</strong>。
+  平均を押し上げているのは1 seed だけである。<strong>n=3 では AUC への効果は検出できない。</strong></p>
+  <p>順位が動かず確率の位置だけが動いたのは筋が通っている。
+  tabular head を大きくすることは<strong>融合ロジット全体を平行移動させる効果が主で、
+  順位の入れ替えは副次的</strong>だからだ。言い換えれば、
+  <strong>この介入は「学習によって内部化された切片補正」</strong>であり、
+  前節の年齢ベース切片補正と同じ方向の効果を、後付けではなくモデルの中で実現している。</p>
+  <figure class="figure">
+    {fig_lrsplit()}
+    <figcaption>線が1 seed。左と中央は3本とも同じ向きに動くが、右（AUC）は揃わない。
+    これが「効いた指標」と「判定できない指標」の違いである。</figcaption>
+  </figure>
+  <div class="tablewrap"><table><caption>LOSO-B、seed 別（左から tabular evidence / AUC / 感度@0.5）</caption>
+    <thead><tr><th scope="col">設定</th>
+    <th scope="col">ev s0</th><th scope="col">ev s1</th><th scope="col">ev s2</th>
+    <th scope="col">AUC s0</th><th scope="col">AUC s1</th><th scope="col">AUC s2</th>
+    <th scope="col">感度 s0</th><th scope="col">感度 s1</th><th scope="col">感度 s2</th></tr></thead>
+    <tbody>{_lrtbl}</tbody></table></div>
+  <p class="eyebrow" style="margin-top:8px">未解決</p>
+  <p>個別シーケンスのヘッド（T1 / T2 / FLAIR）は単独 AUC 0.53〜0.72 と弱く、
+  inner-val で重みを学習させると<strong>ほぼ全ランで下限に張り付く</strong>——
+  最適化はこれらを捨てたがっている。それでも evidence を 10 前後ずつ出し続けており、
+  強いヘッドを希釈している。<strong>AUC の残差はここにある可能性が高い。</strong>
+  次の判断は、(1) seed を増やして AUC への効果の有無を確定させるか、
+  (2) 個別シーケンスヘッドの整理に進むか、である。</p>
+</section>
+"""
 
 CSS = """
 :root{
@@ -679,7 +941,7 @@ JS = """
     if(m&&m.dataset.tip){show(e,m.dataset.tip);}else{tip.classList.remove('on');}
   });
   document.addEventListener('pointerleave',function(){tip.classList.remove('on');});
-  // print/PDF: a collapsed <details> would silently drop the raw 27-run table
+  // print/PDF: a collapsed disclosure would silently drop the raw 27-run table
   var opened=[];
   addEventListener('beforeprint',function(){
     opened=[].slice.call(document.querySelectorAll('details:not([open])'));
@@ -1130,6 +1392,8 @@ doc = f"""<title>OpenIDH Stage B — 27ラン結果解析</title>
   </figure>
 </section>
 
+{AGE_SECTION}
+{LR_SECTION}
 <section class="finding">
   <p class="eyebrow">所見 — 学習の実態</p>
   <h2 class="serif">200 epoch を用意したが、実際に使われたのは平均 8 epoch だった</h2>
