@@ -1,0 +1,48 @@
+{
+  "run": "lrsplit1_foldB_s0",
+  "split_file": "splits_loso_foldB.csv",
+  "fold_id": null,
+  "seed": 0,
+  "train_yaml": "train.lrsplit.yaml",
+  "temperature": 1.0154569464652703,
+  "prior_offset": 1.0918172455352808,
+  "n_val": 204,
+  "n_test": 619,
+  "val_base_rate": 0.11764705882352941,
+  "test_base_rate": 0.284329563812601,
+  "test_raw": {
+    "nll": 0.5356868231136862,
+    "brier": 0.1730407289860674,
+    "ece": 0.16091849063738078,
+    "mean_S": 40.70763615993538,
+    "median_S": 40.259641,
+    "auc": 0.8793094602914016,
+    "auprc": 0.7409625934452262
+  },
+  "test_calibrated": {
+    "nll": 0.5317423057014057,
+    "brier": 0.1723459770819556,
+    "ece": 0.15917882649137194,
+    "mean_S": 40.70763615993538,
+    "median_S": 40.259641,
+    "auc": 0.8793094602914016,
+    "auprc": 0.7409625934452262
+  },
+  "test_prior_oracle": {
+    "nll": 0.416668575178923,
+    "brier": 0.1350973222496297,
+    "ece": 0.08651178249980201,
+    "mean_S": 40.70763615993538,
+    "median_S": 40.259641,
+    "auc": 0.8793094602914016,
+    "auprc": 0.7409625934452262
+  },
+  "ranking_delta": {
+    "auc": 0.0,
+    "auprc": 0.0
+  },
+  "ranking_delta_prior": {
+    "auc": 0.0,
+    "auprc": 0.0
+  }
+}
