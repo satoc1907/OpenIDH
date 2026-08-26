@@ -578,6 +578,12 @@ def table_runs():
 auc_o, auc_os = ms(OOD, "auc"); auc_i, auc_is = ms(IND, "auc")
 ece_o, ece_os = ms(OOD, "ece"); ece_i, ece_is = ms(IND, "ece")
 apr_o, _ = ms(OOD, "auprc"); apr_i, _ = ms(IND, "auprc")
+# AUPRC's floor is the prevalence, and OOD prevalence is higher — so the raw
+# difference flatters the model. Normalise by prevalence before comparing.
+_prev = {k: float(np.mean([pd.read_csv(_RD / r["run"] / "predictions.csv")
+                           .query("role == 'test'")["y_true"].mean() for r in rs]))
+         for k, rs in (("ood", OOD), ("ind", IND))}
+lift_o, lift_i = apr_o / _prev["ood"], apr_i / _prev["ind"]
 nll_o, _ = ms(OOD, "nll"); nll_i, _ = ms(IND, "nll")
 bri_o, _ = ms(OOD, "brier"); bri_i, _ = ms(IND, "brier")
 best = np.array([r["best_epoch"] for r in ROWS]); ran = np.array([r["epochs_run"] for r in ROWS])
@@ -1311,7 +1317,8 @@ doc = f"""<title>OpenIDH Stage B — 27ラン結果解析</title>
     <span class="lab">AUC の低下幅</span>
     <span class="big serif">−{auc_i - auc_o:.3f}</span>
     <span class="sub">分布外 {auc_o:.3f} ± {auc_os:.3f} ／ 分布内 {auc_i:.3f} ± {auc_is:.3f}。
-    AUPRC の差はさらに小さく {apr_i - apr_o:+.3f}。</span>
+    AUPRC は見かけ上ほぼ同じだが、有病率で正規化した lift は
+    {lift_i:.2f} → {lift_o:.2f} と {(1 - lift_o / lift_i)*100:.0f}% 落ちる。</span>
     <span class="chip pass">✓ 主張は成立</span>
   </div>
   <div class="tile">
@@ -1337,6 +1344,11 @@ doc = f"""<title>OpenIDH Stage B — 27ラン結果解析</title>
   それぞれ異なる要因でデータ分布を動かす。にもかかわらず AUC は
   <strong>0.854 / 0.856 / 0.861 / 0.867 と 0.013 の幅に収まった</strong>。
   偶然では出にくい一貫性で、判別性能の頑健性を裏づける。</p>
+  <p><strong>ただし AUPRC を「差がほぼ無い」と読んではいけない。</strong>
+  AUPRC の下限は有病率であり、分布外のほうが有病率が高い（{_prev["ood"]*100:.1f}% 対 {_prev["ind"]*100:.1f}%）。
+  有病率で正規化した lift で測ると <strong>{lift_i:.2f} → {lift_o:.2f}、{(1 - lift_o / lift_i)*100:.0f}% の低下</strong>である。
+  生の AUPRC {apr_i:.3f} → {apr_o:.3f} がほぼ横ばいに見えるのは、
+  底上げされたベースラインに助けられているだけで、頑健性の証拠にはならない。</p>
   <p>ところが同じ図の右パネルを見ると、ECE は分布内の 4 ユニットが 0.035〜0.047 に密集するのに対し、
   分布外は 0.082〜0.162 に散る。<strong>順位づけの能力は保たれるが、確信度の目盛りは狂う</strong>——
   これが今回の実験の中心的な知見だと考える。とりわけ LOSO-B の ECE 0.162 は、
@@ -1357,9 +1369,13 @@ doc = f"""<title>OpenIDH Stage B — 27ラン結果解析</title>
   <p>evidential モデルの価値は「当たる」ことではなく「外すときに黙る」ことにある。
   その検証として、正答した症例と誤答した症例で Dirichlet strength の中央値を比較した。
   <strong>27ラン全てで誤答時のほうが低く、例外はなかった</strong>（差は −3.1 〜 −19.6）。</p>
-  <p>さらに示唆的なのは vendor（Philips）で、S の絶対値そのものが 20〜37 と他ユニット（40〜60）より明確に低い。
-  <strong>最も分布の遠いシフトに対して、モデルが自発的に自信を下げている</strong>。
-  較正が崩れる領域を、不確実性が部分的に補償できている可能性を示す。</p>
+  <p>vendor（Philips）の S の絶対値が 20〜37 と他ユニット（40〜60）より低いことを、
+  当初は「最も分布の遠いシフトに自発的に自信を下げている」と読んだが、
+  <strong>これは誤りである。S の絶対値はラン間で比較できない</strong>——
+  訓練セットの大きさも構成も違うので、水準そのものが揃っていない。
+  同一モデル内で inner-val と test を比べると vendor は −10%、LOSO-B は −9%、field は +5% で、
+  <strong>vendor が特別に敏感なわけではない</strong>（§14.2 の弱く不安定な反応と整合する）。
+  この段落の主張は「誤答時に S が下がる」——同一モデル・同一集団内の比較——に限られる。</p>
   <figure class="figure">
     <div class="legend">
       <span style="color:var(--ink2)"><i style="background:currentColor"></i>正答した症例の median S（塗り）</span>

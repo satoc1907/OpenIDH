@@ -1,0 +1,13 @@
+age_band,grade_suspicion,n_mut,n_wt,n_unknown,pi_mut,source_table,method,notes
+all,high,,,,0.023,"CBTRUS 2018-2022 Fig 4 (Frequency of IDH Mutations by WHO Grade for Selected Astrocytoma Histopathologies)",reported_percentage,"grade 4 astrocytoma histopathologies. Counts not published in the accessible text; only the percentage. Our Mut definition adds GBM IDH-mutant (9445/3) which Fig 4 already counts within grade-4 astrocytoma."
+all,low,,,,0.530,"CBTRUS 2018-2022 Fig 4",reported_percentage,"mean of grade 2 (55.3%) and grade 3 (50.7%) astrocytoma. ASTROCYTOMA ONLY: oligodendroglioma is excluded from this figure and is IDH-mutant by definition, so this UNDERSTATES pi for our label definition. Magnitude of the gap is not derivable from the accessible tables - see the sensitivity row."
+all,low_with_oligo_sens,,,,0.650,"CBTRUS 2018-2022 Fig 4 + Table 3",sensitivity_assumption,"SENSITIVITY ONLY - NOT A SOURCE VALUE. Assumes oligodendroglioma is ~25% of grade 2-3 diffuse glioma and all IDH-mutant: 0.530*0.75+0.25. The grade split of the 7606 IDH-mutant astrocytoma and 4785 oligodendroglioma cases in Table 3 is not published in the accessible text, so the true value cannot be computed."
+all,unknown,,,,0.180,"CBTRUS 2018-2022 Table 3",reconstructed_from_incidence,"marginal over all adult-type diffuse glioma: (7606 IDH-mut astrocytoma + 4785 IDH-mut 1p/19q-codeleted oligodendroglioma) / (7606 + 4785 + 56123 IDH-wildtype astrocytoma/glioblastoma) = 0.181. Fallback for a form answer of 'unknown'."
+0-14,high,,,,,,,"not extracted - no age x grade cross-tabulation in the accessible text"
+0-14,low,,,,,,,"not extracted - same"
+15-39,high,,,,,,,"not extracted - the AYA report's age-stratified IDH x grade table was not reachable (OUP returns the article shell; PubMed/PMC blocked)"
+15-39,low,,,,,,,"not extracted - same"
+40-64,high,,,,,,,"not extracted - same"
+40-64,low,,,,,,,"not extracted - same"
+65+,high,,,,,,,"not extracted - same"
+65+,low,,,,,,,"not extracted - same"
