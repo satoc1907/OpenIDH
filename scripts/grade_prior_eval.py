@@ -171,6 +171,44 @@ def add_ece(rows, runs_dir: Path, paths):
     return rows
 
 
+def stratified(paths, runs_dir: Path, subj: pd.DataFrame) -> list[dict]:
+    """Does the model still discriminate INSIDE a suspicion stratum?
+
+    The defence against "the grade question is just an echo of the model". If the
+    within-stratum AUC collapses to 0.5, the suspicion carries everything and the
+    model adds nothing. If it holds, pre-test odds and likelihood ratio are doing
+    genuinely different jobs — which is the only framing under which asking the
+    clinician one question is honest.
+    """
+    from sklearn.metrics import roc_auc_score
+
+    tag = {"LOSO-A": "foldA", "LOSO-B": "foldB"}
+    out = []
+    for label in FOLDS:
+        acc = {}
+        for seed in range(3):
+            f = runs_dir / f"{tag[label]}_s{seed}" / "predictions.csv"
+            if not f.is_file():
+                continue
+            t = pd.read_csv(f)
+            t = t[t.role == "test"].merge(subj[["subject_id", "grade"]], on="subject_id", how="left")
+            t["p"] = t["alpha"] / (t["alpha"] + t["beta"])
+            for nm, m in (("grade 4", t["grade"] == 4), ("grade 2-3", t["grade"].isin([2, 3]))):
+                g = t[m]
+                if g["y_true"].nunique() < 2:
+                    continue
+                acc.setdefault(nm, []).append({
+                    "n": len(g), "n_mut": int(g["y_true"].sum()),
+                    "prev": float(g["y_true"].mean()),
+                    "auc": float(roc_auc_score(g["y_true"], g["p"])),
+                    "sens": float(((g["p"] > .5) & (g["y_true"] == 1)).sum()
+                                  / max((g["y_true"] == 1).sum(), 1))})
+        for nm, v in acc.items():
+            out.append({"label": label, "stratum": nm,
+                        **{k: float(np.mean([x[k] for x in v])) for k in v[0]}})
+    return out
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--runs-dir", default=str(_ROOT / "runs"))
@@ -247,6 +285,16 @@ def main() -> None:
     d = max(abs(r["metrics"][k]["auc"] - r["metrics"]["raw"]["auc"])
             for r in rows for k in ("A", "B", "C", "Cb", "oracle"))
     print(f"\n検算: AUC の最大変化量 {d:.2e}（施設一律の切片なので 0 のはず）")
+
+    st = stratified(paths, runs_dir, subj)
+    print("\n## 層内での判別（疑いが echo かどうかの検証）\n")
+    print("| fold | 層 | n | Mut | 層内有病率 | 層内 AUC | 感度@0.5 |")
+    print("|---|---|---|---|---|---|---|")
+    for r in st:
+        print(f"| {r['label']} | {r['stratum']} | {r['n']:.0f} | {r['n_mut']:.0f} | "
+              f"{r['prev']*100:.1f}% | **{r['auc']:.3f}** | {r['sens']*100:.1f}% |")
+    for r in rows:
+        r["stratified"] = [x for x in st if x["label"] == r["label"]]
 
     if a.json:
         Path(a.json).write_text(json.dumps(rows, indent=2, default=float))
