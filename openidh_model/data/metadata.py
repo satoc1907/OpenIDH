@@ -69,3 +69,29 @@ def lookup_age_sex(metadata_dir, site: str, subject_id: str):
     else:
         key = str(subject_id)
     return table.get(site, {}).get(key, (float("nan"), float("nan")))
+
+
+@lru_cache(maxsize=8)
+def _load_grade(metadata_dir: str) -> dict:
+    """{site: {key: grade}} — WHO grade as float, nan when unknown. UPenn carries
+    no grade column: the cohort is UPENN-GBM (glioblastoma), so grade 4 by the
+    dataset's definition rather than a value read from metadata."""
+    md = Path(metadata_dir)
+    out: dict = {"UCSF": {}, "UTSW": {}}
+    u = pd.read_csv(md / "UCSF-PDGM-metadata_v5.csv")
+    for _, r in u.iterrows():
+        n = int(re.search(r"(\d+)", str(r["ID"])).group(1))
+        out["UCSF"][n] = float(pd.to_numeric(r["WHO CNS Grade"], errors="coerce"))
+    t = pd.read_csv(md / "UTSW_Glioma_Metadata.tsv", sep="\t")
+    for _, r in t.iterrows():
+        out["UTSW"][str(r["Subject ID"])] = float(pd.to_numeric(r["Tumor Grade"], errors="coerce"))
+    return out
+
+
+def lookup_grade(metadata_dir, site: str, subject_id: str) -> float:
+    """WHO grade (2/3/4) for a subject; nan if unknown. UPenn -> 4.0 by cohort definition."""
+    if site == "UPenn":
+        return 4.0
+    table = _load_grade(str(metadata_dir))
+    key = int(re.search(r"(\d+)", subject_id).group(1)) if site == "UCSF" else str(subject_id)
+    return table.get(site, {}).get(key, float("nan"))
