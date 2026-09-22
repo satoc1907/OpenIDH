@@ -107,13 +107,14 @@ def dump_run(run_dir: Path, paths, device: str, log=print) -> dict | None:
         t0 = time.perf_counter()
         ds = _dataset(split_csv, role, res, paths, cfg)
         feats = collect_features(model, make_loader(ds, cfg, shuffle=False), cfg, device, paths)
-        err = verify_heads(feats, weights)            # row-order / hand-computation check
+        chk = verify_heads(feats, weights)            # row-order / hand-computation check
         fused = _check_against_predictions(run_dir, feats, role, cfg)
         write_features(run_dir / f"features_{role}.npz", feats)
-        out["checks"][role] = {"head_max_abs_err": err, "fused": fused}
+        out["checks"][role] = {**chk, "fused": fused}
         out[f"n_{role}"] = int(len(feats["y"]))
-        log(f"  {role:4s} n={len(feats['y']):4d}  head recompute max|err|={max(err.values()):.2e}  "
-            f"{fused}  ({time.perf_counter() - t0:.0f}s)")
+        log(f"  {role:4s} n={len(feats['y']):4d}  head recompute rel.err={max(chk['rel_err'].values()):.1e} "
+            f"(rows swapped: {min(chk['rel_err_swapped'].values()):.1e})  {fused}  "
+            f"({time.perf_counter() - t0:.0f}s)")
     (run_dir / "features_meta.json").write_text(json.dumps(out, indent=2))
     return out
 

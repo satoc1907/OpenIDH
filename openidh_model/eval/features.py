@@ -125,22 +125,34 @@ def collect_features(model, loader, cfg, device, paths) -> dict:
     return out
 
 
-def verify_heads(feats: dict, weights: dict, atol: float = 1e-4) -> dict:
+def verify_heads(feats: dict, weights: dict, rtol: float = 1e-2, margin: float = 100.0) -> dict:
     """Recompute every head from (features, W, b) and compare with the model's
-    evidence. Returns the max abs error per encoder; raises if any exceeds atol.
+    evidence. Returns per-encoder relative errors for the stored row order and
+    for the SWAPPED row order; raises unless the stored order matches and the
+    swapped one clearly does not.
 
     This is the row-order check the analysis depends on: if W's rows were
-    swapped, e1 and e0 would trade places and every d_p sign would flip.
+    swapped, e1 and e0 would trade places and every d_p sign would flip. The
+    tolerance is relative because the GPU path is not bit-exact — the NGC
+    container forces TF32 matmul (TORCH_ALLOW_TF32_CUBLAS_OVERRIDE), which is
+    ~1e-3 relative on evidence of order 10, while a swapped row is order 1.
     """
-    err = {}
+    def rel_err(hand, ref):
+        return float((np.abs(hand - ref) / np.maximum(1.0, np.abs(ref))).max())
+
+    err, err_swapped = {}, {}
     for e in ENCODERS:
         W, b = weights[e]
-        hand = evidence_from_features(feats[f"feat_{e}"], W, b)
-        err[e] = float(np.abs(hand - feats[f"evidence_{e}"]).max())
-    bad = {e: v for e, v in err.items() if v > atol}
+        ref = feats[f"evidence_{e}"]
+        err[e] = rel_err(evidence_from_features(feats[f"feat_{e}"], W, b), ref)
+        err_swapped[e] = rel_err(evidence_from_features(feats[f"feat_{e}"], W[::-1].copy(), b[::-1].copy()), ref)
+    bad = {e: v for e, v in err.items() if v > rtol}
     if bad:
-        raise AssertionError(f"head recomputation mismatch (row order?): {bad}")
-    return err
+        raise AssertionError(f"head recomputation mismatch: {bad} (rtol {rtol})")
+    weak = {e: (err[e], err_swapped[e]) for e in ENCODERS if err_swapped[e] < margin * max(err[e], 1e-7)}
+    if weak:
+        raise AssertionError(f"row order not separable — swapped rows fit almost as well: {weak}")
+    return {"rel_err": err, "rel_err_swapped": err_swapped}
 
 
 def write_features(path: str | Path, feats: dict) -> Path:
