@@ -27,21 +27,31 @@ COHORTS = ("ucsf-pdgm", "upenn-gbm", "utsw-glioma", "_global")
 
 
 def inventory(data_dir: Path, out: Path | None) -> dict:
+    """One stat() per file. On HDD Lustre that is the whole cost (~13.6k files,
+    minutes), so progress goes to stderr and the TSV is streamed, not buffered."""
+    import time
     rows: list[tuple[str, int]] = []
+    t0 = time.time()
+    fh = out.open("w") if out else None
     for c in COHORTS:
         base = data_dir / c
         if not base.is_dir():
             print(f"WARNING: cohort dir missing: {base}", file=sys.stderr)
             continue
+        n0 = len(rows)
         for dirpath, dirnames, filenames in os.walk(base):
             dirnames.sort()
             for f in sorted(filenames):
                 p = Path(dirpath) / f
                 rows.append((str(p.relative_to(data_dir)), p.stat().st_size))
+                if fh:
+                    fh.write(f"{rows[-1][0]}\t{rows[-1][1]}\n")
+                if len(rows) % 500 == 0:
+                    print(f"  ... {len(rows)} files  ({time.time() - t0:.0f}s)", file=sys.stderr, flush=True)
+        print(f"{c}: {len(rows) - n0} files  ({time.time() - t0:.0f}s)", file=sys.stderr, flush=True)
+    if fh:
+        fh.close()
     rows.sort()
-    if out:
-        with out.open("w") as fh:
-            fh.writelines(f"{r}\t{s}\n" for r, s in rows)
     summary = defaultdict(lambda: {"subjects": set(), "files": 0, "bytes": 0, "nii": 0})
     for r, s in rows:
         parts = r.split("/")
@@ -60,7 +70,7 @@ def inventory(data_dir: Path, out: Path | None) -> dict:
 
 
 def compare(a: Path, b: Path, files_from: Path | None) -> int:
-    def load(p):
+    def load(p):  # order in the file does not matter (streamed per cohort)
         with p.open() as fh:
             return {l.split("\t")[0]: int(l.rstrip("\n").split("\t")[1]) for l in fh if "\t" in l}
     A, B = load(a), load(b)
