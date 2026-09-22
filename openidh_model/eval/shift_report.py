@@ -230,7 +230,7 @@ def judge_unit(summ: pd.DataFrame, unit: str, sig: float = 2.0) -> dict:
     ratios = {"d_p": dp, "d_s": ds, "delta_null": dn}
     counting = {k: v for k, v in ratios.items() if v >= sig}
     if not counting:
-        verdict = "all near floor — features did not move; the shift enters at the evidence non-linearity (head side)"
+        verdict = "no component clears 2x its floor on the encoder average — see the per-encoder table before calling the features unmoved"
     else:
         dom = max(counting, key=counting.get)
         sign = ""
