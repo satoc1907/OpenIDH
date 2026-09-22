@@ -1,0 +1,46 @@
+/uge_mnt/var/spool/uge/dl-gtn15/job_scripts/18483700: line 21: /usr/local/bin/nvidia_entrypoint.sh: No such file or directory
+[feat] host=5fc66815875e job=18483700 device=cuda runs=<default 13>
+GPU 0: NVIDIA A100-SXM4-40GB (UUID: GPU-76686744-a113-1445-07dc-3e3191cf9521)
+[1/13] foldA_s0
+  val  n= 227  head recompute rel.err=5.3e-04 (rows swapped: 1.5e+01)  BT0007: alpha 36.3982 vs csv 36.3982, beta 1.9613 vs csv 1.9613 (match)  (18s)
+  test n= 501  head recompute rel.err=6.1e-04 (rows swapped: 1.3e+01)  UCSF-PDGM-004: alpha 1.4114 vs csv 1.4114, beta 70.2075 vs csv 70.2075 (match)  (45s)
+[2/13] foldA_s1
+  val  n= 227  head recompute rel.err=5.9e-04 (rows swapped: 1.4e+01)  BT0007: alpha 30.4761 vs csv 30.4761, beta 1.7625 vs csv 1.7625 (match)  (15s)
+  test n= 501  head recompute rel.err=4.7e-04 (rows swapped: 1.3e+01)  UCSF-PDGM-004: alpha 1.3296 vs csv 1.3296, beta 51.9598 vs csv 51.9598 (match)  (30s)
+[3/13] foldA_s2
+  val  n= 227  head recompute rel.err=5.8e-04 (rows swapped: 1.2e+01)  BT0007: alpha 35.6176 vs csv 35.6176, beta 1.6126 vs csv 1.6126 (match)  (15s)
+  test n= 501  head recompute rel.err=6.7e-04 (rows swapped: 1.1e+01)  UCSF-PDGM-004: alpha 1.5584 vs csv 1.5584, beta 50.6995 vs csv 50.6995 (match)  (31s)
+[4/13] foldB_s0
+  val  n= 204  head recompute rel.err=4.0e-04 (rows swapped: 1.2e+01)  UCSF-PDGM-007: alpha 1.5158 vs csv 1.5158, beta 46.8831 vs csv 46.8831 (match)  (21s)
+  test n= 619  head recompute rel.err=4.4e-04 (rows swapped: 1.1e+01)  BT0001: alpha 1.6058 vs csv 1.6058, beta 41.2925 vs csv 41.2925 (match)  (59s)
+[5/13] foldB_s1
+  val  n= 204  head recompute rel.err=5.3e-04 (rows swapped: 1.4e+01)  UCSF-PDGM-007: alpha 1.3865 vs csv 1.3865, beta 55.0092 vs csv 55.0092 (match)  (15s)
+  test n= 619  head recompute rel.err=7.7e-04 (rows swapped: 1.5e+01)  BT0001: alpha 1.5297 vs csv 1.5297, beta 41.7022 vs csv 41.7022 (match)  (43s)
+[6/13] foldB_s2
+  val  n= 204  head recompute rel.err=4.3e-04 (rows swapped: 1.5e+01)  UCSF-PDGM-007: alpha 1.2009 vs csv 1.2009, beta 49.9351 vs csv 49.9352 (match)  (15s)
+  test n= 619  head recompute rel.err=6.6e-04 (rows swapped: 1.5e+01)  BT0001: alpha 1.9467 vs csv 1.9467, beta 31.5604 vs csv 31.5604 (match)  (42s)
+[7/13] field_s0
+  val  n=  85  head recompute rel.err=6.5e-04 (rows swapped: 1.7e+01)  BT0008: alpha 1.9934 vs csv 1.9934, beta 51.0698 vs csv 51.0698 (match)  (12s)
+  test n= 195  head recompute rel.err=7.2e-04 (rows swapped: 1.7e+01)  BT0003: alpha 48.7525 vs csv 48.7525, beta 2.8539 vs csv 2.8539 (match)  (14s)
+[8/13] field_s1
+  val  n=  85  head recompute rel.err=5.5e-04 (rows swapped: 3.5e+00)  BT0008: alpha 2.7440 vs csv 2.7440, beta 20.7821 vs csv 20.7821 (match)  (13s)
+  test n= 195  head recompute rel.err=6.2e-04 (rows swapped: 3.6e+00)  BT0003: alpha 18.2104 vs csv 18.2104, beta 2.4875 vs csv 2.4875 (match)  (14s)
+[9/13] field_s2
+  val  n=  85  head recompute rel.err=6.0e-04 (rows swapped: 1.3e+01)  BT0008: alpha 16.7403 vs csv 16.7403, beta 20.3046 vs csv 20.3046 (match)  (12s)
+  test n= 195  head recompute rel.err=4.9e-04 (rows swapped: 1.3e+01)  BT0003: alpha 41.6402 vs csv 41.6402, beta 1.3983 vs csv 1.3983 (match)  (14s)
+[10/13] vendor_s0
+  val  n=  96  head recompute rel.err=6.4e-04 (rows swapped: 5.1e+00)  BT0001: alpha 7.2360 vs csv 7.2360, beta 8.3872 vs csv 8.3872 (match)  (13s)
+  test n= 140  head recompute rel.err=9.6e-04 (rows swapped: 5.9e+00)  BT0018: alpha 10.6609 vs csv 10.6609, beta 11.2772 vs csv 11.2772 (match)  (13s)
+[11/13] vendor_s1
+  val  n=  96  head recompute rel.err=6.1e-04 (rows swapped: 6.3e+00)  BT0001: alpha 12.2082 vs csv 12.2082, beta 4.9860 vs csv 4.9860 (match)  (13s)
+  test n= 140  head recompute rel.err=7.2e-04 (rows swapped: 6.3e+00)  BT0018: alpha 16.8202 vs csv 16.8202, beta 5.0841 vs csv 5.0841 (match)  (13s)
+[12/13] vendor_s2
+  val  n=  96  head recompute rel.err=5.4e-04 (rows swapped: 1.4e+01)  BT0001: alpha 19.8075 vs csv 19.8075, beta 7.5282 vs csv 7.5282 (match)  (13s)
+  test n= 140  head recompute rel.err=5.8e-04 (rows swapped: 1.4e+01)  BT0018: alpha 11.7990 vs csv 11.7990, beta 11.2992 vs csv 11.2992 (match)  (13s)
+[13/13] rand0_s0
+  val  n= 262  head recompute rel.err=7.0e-04 (rows swapped: 1.2e+01)  UCSF-PDGM-017: alpha 3.9732 vs csv 3.9732, beta 37.0371 vs csv 37.0371 (match)  (20s)
+  test n= 327  head recompute rel.err=6.3e-04 (rows swapped: 1.2e+01)  UCSF-PDGM-018: alpha 2.8402 vs csv 2.8402, beta 35.5001 vs csv 35.5001 (match)  (33s)
+
+dumped: ['foldA_s0', 'foldA_s1', 'foldA_s2', 'foldB_s0', 'foldB_s1', 'foldB_s2', 'field_s0', 'field_s1', 'field_s2', 'vendor_s0', 'vendor_s1', 'vendor_s2', 'rand0_s0']
+[feat] done — runs/*/features_{val,test}.npz + head_weights.npz + features_meta.json
+[feat] to analyse elsewhere: rsync -av --include='*/' --include='features_*' --include='head_weights.npz' --exclude='*' runs/ <dest>/runs/
