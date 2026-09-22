@@ -109,12 +109,12 @@ epoch 0: train_loss=... val_nll=...
 epoch 1: ...
 TEST metrics: {...}
 saved -> runs/smoke_rikyu_s0
-[smoke] result vs runs/smoke_foldA_s0 (CPU reference):
+[smoke] result vs runs/smoke/result.json (raiden reference):
   n_train      new       20  ref       20  ok
   n_val        new       10  ref       10  ok
   n_test       new       20  ref       20  ok
   best_epoch   new        1  ref        1  ok     ← 0 でも可（2 epoch の smoke なので）
-  best_val_nll new 0.6xxx  ref 0.6789        ← 1e-2 程度のずれは TF32/GPU 由来で正常
+  best_val_nll new 0.6xxx  ref 0.6823        ← 1e-2 程度のずれは float 順序由来で正常（devbox CPU は 0.6789）
   test nll / auc / median_S                   ← 同じオーダーなら OK
 [smoke] done -> runs/smoke_rikyu_s0
 ```
