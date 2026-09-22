@@ -1,0 +1,15 @@
+/uge_mnt/var/spool/uge/dl-gtn14/job_scripts/18483631: line 21: /usr/local/bin/nvidia_entrypoint.sh: No such file or directory
+[feat] host=ed353bf39143 job=18483631 device=cuda runs=<default 13>
+GPU 0: NVIDIA A100-SXM4-40GB (UUID: GPU-356490f2-20e2-f9a4-1d0b-53234d6f6c5b)
+[1/13] foldA_s0
+Traceback (most recent call last):
+  File "/uge_mnt/home/satoc/OpenIDH/scripts/dump_features.py", line 158, in <module>
+    main()
+    ~~~~^^
+  File "/uge_mnt/home/satoc/OpenIDH/scripts/dump_features.py", line 145, in main
+    r = dump_run(d, paths, a.device)
+  File "/uge_mnt/home/satoc/OpenIDH/scripts/dump_features.py", line 110, in dump_run
+    err = verify_heads(feats, weights)            # row-order / hand-computation check
+  File "/uge_mnt/home/satoc/OpenIDH/openidh_model/eval/features.py", line 142, in verify_heads
+    raise AssertionError(f"head recomputation mismatch (row order?): {bad}")
+AssertionError: head recomputation mismatch (row order?): {'T1': 0.0012655258178710938, 'T2': 0.0013408660888671875, 'FLAIR': 0.0010738372802734375, 'T1c': 0.001434326171875, 'unified': 0.001373291015625}
