@@ -1,0 +1,21 @@
+# RIKYU (RIKEN R-CCS, Slurm, aarch64 + GB200) paths.
+# ★ On migration, edit ONLY the two `*_root` lines below. Nothing else in the repo changes.
+#
+# Layout on rikyu (confirmed 2026-09-22) — repo clone and image data live in
+# separate trees, as on raiden:
+#   root      = git clone of this repo (/home/rku00233/OpenIDH, 50GB SSD Lustre).
+#               Holds data/metadata/*.csv and the frozen splits (git-tracked).
+#   data_root = staged image tree (/data1/rkp00078/satoc/Glioma/images, HDD Lustre).
+#               = the local repo's data/preprocessed/, cut out:
+#               v1.0.0/{ucsf-pdgm,upenn-gbm,utsw-glioma,_global}/ (+ _backup_*, egd: unused)
+#
+# Jobs may override data_dir with a /tmp copy (slurm/env.sh: stage_data) — they
+# write a derived yaml next to the job, this file is never edited by a job.
+root: /home/rku00233/OpenIDH
+data_root: /data1/rkp00078/satoc/Glioma/images
+
+data_dir: ${data_root}/v1.0.0
+metadata_dir: ${root}/data/metadata
+splits_dir: ${root}/data/preprocessed/v1.0.0/_global/splits
+weights_dir: ${root}/weights
+output_dir: ${root}/runs
