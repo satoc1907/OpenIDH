@@ -8,6 +8,7 @@
 # the subject counts and the ordering of metrics must match exactly.
 # ~2 minutes of GPU -> ~10 yen.
 #SBATCH --job-name=openidh_smoke
+#SBATCH --account=rkp00078
 #SBATCH --gpus=1
 #SBATCH --time=00:20:00
 #SBATCH --output=slurm/logs/%x.%j.out

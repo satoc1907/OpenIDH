@@ -126,7 +126,7 @@ saved -> runs/smoke_rikyu_s0
 ## 5. 通ったら（任意）：特徴ダンプの smoke 版
 
 ```
-sbatch --export=ALL --wrap='source slurm/env.sh; node_report; L=runs/smoke_rikyu_s0/staged_subjects.txt; stage_data $L; export OPENIDH_PATHS=$STAGE_PATHS; run_py python scripts/dump_features.py --runs smoke_rikyu_s0 --include-all --device cuda' --gpus=1 --time=00:10:00 --job-name=openidh_feat_smoke --output=slurm/logs/%x.%j.out
+sbatch --export=ALL --wrap='source slurm/env.sh; node_report; L=runs/smoke_rikyu_s0/staged_subjects.txt; stage_data $L; export OPENIDH_PATHS=$STAGE_PATHS; run_py python scripts/dump_features.py --runs smoke_rikyu_s0 --include-all --device cuda' --account=rkp00078 --gpus=1 --time=00:10:00 --job-name=openidh_feat_smoke --output=slurm/logs/%x.%j.out
 ```
 期待：`head recompute rel.err=1e-3 前後 (rows swapped: 0.5〜2)` と `(match)`。
 

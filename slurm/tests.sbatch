@@ -5,6 +5,7 @@
 # list, a GPU forward of the real model with the right output shapes, and
 # "33 passed" from pytest. ~3 minutes -> ~15 yen.
 #SBATCH --job-name=openidh_tests
+#SBATCH --account=rkp00078
 #SBATCH --gpus=1
 #SBATCH --time=00:15:00
 #SBATCH --output=slurm/logs/%x.%j.out
