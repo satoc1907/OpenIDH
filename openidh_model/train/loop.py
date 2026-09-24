@@ -47,7 +47,12 @@ def _sample_kept(avail: dict, p: float, training: bool, device, gen) -> dict:
     return kept
 
 
-def _forward(model, batch, cfg, training, device, gen):
+def _forward(model, batch, cfg, training, device, gen, drop=None):
+    """One step in the mandated op order. `drop` names modalities to treat as
+    NOT ACQUIRED (eval-time ablation, spec §7): their channels are zeroed — so
+    the unified trunk sees the absence too — and their heads leave the fusion,
+    exactly as a genuinely missing sequence would (spec §3.5). It is applied
+    after the dropout mask, so dropping is idempotent with it."""
     images = {m: batch["images"][m].to(device) for m in MODALITIES}
     avail = {m: batch["mask"][m] for m in MODALITIES}
     volume = batch["volume"].to(device)
@@ -55,6 +60,8 @@ def _forward(model, batch, cfg, training, device, gen):
     y = batch["label"].to(device)
 
     kept = _sample_kept(avail, cfg["train"]["modality_dropout_p"], training, device, gen)
+    for m in drop or ():
+        kept[m] = torch.zeros_like(kept[m])
     for m in MODALITIES:  # zero dropped modality channels (also feeds the unified trunk)
         images[m] = images[m] * kept[m].view(-1, 1, 1, 1).to(images[m].dtype)
 

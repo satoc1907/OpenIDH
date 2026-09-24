@@ -81,6 +81,14 @@ def score(df: pd.DataFrame, keep: list[str]) -> dict:
     return m
 
 
+def _true_missing_files(run_dir: Path) -> dict:
+    """{tag: csv} written by scripts/modality_drop_eval.py — the sequences were
+    actually withheld from the forward pass (unified trunk included), which the
+    column arithmetic here cannot emulate."""
+    return {f.stem.split("predictions_drop-")[1]: f
+            for f in sorted(run_dir.glob("predictions_drop-*.csv"))}
+
+
 def run_table(runs_dir: Path, runs: list[str]) -> pd.DataFrame:
     rows = []
     for run in runs:
@@ -105,6 +113,18 @@ def run_table(runs_dir: Path, runs: list[str]) -> pd.DataFrame:
                 rows.append({"run": run, "unit": label, "kind": kind, "seed": res["seed"],
                              "role": role, "subset": name, "n_keep": len(keep), "n": len(d),
                              **score(d, keep)})
+        # the true missing-sequence runs, when they have been scored on a GPU
+        for tag, f in _true_missing_files(runs_dir / run).items():
+            dm = pd.read_csv(f)
+            for role in ("val", "test"):
+                d = dm[dm.role == role]
+                if not len(d):
+                    continue
+                rows.append({"run": run, "unit": label, "kind": kind, "seed": res["seed"],
+                             "role": role, "subset": f"true-missing -{tag}",
+                             "n_keep": int(sum((d[f"e1_{h}"] + d[f"e0_{h}"]).abs().max() > 0
+                                               for h in CLASSIFIERS)),
+                             "n": len(d), **score(d, CLASSIFIERS)})
     return pd.DataFrame(rows)
 
 

@@ -28,15 +28,23 @@ PRED_COLUMNS = (
 
 
 @torch.no_grad()
-def collect_predictions(model, loader, cfg, device, role: str, run: str = "") -> list[dict]:
-    """One row per subject. Inference only — modality dropout is off (training=False)."""
+def collect_predictions(model, loader, cfg, device, role: str, run: str = "",
+                        drop=None) -> list[dict]:
+    """One row per subject. Inference only — modality dropout is off (training=False).
+
+    `drop` (a sequence of modality names) evaluates the model as if those
+    sequences had never been acquired: zeroed channels into the unified trunk
+    and their heads out of the fusion (see train.loop._forward). The rows are
+    written in the same schema, so `active_mask` records what was used.
+    """
     from ..train.loop import _forward  # local import: loop imports eval.metrics
 
     model.eval()
     gen = torch.Generator(device=device)
     rows: list[dict] = []
     for batch in loader:
-        _, active, alpha, beta, scaled, y = _forward(model, batch, cfg, False, device, gen)
+        _, active, alpha, beta, scaled, y = _forward(model, batch, cfg, False, device, gen,
+                                                     drop=drop)
         S = (alpha + beta).cpu()
         p = (alpha / (alpha + beta)).cpu()
         a, b = alpha.cpu(), beta.cpu()
