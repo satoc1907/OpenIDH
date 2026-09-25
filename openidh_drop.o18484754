@@ -1,0 +1,48 @@
+/uge_mnt/var/spool/uge/dl-gtn13/job_scripts/18484754: line 24: /usr/local/bin/nvidia_entrypoint.sh: No such file or directory
+[drop] host=6b7f3534aea2 job=18484754 device=cuda runs=<default 13> drops=<all>
+GPU 0: NVIDIA A100-SXM4-40GB (UUID: GPU-88d7e07a-d067-2e3f-1e8c-7489c16d6a33)
+[1/13] foldA_s0
+  baseline: max |Δα|,|Δβ| = 0.00e+00 over 728 subjects (match)  (87s)
+  drop T2+FLAIR     test n= 501 auc=0.839 ece=0.101 nll=0.442 medS=33.1 mask=['100111'] (47s)
+  drop T1+T2+FLAIR  test n= 501 auc=0.841 ece=0.090 nll=0.436 medS=24.8 mask=['000111'] (47s)
+[2/13] foldA_s1
+  drop T2+FLAIR     test n= 501 auc=0.861 ece=0.054 nll=0.377 medS=25.5 mask=['100111'] (45s)
+  drop T1+T2+FLAIR  test n= 501 auc=0.862 ece=0.082 nll=0.393 medS=16.6 mask=['000111'] (45s)
+[3/13] foldA_s2
+  drop T2+FLAIR     test n= 501 auc=0.813 ece=0.085 nll=0.450 medS=31.9 mask=['100111'] (48s)
+  drop T1+T2+FLAIR  test n= 501 auc=0.868 ece=0.098 nll=0.459 medS=29.4 mask=['000111'] (48s)
+[4/13] foldB_s0
+  drop T2+FLAIR     test n= 619 auc=0.844 ece=0.043 nll=0.456 medS=24.3 mask=['100111'] (82s)
+  drop T1+T2+FLAIR  test n= 619 auc=0.842 ece=0.098 nll=0.499 medS=19.1 mask=['000111'] (59s)
+[5/13] foldB_s1
+  drop T2+FLAIR     test n= 619 auc=0.863 ece=0.090 nll=0.458 medS=28.1 mask=['100111'] (58s)
+  drop T1+T2+FLAIR  test n= 619 auc=0.854 ece=0.069 nll=0.441 medS=20.6 mask=['000111'] (59s)
+[6/13] foldB_s2
+  drop T2+FLAIR     test n= 619 auc=0.834 ece=0.085 nll=0.484 medS=24.8 mask=['100111'] (57s)
+  drop T1+T2+FLAIR  test n= 619 auc=0.846 ece=0.075 nll=0.460 medS=17.5 mask=['000111'] (57s)
+[7/13] field_s0
+  drop T2+FLAIR     test n= 195 auc=0.821 ece=0.107 nll=0.522 medS=36.2 mask=['100111'] (27s)
+  drop T1+T2+FLAIR  test n= 195 auc=0.845 ece=0.097 nll=0.471 medS=24.3 mask=['000111'] (27s)
+[8/13] field_s1
+  drop T2+FLAIR     test n= 195 auc=0.812 ece=0.056 nll=0.472 medS=19.8 mask=['100111'] (27s)
+  drop T1+T2+FLAIR  test n= 195 auc=0.818 ece=0.049 nll=0.475 medS=21.4 mask=['000111'] (27s)
+[9/13] field_s2
+  drop T2+FLAIR     test n= 195 auc=0.851 ece=0.058 nll=0.424 medS=30.2 mask=['100111'] (26s)
+  drop T1+T2+FLAIR  test n= 195 auc=0.865 ece=0.073 nll=0.442 medS=18.8 mask=['000111'] (26s)
+[10/13] vendor_s0
+  drop T2+FLAIR     test n= 140 auc=0.876 ece=0.067 nll=0.445 medS=21.5 mask=['100111'] (26s)
+  drop T1+T2+FLAIR  test n= 140 auc=0.867 ece=0.073 nll=0.461 medS=19.5 mask=['000111'] (25s)
+[11/13] vendor_s1
+  drop T2+FLAIR     test n= 140 auc=0.865 ece=0.117 nll=0.487 medS=21.6 mask=['100111'] (26s)
+  drop T1+T2+FLAIR  test n= 140 auc=0.887 ece=0.125 nll=0.455 medS=17.9 mask=['000111'] (26s)
+[12/13] vendor_s2
+  drop T2+FLAIR     test n= 140 auc=0.799 ece=0.120 nll=0.597 medS=20.2 mask=['100111'] (26s)
+  drop T1+T2+FLAIR  test n= 140 auc=0.866 ece=0.120 nll=0.498 medS=12.9 mask=['000111'] (26s)
+[13/13] rand0_s0
+  drop T2+FLAIR     test n= 327 auc=0.927 ece=0.032 nll=0.254 medS=32.3 mask=['100111'] (54s)
+  drop T1+T2+FLAIR  test n= 327 auc=0.920 ece=0.037 nll=0.282 medS=27.6 mask=['000111'] (45s)
+
+dumped: ['foldA_s0', 'foldA_s1', 'foldA_s2', 'foldB_s0', 'foldB_s1', 'foldB_s2', 'field_s0', 'field_s1', 'field_s2', 'vendor_s0', 'vendor_s1', 'vendor_s2', 'rand0_s0']
+wrote results/modality_drop.json
+[drop] done — runs/*/predictions_drop-*.csv + results/modality_drop.json
+[drop] to analyse elsewhere: rsync -av --include='*/' --include='predictions_drop-*' --exclude='*' runs/ <dest>/runs/
