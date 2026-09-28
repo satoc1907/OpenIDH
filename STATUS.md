@@ -1,5 +1,5 @@
 ---
-updated: 2026-09-28T15:20:00+09:00
+updated: 2026-09-28T17:05:00+09:00
 state: review
 waiting_on: me
 phase: dev
@@ -9,17 +9,20 @@ phase: dev
 
 ## 現状サマリ
 
-ドメインシフト調査（実験 A/B/C）が完了し、「分布外の較正誤差は確信度の水準ではなく**切片**の問題」と確定した。
-次の一手の候補は 2 つに絞れており、いまは他の AI への相談結果を待つ判断待ち。
-Mac mini（Docker, Linux aarch64, GPU 無し）で起動確認済み。運用は「AI がコードを書き、人がスパコン（raiden / 理究）で実行」を継続。
+受領した仕様どおり**出力整合（output matching）**による切片推定を実装・検証した。全例で LOSO-A/B の ECE が oracle 並み（0.038 / 0.042）まで下がる。
+N 例運用では LOSO-B は N=20 から安全、LOSO-A は N=100（許容 0.01 なら 30）。vendor は切片では直らない。
+結果（`results/output_matching.md`）の判定と、レポート本文への反映可否が人の判断待ち。
 
 ## 進行中
 
-- 他の AI へ `results/domain_shift_summary.md` を渡して相談 `@me`
+- 出力整合の結果の判定 `@me` — `results/output_matching.md`、図 `results/figures/output_matching_n.png`
 
 ## ブロッカー・要判断
 
-- **次の一手の選択** `@me` — 下記「次にやるべきこと」の (1) か (2)。相談結果が出てから決める
+- **出力整合の判定とレポート反映** `@me` — 特に次の 3 点：
+  (a) 「害」の定義。仕様どおりの「わずかでも悪化」だと、ずれが小さいユニット（field / vendor / 分布内）はどの N でも 10% を切らない（雑音で 50% 前後に張り付く）。補足として「0.01 超の悪化」も併記した
+  (b) vendor は π̂_cov が 30.9%、真値は 35.0% と係留点がずれる上、全例ラベルの切片でも ECE 0.086（補正なし 0.085）。切片の問題ではない
+  (c) field の比方式が逆符号（b = −0.33）。π(年齢, 疑い) が val 上で 33.1% と、観測 28.2% からずれているため
 - **Mac では torch が入らない** `@me` — `uv.lock` が CUDA 専用 wheel を指しているため。
   解析は torch 不要にしたので影響しないが、学習・推論は raiden / 理究で行う前提。詳細は `markdown/HANDOVER.md`
   この Mac の実体は Docker（Linux aarch64）なので、HANDOVER の `--no-install-package torch torchvision` だけでは CUDA ライブラリ（数 GB）を落としにいく。
@@ -39,20 +42,16 @@ Mac mini（Docker, Linux aarch64, GPU 無し）で起動確認済み。運用は
 - 未 push の commit を push 済み（main = origin/main を 2026-09-28 に確認）
 - Mac での移行確認：解析テスト 8/9 通過、実験 B head-off 540 行・実験 C-2 が committed の JSON と完全一致
 - 計算環境の移行（Spark → Mac mini）。解析はスパコンで実行する運用のため、features 類の Mac への転送は不要と確認
+- 出力整合の仕様を受領（2026-09-28、Discord 経由）
+- **出力整合**（ラベル無し切片推定）の実装と 3 評価 → `openidh_model/eval/output_matching.py`、`notebooks/06_output_matching.ipynb`、`results/output_matching.{md,json}`
 
 ## 次にやるべきこと（AI 提案）
 
-次のセッションの人が最初に読む前提で書く。まず `results/domain_shift_summary.md` を読めば全体像が掴める。
+次のセッションの人が最初に読む前提で書く。まず `results/output_matching.md` と `results/domain_shift_summary.md`。
 
-1. **撮像由来の切片ずれを装置メタデータから推定する**（本命）
-   実験 A が見つけた穴。既存の切片推定手段（年齢・grade・CBTRUS・少数ラベル）はすべて「症例構成由来」しか扱えず、
-   撮像由来の成分（field で有病率不変のままロジット −0.33、LOSO-B で criterion −0.24〜−0.43σ）は誰も推定できていない。
-   ベンダー・磁場強度は推論時に既知なので、原理的には補正可能。まず既存の分解表で回帰が立つか確認する（推論不要）。
-
-2. **T2 / FLAIR 限定のエンコーダ側介入**（輝度のアフィン不変な拡張）
-   実験 A の判定では介入対象は T2 と FLAIR に限定してよい（T1c は動いていない）。
-   ただし効果の上限は「vendor で失った 2〜3 割の evidence 回復＋ criterion 0.3σ」で、AUC は大きく動かない見込み。
-   **再学習が必要**なので raiden か理究でのジョブになる。
-
-どちらに進むにせよ、`results/domain_shift_summary.md` 6 節に**想定される反論を 4 点**書いてある。
-相談相手からの指摘があれば、そこに追記してから設計に入るのがよい。
+1. **出力整合の判定を受けて、処方箋の階段とレポート本文を更新する**（判定後）
+   実測の階段（ECE、LOSO-A / LOSO-B）：補正なし 0.082 / 0.162 → 年齢のみ比方式 0.074 / 0.105 → 年齢+疑い比方式 0.070 / 0.064
+   → **年齢+疑い出力整合 0.038 / 0.042** → 全例ラベル 0.042 / 0.045。出力整合は「ラベル 20 例」より上、全例ラベルとほぼ同じ段に入る。
+2. **vendor の扱い**：切片では直らないことが分かったので、残差は形の歪み（傾き・ビン別のずれ）として別に調べる。
+   あるいは先の案 (2)（T2/FLAIR の輝度拡張、再学習あり）の対象にする。
+3. 旧案 (1)「装置メタデータから撮像由来の切片を推定」は、出力整合が撮像由来の分も一括で吸収する（LOSO-B で +0.35、field で +0.53）ので、優先度が下がった。
