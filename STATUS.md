@@ -1,5 +1,5 @@
 ---
-updated: 2026-09-28T17:05:00+09:00
+updated: 2026-09-28T21:45:00+09:00
 state: review
 waiting_on: me
 phase: dev
@@ -9,20 +9,19 @@ phase: dev
 
 ## 現状サマリ
 
-受領した仕様どおり**出力整合（output matching）**による切片推定を実装・検証した。全例で LOSO-A/B の ECE が oracle 並み（0.038 / 0.042）まで下がる。
-N 例運用では LOSO-B は N=20 から安全、LOSO-A は N=100（許容 0.01 なら 30）。vendor は切片では直らない。
-結果（`results/output_matching.md`）の判定と、レポート本文への反映可否が人の判断待ち。
+出力整合（06）に有意性ゲート（|b̂| > k·SE、SE は N 例内ブートストラップ）を付けた（07）。事前固定の規則で **k = 2.5、N_min = 20** に決まった。
+ずれの無い施設での害はほぼ消えた（vendor 55→3%、in-dist 47→6%）。代償として LOSO-B は N=20 で利得の半分を失う（発火 59%）。
+k・N_min の採否、最終階段、レポートへの反映が人の判断待ち。
 
 ## 進行中
 
-- 出力整合の結果の判定 `@me` — `results/output_matching.md`、図 `results/figures/output_matching_n.png`
+- 07 の結果の判定 `@me` — `results/gated_correction.md`、図 `results/figures/gated_correction_{fire,ece}.png`
 
 ## ブロッカー・要判断
 
-- **出力整合の判定とレポート反映** `@me` — 特に次の 3 点：
-  (a) 「害」の定義。仕様どおりの「わずかでも悪化」だと、ずれが小さいユニット（field / vendor / 分布内）はどの N でも 10% を切らない（雑音で 50% 前後に張り付く）。補足として「0.01 超の悪化」も併記した
-  (b) vendor は π̂_cov が 30.9%、真値は 35.0% と係留点がずれる上、全例ラベルの切片でも ECE 0.086（補正なし 0.085）。切片の問題ではない
-  (c) field の比方式が逆符号（b = −0.33）。π(年齢, 疑い) が val 上で 33.1% と、観測 28.2% からずれているため
+- **k = 2.5 / N_min = 20 の採否** `@me` — 事前予測のうち LOSO-B（N=20 でほぼ常に発火）と field（N とともに発火が増える）は外れた。
+  LOSO-B の利得が戻るのは N=30〜50。k=2.0 は in-dist の P(害>0.01) が 11% で、基準を僅差で落ちている
+- **レポート反映** `@me` — 4/4 の書き方指示（「oracle 超え」と書かない、vendor を限界事項へ、Rao-Blackwell の段落、b̂ の内訳）は判定後に反映する
 - **Mac では torch が入らない** `@me` — `uv.lock` が CUDA 専用 wheel を指しているため。
   解析は torch 不要にしたので影響しないが、学習・推論は raiden / 理究で行う前提。詳細は `markdown/HANDOVER.md`
   この Mac の実体は Docker（Linux aarch64）なので、HANDOVER の `--no-install-package torch torchvision` だけでは CUDA ライブラリ（数 GB）を落としにいく。
@@ -43,15 +42,16 @@ N 例運用では LOSO-B は N=20 から安全、LOSO-A は N=100（許容 0.01 
 - Mac での移行確認：解析テスト 8/9 通過、実験 B head-off 540 行・実験 C-2 が committed の JSON と完全一致
 - 計算環境の移行（Spark → Mac mini）。解析はスパコンで実行する運用のため、features 類の Mac への転送は不要と確認
 - 出力整合の仕様を受領（2026-09-28、Discord 経由）
+- 出力整合 06 の判定事項（害の定義・vendor・field 比方式の逆符号）→ 07 の仕様として回答を受領
 - **出力整合**（ラベル無し切片推定）の実装と 3 評価 → `openidh_model/eval/output_matching.py`、`notebooks/06_output_matching.ipynb`、`results/output_matching.{md,json}`
+- **有意性ゲート**の実装と評価 → `openidh_model/eval/gated_correction.py`、`notebooks/07_gated_correction.ipynb`、`results/gated_correction.{md,json}`
 
 ## 次にやるべきこと（AI 提案）
 
-次のセッションの人が最初に読む前提で書く。まず `results/output_matching.md` と `results/domain_shift_summary.md`。
+次のセッションの人が最初に読む前提で書く。まず `results/gated_correction.md`、次に `results/output_matching.md`。
 
-1. **出力整合の判定を受けて、処方箋の階段とレポート本文を更新する**（判定後）
-   実測の階段（ECE、LOSO-A / LOSO-B）：補正なし 0.082 / 0.162 → 年齢のみ比方式 0.074 / 0.105 → 年齢+疑い比方式 0.070 / 0.064
-   → **年齢+疑い出力整合 0.038 / 0.042** → 全例ラベル 0.042 / 0.045。出力整合は「ラベル 20 例」より上、全例ラベルとほぼ同じ段に入る。
-2. **vendor の扱い**：切片では直らないことが分かったので、残差は形の歪み（傾き・ビン別のずれ）として別に調べる。
-   あるいは先の案 (2)（T2/FLAIR の輝度拡張、再学習あり）の対象にする。
-3. 旧案 (1)「装置メタデータから撮像由来の切片を推定」は、出力整合が撮像由来の分も一括で吸収する（LOSO-B で +0.35、field で +0.53）ので、優先度が下がった。
+1. **k・N_min の判定を受けて、レポート本文を更新する**（判定後）。書き方の指示は 2026-09-28 の Discord 4/4 にある：
+   「oracle 超え」ではなく「ラベル 0 で下限に到達」と書く／vendor の微悪化を原因（係留点の誤差：π̂_cov 30.9% 対 真値 35.0%）とともに限界事項へ入れ、ゲート後の変化（P(害) 81→3%）を追記／
+   ラベルなしがラベルありより少ない N で安定する理由（Rao-Blackwell 化、LOSO-B でラベルなし 20 例 ≈ ラベルあり 44 例）／b̂ の内訳（+1.42 = +1.07 + 0.35）を実験 A と対応づける
+2. LOSO-B の利得損失を減らしたければ、候補は 2 つ：ゲートの判定を N とともに逐次更新する（N=30 で発火 82%）、または k を N に依存させる。ただし事前固定した規則の外に出るので、やるなら新しい評価として切り分ける
+3. vendor は切片では直らない（全例ラベルの切片でも ECE 0.086、補正なし 0.085）。残差は形の歪みとして別に扱う
