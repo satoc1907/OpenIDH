@@ -1,5 +1,5 @@
 ---
-updated: 2026-09-28T09:30:00+09:00
+updated: 2026-09-28T15:15:00+09:00
 state: review
 waiting_on: me
 phase: dev
@@ -11,20 +11,22 @@ phase: dev
 
 ドメインシフト調査（実験 A/B/C）が完了し、「分布外の較正誤差は確信度の水準ではなく**切片**の問題」と確定した。
 次の一手の候補は 2 つに絞れており、いまは他の AI への相談結果を待つ判断待ち。
-計算環境を DGX Spark から Mac mini へ移行中（解析は torch 無しで動くよう対応済み、学習・推論は raiden / 理究）。
+Mac mini（Docker, Linux aarch64, GPU 無し）で起動確認済み。実験 B（head-off）・C-2 は再実行で完全一致、features 未転送のため実験 A・C-1・B の true-missing は未再現。
 
 ## 進行中
 
 - 他の AI へ `results/domain_shift_summary.md` を渡して相談 `@me`
-- 計算環境の移行（Spark → Mac mini）`@me`
+- 計算環境の移行（Spark → Mac mini）：残りは `runs/` の features / predictions_drop の転送 `@me`
 
 ## ブロッカー・要判断
 
-- **未 push の commit が 5 本ある** `@me` — 移行前に必ず `git push origin main`。
-  この環境には GitHub 認証が無く、push は人が実行する必要がある（失うと実験 A/B/C の成果物ごと消える）
+- **features_*.npz / head_weights.npz / predictions_drop-*.csv が Mac に無い** `@me` — HANDOVER §3 の rsync で Spark から持ってくるか、
+  raiden で `qsub/dump_features.sh`・`qsub/modality_drop.sh` を再実行。これが無いと実験 A・C-1 が再解析できない
 - **次の一手の選択** `@me` — 下記「次にやるべきこと」の (1) か (2)。相談結果が出てから決める
 - **Mac では torch が入らない** `@me` — `uv.lock` が CUDA 専用 wheel を指しているため。
   解析は torch 不要にしたので影響しないが、学習・推論は raiden / 理究で行う前提。詳細は `markdown/HANDOVER.md`
+  この Mac の実体は Docker（Linux aarch64）なので、HANDOVER の `--no-install-package torch torchvision` だけでは CUDA ライブラリ（数 GB）を落としにいく。
+  nvidia-* / triton / cuda-* も除外が必要。また `tests/test_shift_decomp.py` の 1 本（softplus 比較）は torch を import するので torch 無しでは 8/9 になる
 
 ## 完了
 
@@ -37,6 +39,8 @@ phase: dev
 - **総まとめ**（外部相談用）→ `results/domain_shift_summary.md`
 - 理究（RIKEN R-CCS, Slurm）の環境構築と Step 1/2 検証 → `slurm/`, `markdown/HPC_GUIDE_raiden_rikyu.md`
 - 解析パスの torch 依存を除去（Mac 移行対応）
+- 未 push の commit を push 済み（main = origin/main を 2026-09-28 に確認）
+- Mac での移行確認：解析テスト 8/9 通過、実験 B head-off 540 行・実験 C-2 が committed の JSON と完全一致
 
 ## 次にやるべきこと（AI 提案）
 
