@@ -1,5 +1,5 @@
 ---
-updated: 2026-09-28T15:15:00+09:00
+updated: 2026-09-28T15:20:00+09:00
 state: review
 waiting_on: me
 phase: dev
@@ -11,17 +11,14 @@ phase: dev
 
 ドメインシフト調査（実験 A/B/C）が完了し、「分布外の較正誤差は確信度の水準ではなく**切片**の問題」と確定した。
 次の一手の候補は 2 つに絞れており、いまは他の AI への相談結果を待つ判断待ち。
-Mac mini（Docker, Linux aarch64, GPU 無し）で起動確認済み。実験 B（head-off）・C-2 は再実行で完全一致、features 未転送のため実験 A・C-1・B の true-missing は未再現。
+Mac mini（Docker, Linux aarch64, GPU 無し）で起動確認済み。運用は「AI がコードを書き、人がスパコン（raiden / 理究）で実行」を継続。
 
 ## 進行中
 
 - 他の AI へ `results/domain_shift_summary.md` を渡して相談 `@me`
-- 計算環境の移行（Spark → Mac mini）：残りは `runs/` の features / predictions_drop の転送 `@me`
 
 ## ブロッカー・要判断
 
-- **features_*.npz / head_weights.npz / predictions_drop-*.csv が Mac に無い** `@me` — HANDOVER §3 の rsync で Spark から持ってくるか、
-  raiden で `qsub/dump_features.sh`・`qsub/modality_drop.sh` を再実行。これが無いと実験 A・C-1 が再解析できない
 - **次の一手の選択** `@me` — 下記「次にやるべきこと」の (1) か (2)。相談結果が出てから決める
 - **Mac では torch が入らない** `@me` — `uv.lock` が CUDA 専用 wheel を指しているため。
   解析は torch 不要にしたので影響しないが、学習・推論は raiden / 理究で行う前提。詳細は `markdown/HANDOVER.md`
@@ -41,6 +38,7 @@ Mac mini（Docker, Linux aarch64, GPU 無し）で起動確認済み。実験 B�
 - 解析パスの torch 依存を除去（Mac 移行対応）
 - 未 push の commit を push 済み（main = origin/main を 2026-09-28 に確認）
 - Mac での移行確認：解析テスト 8/9 通過、実験 B head-off 540 行・実験 C-2 が committed の JSON と完全一致
+- 計算環境の移行（Spark → Mac mini）。解析はスパコンで実行する運用のため、features 類の Mac への転送は不要と確認
 
 ## 次にやるべきこと（AI 提案）
 
