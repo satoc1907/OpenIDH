@@ -127,3 +127,50 @@ def test_project_residual_is_orthogonal(W):
     resid = d - pr["delta_p"] * b["u_p"] - pr["delta_s"] * b["u_s"]
     assert abs(resid @ b["u_p"]) < 1e-9 and abs(resid @ b["u_s"]) < 1e-9
     assert abs(np.linalg.norm(resid) - pr["delta_null"]) < 1e-12
+
+
+def test_softplus_matches_torch_and_needs_no_torch(W):
+    """evidence_from_features is numpy so the analysis runs without torch; it must
+    still agree with the head it stands in for (models/heads.py uses F.softplus)."""
+    import importlib
+    import torch
+    import torch.nn.functional as F
+
+    import openidh_model.eval.features as feat_mod
+    assert "torch" not in vars(importlib.import_module("openidh_model.eval.features")), \
+        "torch must not be a module-level name in eval.features"
+
+    rng = np.random.default_rng(11)
+    f = rng.normal(scale=3.0, size=(64, D)).astype(np.float32)   # scale=3 -> |z| up to ~100
+    b = rng.normal(size=2).astype(np.float32)
+    mine = feat_mod.evidence_from_features(f, W, b)
+    ref = F.softplus(torch.from_numpy(f) @ torch.from_numpy(W).T
+                     + torch.from_numpy(b)).clamp(min=1e-6).numpy()
+    assert np.abs(mine - ref).max() / max(1.0, float(np.abs(ref).max())) < 1e-6
+
+
+def test_analysis_path_imports_without_torch(monkeypatch):
+    """The Mac has no torch (the lock pins CUDA-only wheels), so every module the
+    analysis touches must import without it."""
+    import builtins
+    import importlib
+    import sys
+
+    mods = ["openidh_model.constants", "openidh_model.eval.features",
+            "openidh_model.eval.shift_decomp", "openidh_model.eval.shift_report",
+            "openidh_model.eval.metrics", "openidh_model.train.calibrate",
+            "openidh_model.train.monitor"]
+    for m in list(sys.modules):
+        if m.startswith("openidh_model") or m == "torch":
+            monkeypatch.delitem(sys.modules, m, raising=False)
+
+    real_import = builtins.__import__
+
+    def no_torch(name, *a, **k):
+        if name == "torch" or name.startswith("torch."):
+            raise ImportError("torch is not installed (simulated)")
+        return real_import(name, *a, **k)
+
+    monkeypatch.setattr(builtins, "__import__", no_torch)
+    for m in mods:
+        importlib.import_module(m)

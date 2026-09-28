@@ -1,0 +1,20 @@
+# Mac (Apple Silicon) paths — the analysis machine.
+#
+# ★ UNVERIFIED: written from the layout reported for the Mac on 2026-09-22
+#   (repo ~/Desktop/OpenIDH, images under data/openidh/preprocessed/v1.0.0).
+#   Check it in one command before trusting it:
+#       OPENIDH_PATHS=configs/paths.mac.yaml uv run python -c \
+#         "from openidh_model.utils.paths import load_paths; print(load_paths().as_dict())"
+#   and fix `data_dir` if the images are elsewhere. If the Mac actually uses the
+#   plain repo layout (data/preprocessed/v1.0.0), just use paths.local.yaml.
+#
+# NOTE the Mac cannot run the model: uv.lock pins CUDA-only torch wheels, so
+# `uv sync --frozen` has nothing to install for macOS. The analysis path needs no
+# torch (see markdown/HANDOVER.md); anything that loads a checkpoint runs on
+# raiden or rikyu instead.
+root: AUTO
+data_dir: ${root}/data/openidh/preprocessed/v1.0.0
+metadata_dir: ${root}/data/metadata
+splits_dir: ${root}/data/preprocessed/v1.0.0/_global/splits
+weights_dir: ${root}/weights
+output_dir: ${root}/runs

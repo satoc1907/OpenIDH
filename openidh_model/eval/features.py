@@ -23,11 +23,13 @@ from contextlib import contextmanager
 from pathlib import Path
 
 import numpy as np
-import torch
-import torch.nn.functional as F
 
+from ..constants import IMG_MODALITIES
 from ..data.metadata import lookup_age_sex, lookup_grade
-from ..models.openidh import IMG_MODALITIES
+
+# torch is imported lazily, inside the functions that need a live model. The
+# analysis path (load the npz, decompose, tabulate) then runs on a machine with
+# no torch at all — the lock has CUDA-only wheels, so a Mac cannot install it.
 
 ENCODERS = IMG_MODALITIES + ["unified"]   # T1, T2, FLAIR, T1c, unified
 E1_ROW, E0_ROW = 0, 1                     # head output rows (models/heads.py)
@@ -75,13 +77,18 @@ def head_weights(model) -> dict:
 
 def evidence_from_features(feat: np.ndarray, W: np.ndarray, b: np.ndarray,
                            eps: float = 1e-6) -> np.ndarray:
-    """Hand-computed head: softplus(W f + b).clamp(eps) -> (N, 2) [e1, e0]."""
-    z = torch.from_numpy(np.asarray(feat, dtype=np.float32)) @ torch.from_numpy(W).T \
-        + torch.from_numpy(b)
-    return F.softplus(z).clamp(min=eps).numpy()
+    """Hand-computed head: softplus(W f + b).clamp(eps) -> (N, 2) [e1, e0].
+
+    numpy, not torch, so the analysis needs no deep-learning stack. The softplus
+    is the overflow-safe form log1p(exp(-|z|)) + max(z, 0), which agrees with
+    torch.nn.functional.softplus to float32 precision (asserted in the tests).
+    """
+    z = (np.asarray(feat, dtype=np.float32) @ np.asarray(W, dtype=np.float32).T
+         + np.asarray(b, dtype=np.float32)).astype(np.float64)
+    sp = np.log1p(np.exp(-np.abs(z))) + np.maximum(z, 0.0)
+    return np.maximum(sp, eps).astype(np.float32)
 
 
-@torch.no_grad()
 def collect_features(model, loader, cfg, device, paths) -> dict:
     """Run the evaluation forward pass (eval mode, no dropout, no augmentation)
     and return CLS features + raw evidence per encoder, with subject covariates.
@@ -90,6 +97,8 @@ def collect_features(model, loader, cfg, device, paths) -> dict:
     so it is neither applied nor needed here. The tabular head has no CLS feature
     and is out of scope.
     """
+    import torch  # only the dump path needs a live model
+
     from ..train.loop import _forward  # local import: loop imports eval.metrics
 
     model.eval()
@@ -99,22 +108,23 @@ def collect_features(model, loader, cfg, device, paths) -> dict:
     cols.update({f"evidence_{e}": [] for e in ENCODERS})
     meta = {k: [] for k in ("subject_id", "site", "y", "age", "sex", "grade", "volume")}
 
-    for batch in loader:
-        with capture_cls(model) as store:
-            ev, active, _, _, _, y = _forward(model, batch, cfg, False, device, gen)
-        feats = cls_from_store(store)
-        for e in ENCODERS:
-            cols[f"feat_{e}"].append(feats[e].float().cpu().numpy())
-            cols[f"active_{e}"].append(active[e].cpu().numpy().astype(bool))
-            cols[f"evidence_{e}"].append(ev[e].float().cpu().numpy())
-        for i in range(len(y)):
-            sid, site = batch["subject_id"][i], batch["site"][i]
-            age, sex = lookup_age_sex(paths.metadata_dir, site, sid)   # raw years, not standardised
-            meta["subject_id"].append(sid); meta["site"].append(site)
-            meta["y"].append(int(y[i].item()))
-            meta["age"].append(float(age)); meta["sex"].append(float(sex))
-            meta["grade"].append(lookup_grade(paths.metadata_dir, site, sid))
-            meta["volume"].append(float(batch["volume"][i]))
+    with torch.no_grad():
+        for batch in loader:
+            with capture_cls(model) as store:
+                ev, active, _, _, _, y = _forward(model, batch, cfg, False, device, gen)
+            feats = cls_from_store(store)
+            for e in ENCODERS:
+                cols[f"feat_{e}"].append(feats[e].float().cpu().numpy())
+                cols[f"active_{e}"].append(active[e].cpu().numpy().astype(bool))
+                cols[f"evidence_{e}"].append(ev[e].float().cpu().numpy())
+            for i in range(len(y)):
+                sid, site = batch["subject_id"][i], batch["site"][i]
+                age, sex = lookup_age_sex(paths.metadata_dir, site, sid)  # raw years, not standardised
+                meta["subject_id"].append(sid); meta["site"].append(site)
+                meta["y"].append(int(y[i].item()))
+                meta["age"].append(float(age)); meta["sex"].append(float(sex))
+                meta["grade"].append(lookup_grade(paths.metadata_dir, site, sid))
+                meta["volume"].append(float(batch["volume"][i]))
 
     out = {k: np.concatenate(v, 0) for k, v in cols.items()}
     out["subject_id"] = np.array(meta["subject_id"], dtype=str)

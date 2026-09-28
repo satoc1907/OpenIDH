@@ -14,11 +14,9 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 
+from ..constants import IMG_MODALITIES  # re-exported: callers may import it from here
 from .encoder import build_trunk
 from .heads import EvidenceHead, TabularHead
-
-# Fixed channel order for the unified 12ch input (spec §3.3 — order must not change).
-IMG_MODALITIES = ["T1", "T2", "FLAIR", "T1c"]
 
 
 class OpenIDH(nn.Module):
