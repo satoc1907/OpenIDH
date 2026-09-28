@@ -64,7 +64,7 @@ uv sync --frozen --no-install-package torch --no-install-package torchvision
 uv run pytest tests/test_shift_decomp.py -q
 ```
 
-（35 本のうち `test_invariants.py` はモデルを構築するので torch が要る。`tests/test_shift_decomp.py` には
+（全 35 本のうち `test_shift_decomp.py` の 9 本が torch 不要。残りの `test_invariants.py` はモデルを構築するので torch が要る。前者には
 「torch が import できない状況でも解析モジュールが読める」ことを確かめる回帰テストが入っている）
 
 **もし Mac でもモデルを動かしたくなったら**：`pyproject.toml` の `[tool.uv.sources]` に
@@ -143,13 +143,13 @@ cat STATUS.md
 ls runs/*/features_test.npz | wc -l
 ```
 
-（13 と出れば実験 A の再解析が可能。0 なら §3 のコピーか raiden での再生成が要る）
+（**14** と出れば実験 A の再解析が可能：本番 13 ラン ＋ ローカルの smoke 1 つ。0 なら §3 のコピーか raiden での再生成が要る）
 
 ```
 uv run pytest tests/test_shift_decomp.py -q
 ```
 
-（35 本中の解析テストが通れば、torch 無しの解析環境として使える）
+（**9 本**すべて通れば、torch 無しの解析環境として使える。リポジトリ全体は 35 本だが、残りはモデルを構築するので torch が要る）
 
 ```
 uv run papermill notebooks/05_shift_decomposition.ipynb /tmp/check.ipynb
