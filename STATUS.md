@@ -1,5 +1,5 @@
 ---
-updated: 2026-10-21T12:00:00+09:00
+updated: 2026-10-21T12:30:00+09:00
 state: review
 waiting_on: me
 phase: writing
@@ -9,12 +9,14 @@ phase: writing
 
 ## 現状サマリ
 
-研究全体を論文形式の草稿 v0.2 にまとめた（commit 済み）（`results/manuscript_draft.md`）。最有望は「出力整合（年齢+疑い）＋有意性ゲート k=2.5, N_min=20」で、ポータル定義案も草稿 5 章に入れた。
+研究全体を論文形式の草稿 v0.3 にまとめた（`results/manuscript_draft.md`）。最有望は「出力整合（年齢+疑い）＋有意性ゲート k=2.5, N_min=20」で、ポータル定義案も草稿 5 章に入れた。
 草稿のレビューと、k・N_min の採否が人の判断待ち。
 
 ## 進行中
 
-- 草稿 v0.2 のレビュー `@me` — `results/manuscript_draft.md`（データ・目的・実験・較正補正の比較・ポータル定義案）
+- 草稿 v0.3 のレビュー `@me` — `results/manuscript_draft.md`（データ・目的・実験・較正補正の比較・ポータル定義案）
+- 年齢のみモデルの較正（08）を Raiden で実行 `@me` — `notebooks/08_age_baseline_calibration.ipynb`（ロジックは `scripts/age_baseline_calibration.py`）。
+  年齢のみ・画像・画像 + 年齢の ECE / 較正切片 / スロープを 9 ユニットで出す。未実行（この環境では Python が動かない）。結果が届いたら草稿 3.2 節に表と図を入れる `@ai`
 - 07 の結果の判定 `@me` — `results/gated_correction.md`、図 `results/figures/gated_correction_{fire,ece}.png`
 
 ## ブロッカー・要判断
@@ -45,13 +47,13 @@ phase: writing
 - 出力整合 06 の判定事項（害の定義・vendor・field 比方式の逆符号）→ 07 の仕様として回答を受領
 - **出力整合**（ラベル無し切片推定）の実装と 3 評価 → `openidh_model/eval/output_matching.py`、`notebooks/06_output_matching.ipynb`、`results/output_matching.{md,json}`
 - **有意性ゲート**の実装と評価 → `openidh_model/eval/gated_correction.py`、`notebooks/07_gated_correction.ipynb`、`results/gated_correction.{md,json}`
-- **論文形式の総まとめ草稿 v0.1** → `results/manuscript_draft.md`（2026-10-20、Discord 依頼。既存レポートからの転記のみで、新しい計算はしていない）。v0.2 で図 12 枚（notebook 由来 5、Stage B レポート由来 5、新規作図 2：`results/figures/model_architecture.svg`・`beta_width.svg`）。モデル詳説（2.3）と「なぜ Beta 分布か」（2.4）を追加し、数式を $$ ブロックとプレーン表記に統一
+- **論文形式の総まとめ草稿 v0.1** → `results/manuscript_draft.md`（2026-10-20、Discord 依頼。既存レポートからの転記のみで、新しい計算はしていない）。v0.2 で図 12 枚。v0.3 で「画像を使わないモデル（年齢のみ）との比較」を 2.8・3.2 節に独立させた（既存結果 `results/age_prior.json` の転記）。v0.2 の内訳は図 12 枚（notebook 由来 5、Stage B レポート由来 5、新規作図 2：`results/figures/model_architecture.svg`・`beta_width.svg`）。モデル詳説（2.3）と「なぜ Beta 分布か」（2.4）を追加し、数式を $$ ブロックとプレーン表記に統一
 
 ## 次にやるべきこと（AI 提案）
 
 次のセッションの人が最初に読む前提で書く。全体像はまず `results/manuscript_draft.md`、詳細は `results/gated_correction.md`、`results/output_matching.md`。
 
-0. **草稿へのコメントを受けて改稿する**。k・N_min が確定したら 3.4 節・6 章の `【要判断】` を外す。疑いの代用（確定 grade の 2 値化）と vendor の書き方を確認してもらう
+0. **草稿へのコメントを受けて改稿する**。k・N_min が確定したら 3.5 節・6 章の `【要判断】` を外す。疑いの代用（確定 grade の 2 値化）と vendor の書き方を確認してもらう
 
 1. **k・N_min の判定を受けて、レポート本文を更新する**（判定後）。書き方の指示は 2026-09-28 の Discord 4/4 にある：
    「oracle 超え」ではなく「ラベル 0 で下限に到達」と書く／vendor の微悪化を原因（係留点の誤差：π̂_cov 30.9% 対 真値 35.0%）とともに限界事項へ入れ、ゲート後の変化（P(害) 81→3%）を追記／
