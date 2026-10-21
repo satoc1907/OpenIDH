@@ -1,5 +1,5 @@
 ---
-updated: 2026-10-21T14:10:00+09:00
+updated: 2026-10-21T14:35:00+09:00
 state: review
 waiting_on: me
 phase: writing
@@ -17,7 +17,8 @@ notebook 08（年齢のみモデルの較正）は Raiden で実行し、結果�
 
 - 草稿 v0.4 のレビュー `@me` — `results/manuscript_draft.md`（3.2 節に 08 の較正の表と図8 を追加。データ・目的・実験・較正補正の比較・ポータル定義案）
 - 非専門家向け要約版のレビュー `@me` — `results/manuscript_summary_lay.md`（2026-10-21、Discord 依頼。草稿 v0.4 からの転記のみ。数式・専門用語なし、末尾に用語表）
-- **push** `@me` — STATUS・草稿 v0.4・要約版の commit がローカルにある。この環境には GitHub の認証が無く、push できなかった。Mac で `git push`
+- **Marp スライド（16:9）のレビュー** `@me` — 詳しい版 `results/slides/openidh_detailed.md`（22 枚）、要約版 `results/slides/openidh_lay.md`（13 枚）。2026-10-21、Discord 依頼。この環境では Chromium が起動せず、PNG/PDF での見た目は未確認（HTML 変換は通る）。文字のはみ出しを手元で確認してほしい
+- **push** `@me` — STATUS・草稿 v0.4・要約版・スライドの commit がローカルにある。この環境には GitHub の認証が無く、push できなかった。Mac で `git push`
 - 07 の結果の判定 `@me` — `results/gated_correction.md`、図 `results/figures/gated_correction_{fire,ece}.png`
 
 ## ブロッカー・要判断
@@ -60,7 +61,7 @@ notebook 08（年齢のみモデルの較正）は Raiden で実行し、結果�
 
 次のセッションの人が最初に読む前提で書く。全体像はまず `results/manuscript_draft.md`、詳細は `results/gated_correction.md`、`results/output_matching.md`。
 
-0. **草稿 v0.4 へのコメントを受けて改稿する**。要約版（`results/manuscript_summary_lay.md`）も、草稿を直したら合わせて直す。k・N_min が確定したら 3.5 節・6 章の `【要判断】` を外す。疑いの代用（確定 grade の 2 値化）と vendor の書き方を確認してもらう
+0. **草稿 v0.4 へのコメントを受けて改稿する**。要約版（`results/manuscript_summary_lay.md`）とスライド 2 本（`results/slides/`）も、草稿を直したら合わせて直す。k・N_min が確定したら 3.5 節・6 章の `【要判断】` を外す。疑いの代用（確定 grade の 2 値化）と vendor の書き方を確認してもらう
 
 1. **k・N_min の判定を受けて、レポート本文を更新する**（判定後）。書き方の指示は 2026-09-28 の Discord 4/4 にある：
    「oracle 超え」ではなく「ラベル 0 で下限に到達」と書く／vendor の微悪化を原因（係留点の誤差：π̂_cov 30.9% 対 真値 35.0%）とともに限界事項へ入れ、ゲート後の変化（P(害) 81→3%）を追記／
