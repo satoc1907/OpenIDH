@@ -1,5 +1,5 @@
 ---
-updated: 2026-10-21T12:30:00+09:00
+updated: 2026-10-21T12:40:00+09:00
 state: review
 waiting_on: me
 phase: writing
@@ -9,14 +9,20 @@ phase: writing
 
 ## 現状サマリ
 
-研究全体を論文形式の草稿 v0.3 にまとめた（`results/manuscript_draft.md`）。最有望は「出力整合（年齢+疑い）＋有意性ゲート k=2.5, N_min=20」で、ポータル定義案も草稿 5 章に入れた。
-草稿のレビューと、k・N_min の採否が人の判断待ち。
+論文形式の草稿 v0.3（`results/manuscript_draft.md`）まで commit 済み。最有望は「出力整合（年齢+疑い）＋有意性ゲート k=2.5, N_min=20」。
+年齢のみモデルの較正を測る notebook 08 を書いたが未実行で、Raiden での実行待ち。**main は origin より 11 commit 先行（未 push）**。
+草稿のレビューと k・N_min の採否が人の判断待ち。
 
 ## 進行中
 
 - 草稿 v0.3 のレビュー `@me` — `results/manuscript_draft.md`（データ・目的・実験・較正補正の比較・ポータル定義案）
-- 年齢のみモデルの較正（08）を Raiden で実行 `@me` — `notebooks/08_age_baseline_calibration.ipynb`（ロジックは `scripts/age_baseline_calibration.py`）。
-  年齢のみ・画像・画像 + 年齢の ECE / 較正切片 / スロープを 9 ユニットで出す。未実行（この環境では Python が動かない）。結果が届いたら草稿 3.2 節に表と図を入れる `@ai`
+- **年齢のみモデルの較正（08）を Raiden で実行** `@me` — `notebooks/08_age_baseline_calibration.ipynb`（ロジックは `scripts/age_baseline_calibration.py`、テストは `tests/test_age_baseline_calibration.py`）。
+  年齢のみ・画像・画像 + 年齢の AUC / ECE / NLL / Brier / 較正切片 / 較正スロープを 9 ユニットで出し、信頼度図を描く。
+  **一度も実行していない**（書いた環境では Python が動かなかった）。Raiden へ持っていくには先に push が要る。手順（リポ root、ログインノードで可）：
+  `uv run --frozen pytest -q tests/test_age_baseline_calibration.py`（4 passed）→
+  `OPENIDH_PATHS=configs/paths.hpc.yaml uv run --frozen papermill notebooks/08_age_baseline_calibration.ipynb notebooks/08_age_baseline_calibration.ipynb`。
+  検算セルで AUC が `age_prior.json` と一致（差 < 1e-9）し、predictions.csv が 9 ユニット × 3 seed そろうことを assert する
+- 08 の結果を草稿 3.2 節に表と図として入れる `@ai` — 08 の実行後。出力は `results/age_baseline_calibration.{json,md}`、`results/figures/age_baseline_reliability.png`
 - 07 の結果の判定 `@me` — `results/gated_correction.md`、図 `results/figures/gated_correction_{fire,ece}.png`
 
 ## ブロッカー・要判断
@@ -47,13 +53,20 @@ phase: writing
 - 出力整合 06 の判定事項（害の定義・vendor・field 比方式の逆符号）→ 07 の仕様として回答を受領
 - **出力整合**（ラベル無し切片推定）の実装と 3 評価 → `openidh_model/eval/output_matching.py`、`notebooks/06_output_matching.ipynb`、`results/output_matching.{md,json}`
 - **有意性ゲート**の実装と評価 → `openidh_model/eval/gated_correction.py`、`notebooks/07_gated_correction.ipynb`、`results/gated_correction.{md,json}`
-- **論文形式の総まとめ草稿 v0.1** → `results/manuscript_draft.md`（2026-10-20、Discord 依頼。既存レポートからの転記のみで、新しい計算はしていない）。v0.2 で図 12 枚。v0.3 で「画像を使わないモデル（年齢のみ）との比較」を 2.8・3.2 節に独立させた（既存結果 `results/age_prior.json` の転記）。v0.2 の内訳は図 12 枚（notebook 由来 5、Stage B レポート由来 5、新規作図 2：`results/figures/model_architecture.svg`・`beta_width.svg`）。モデル詳説（2.3）と「なぜ Beta 分布か」（2.4）を追加し、数式を $$ ブロックとプレーン表記に統一
+- **論文形式の総まとめ草稿** → `results/manuscript_draft.md`（2026-10-20〜21、Discord 依頼。既存レポートからの転記のみで、新しい計算はしていない）
+  - v0.1：データ・目的・実験・較正補正の比較・ポータル定義案
+  - v0.2：図 12 枚（notebook 由来 5、Stage B レポート由来 5、新規作図 2：`results/figures/model_architecture.svg`・`beta_width.svg`）。モデル詳説（2.3）と「なぜ Beta 分布か」（2.4）を追加し、数式を $$ ブロックとプレーン表記に統一
+  - v0.3：「画像を使わないモデル（年齢のみ）との比較」を 2.8・3.2 節に独立（`results/age_prior.json` の AUC の転記。年齢 1 変数のみで、性別は未評価）。旧 3.2〜3.4 節は 3.3〜3.5 節へ
+  - commit：5ae5d6b（v0.2）、f978f43（v0.3）、12186b0（08 のコード）、21e5e09（STATUS）。push はまだ
 
 ## 次にやるべきこと（AI 提案）
 
 次のセッションの人が最初に読む前提で書く。全体像はまず `results/manuscript_draft.md`、詳細は `results/gated_correction.md`、`results/output_matching.md`。
 
-0. **草稿へのコメントを受けて改稿する**。k・N_min が確定したら 3.5 節・6 章の `【要判断】` を外す。疑いの代用（確定 grade の 2 値化）と vendor の書き方を確認してもらう
+0. **push して Raiden で 08 を回す**（上の「進行中」の手順）。結果が戻ったら草稿 3.2 節に較正の表と図を入れる。
+   見どころ：分布外で年齢のみの ECE が画像モデルより小さいか／年齢のみの較正切片（LOSO-B では予測平均 19.5% 対 実際 28.4% なので +0.5 前後の見込み）／画像 + 年齢のスロープが 1 を割るか（足し算による過信）
+
+0'. **草稿へのコメントを受けて改稿する**。k・N_min が確定したら 3.5 節・6 章の `【要判断】` を外す。疑いの代用（確定 grade の 2 値化）と vendor の書き方を確認してもらう
 
 1. **k・N_min の判定を受けて、レポート本文を更新する**（判定後）。書き方の指示は 2026-09-28 の Discord 4/4 にある：
    「oracle 超え」ではなく「ラベル 0 で下限に到達」と書く／vendor の微悪化を原因（係留点の誤差：π̂_cov 30.9% 対 真値 35.0%）とともに限界事項へ入れ、ゲート後の変化（P(害) 81→3%）を追記／
