@@ -1,5 +1,5 @@
 ---
-updated: 2026-10-21T13:40:00+09:00
+updated: 2026-10-21T13:55:00+09:00
 state: review
 waiting_on: me
 phase: writing
@@ -9,14 +9,14 @@ phase: writing
 
 ## 現状サマリ
 
-論文形式の草稿 v0.3（`results/manuscript_draft.md`）まで commit 済み。最有望は「出力整合（年齢+疑い）＋有意性ゲート k=2.5, N_min=20」。
+論文形式の草稿 v0.4（`results/manuscript_draft.md`）まで commit 済み。最有望は「出力整合（年齢+疑い）＋有意性ゲート k=2.5, N_min=20」。
 notebook 08（年齢のみモデルの較正）は Raiden で実行し、結果は取り込み済み（e0efc92）。OOD の平均 ECE は 年齢のみ 0.068 < 画像 + 年齢 0.073 < 画像 0.104。画像 + 年齢はスロープ 0.60〜0.84 で過信。
 草稿のレビューと k・N_min の採否が人の判断待ち。
 
 ## 進行中
 
-- 草稿 v0.3 のレビュー `@me` — `results/manuscript_draft.md`（データ・目的・実験・較正補正の比較・ポータル定義案）
-- 08 の結果を草稿 3.2 節に表と図として入れる `@ai` — Discord で可否を確認中。出力は `results/age_baseline_calibration.{json,md}`、`results/figures/age_baseline_reliability.png`
+- 草稿 v0.4 のレビュー `@me` — `results/manuscript_draft.md`（3.2 節に 08 の較正の表と図8 を追加。データ・目的・実験・較正補正の比較・ポータル定義案）
+- **push** `@me` — STATUS と草稿 v0.4 の commit がローカルにある。この環境には GitHub の認証が無く、push できなかった。Mac で `git push`
 - 07 の結果の判定 `@me` — `results/gated_correction.md`、図 `results/figures/gated_correction_{fire,ece}.png`
 
 ## ブロッカー・要判断
@@ -51,6 +51,7 @@ notebook 08（年齢のみモデルの較正）は Raiden で実行し、結果�
   - v0.1：データ・目的・実験・較正補正の比較・ポータル定義案
   - v0.2：図 12 枚（notebook 由来 5、Stage B レポート由来 5、新規作図 2：`results/figures/model_architecture.svg`・`beta_width.svg`）。モデル詳説（2.3）と「なぜ Beta 分布か」（2.4）を追加し、数式を $$ ブロックとプレーン表記に統一
   - v0.3：「画像を使わないモデル（年齢のみ）との比較」を 2.8・3.2 節に独立（`results/age_prior.json` の AUC の転記。年齢 1 変数のみで、性別は未評価）。旧 3.2〜3.4 節は 3.3〜3.5 節へ
+  - v0.4：08 の較正結果を 3.2 節に表と図8（`results/figures/age_baseline_reliability.png`）として追加。旧図8〜12 は図9〜13 に繰り下げ。要旨・2.8 節・4.3 節・付録にも反映。草稿で初めての新規計算
   - commit：5ae5d6b（v0.2）、f978f43（v0.3）、12186b0（08 のコード）、21e5e09（STATUS）。push 済み（2026-10-21 に origin/main = ea30285 を確認）
 - **notebook 08 を Raiden で実行**（2026-10-21）：テスト 4 passed、papermill 14/14 セル（34 秒）。検算 assert 通過。出力は e0efc92 で push 済み・pull 済み
 
@@ -58,9 +59,7 @@ notebook 08（年齢のみモデルの較正）は Raiden で実行し、結果�
 
 次のセッションの人が最初に読む前提で書く。全体像はまず `results/manuscript_draft.md`、詳細は `results/gated_correction.md`、`results/output_matching.md`。
 
-0. **08 の結果を草稿 3.2 節に表と図として入れる**（Discord で可否を確認中）。要点：OOD で年齢のみの ECE が画像より小さい（0.068 対 0.104）／LOSO-B の年齢のみの切片は +0.99（見込み +0.5 より大きい）／画像 + 年齢のスロープは全ユニットで 1 未満（in-dist 平均 0.70）。
-
-0'. **草稿へのコメントを受けて改稿する**。k・N_min が確定したら 3.5 節・6 章の `【要判断】` を外す。疑いの代用（確定 grade の 2 値化）と vendor の書き方を確認してもらう
+0. **草稿 v0.4 へのコメントを受けて改稿する**。k・N_min が確定したら 3.5 節・6 章の `【要判断】` を外す。疑いの代用（確定 grade の 2 値化）と vendor の書き方を確認してもらう
 
 1. **k・N_min の判定を受けて、レポート本文を更新する**（判定後）。書き方の指示は 2026-09-28 の Discord 4/4 にある：
    「oracle 超え」ではなく「ラベル 0 で下限に到達」と書く／vendor の微悪化を原因（係留点の誤差：π̂_cov 30.9% 対 真値 35.0%）とともに限界事項へ入れ、ゲート後の変化（P(害) 81→3%）を追記／
