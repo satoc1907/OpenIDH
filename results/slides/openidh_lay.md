@@ -1,5 +1,5 @@
 ---
-marp: true
+marp: false
 size: 16:9
 paginate: true
 header: 'OpenIDH — 要約版'

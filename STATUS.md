@@ -1,5 +1,5 @@
 ---
-updated: 2026-10-21T14:35:00+09:00
+updated: 2026-10-22T12:40:00+09:00
 state: review
 waiting_on: me
 phase: writing
@@ -18,6 +18,7 @@ notebook 08（年齢のみモデルの較正）は Raiden で実行し、結果�
 - 草稿 v0.4 のレビュー `@me` — `results/manuscript_draft.md`（3.2 節に 08 の較正の表と図8 を追加。データ・目的・実験・較正補正の比較・ポータル定義案）
 - 非専門家向け要約版のレビュー `@me` — `results/manuscript_summary_lay.md`（2026-10-21、Discord 依頼。草稿 v0.4 からの転記のみ。数式・専門用語なし、末尾に用語表）
 - **Marp スライド（16:9）のレビュー** `@me` — 詳しい版 `results/slides/openidh_detailed.md`（22 枚）、要約版 `results/slides/openidh_lay.md`（13 枚）。2026-10-21、Discord 依頼。この環境では Chromium が起動せず、PNG/PDF での見た目は未確認（HTML 変換は通る）。文字のはみ出しを手元で確認してほしい
+- **EGD の外部評価（推論のみ）の準備** `@me` → `@ext` — データ管理リポジトリの AI 向けの依頼プロンプトを Discord で渡した（2026-10-22）。依頼内容：v1.0.0 と同じ前処理の画像、`EGD_metadata_openidh.csv`（IDH は Mut/WT/NA と変換前の値、NA も全例残す）、集計、利用条件（DUA）の原文。成果物が届いたら `@ai` が site 追加・推論・評価のスクリプトを書く。NCC はその後
 - **push** `@me` — STATUS・草稿 v0.4・要約版・スライドの commit がローカルにある。この環境には GitHub の認証が無く、push できなかった。Mac で `git push`
 - 07 の結果の判定 `@me` — `results/gated_correction.md`、図 `results/figures/gated_correction_{fire,ece}.png`
 
