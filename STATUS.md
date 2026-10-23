@@ -1,5 +1,5 @@
 ---
-updated: 2026-10-23T09:45:00+09:00
+updated: 2026-10-23T09:55:00+09:00
 state: review
 waiting_on: me
 phase: writing
@@ -18,7 +18,8 @@ notebook 08（年齢のみモデルの較正）は Raiden で実行し、結果�
 - 草稿 v0.4 のレビュー `@me` — `results/manuscript_draft.md`（3.2 節に 08 の較正の表と図8 を追加。データ・目的・実験・較正補正の比較・ポータル定義案）
 - 非専門家向け要約版のレビュー `@me` — `results/manuscript_summary_lay.md`（2026-10-21、Discord 依頼。草稿 v0.4 からの転記のみ。数式・専門用語なし、末尾に用語表）
 - **Marp スライド（16:9）のレビュー** `@me` — 詳しい版 `results/slides/openidh_detailed.md`（22 枚）、要約版 `results/slides/openidh_lay.md`（13 枚）。2026-10-21、Discord 依頼。この環境では Chromium が起動せず、PNG/PDF での見た目は未確認（HTML 変換は通る）。文字のはみ出しを手元で確認してほしい
-- **EGD の外部評価（推論のみ）** `@me` — データ管理側の報告が `DataRepoReport/egd_openidh/` に届いた（2026-10-23、未追跡。**EGD のラベルを含み、利用条件が再配布を禁じ、GitHub は公開なので commit しない**）。QC 通過 730 例、IDH 既知 441 例（Mut 145 / WT 296、32.9%）。向き（RAS→LPS）と生データ破損 44 例は修正済み。要判断：破損 44 例の再取得（推奨）、LPS での全例再処理（不要と回答）、Raiden に置くことの可否、データ管理側の commit 先、`.gitignore` に EGD 関連を足すか。決まれば `@ai` が site 追加と推論・評価を書く（年齢欠損 38 例は tabular を外して推論）
+- **EGD の外部評価（推論のみ）・一時停止** `@me` — 破損 44 例をユーザが再ダウンロード中（2026-10-23 決定。時間がかかる）。再取得分は残り 730 例と同じ手順（RAS のまま処理 → 後で LPS に反転）で処理してもらう。データ管理側の報告が `DataRepoReport/egd_openidh/` に届いた（2026-10-23、未追跡。**EGD のラベルを含み、利用条件が再配布を禁じ、GitHub は公開なので commit しない**）。QC 通過 730 例、IDH 既知 441 例（Mut 145 / WT 296、32.9%）。向き（RAS→LPS）と生データ破損 44 例は修正済み。残る要判断：Raiden に置くことの可否、データ管理側の commit 先、`.gitignore` に EGD 関連を足すか。決まれば `@ai` が site 追加と推論・評価を書く（年齢欠損 38 例は tabular を外して推論）
+- **NCC の外部評価の準備** `@me` — データ管理側 AI 向けの依頼プロンプトの案を Discord で渡した（2026-10-23）。EGD 版に、個人情報の取り扱い・向き（LPS）と生データ破損の確認・IDH 判定方法（R132H 免疫染色のみの例を分ける）・WHO の版・術前検査のみかの確認を足した。返事待ち：データ管理の担当、既存の `v1.0.0/ncc/` の有無、NCC について分かっていること
 - **push** `@me` — STATUS・草稿 v0.4・要約版・スライドの commit がローカルにある。この環境には GitHub の認証が無く、push できなかった。Mac で `git push`
 - 07 の結果の判定 `@me` — `results/gated_correction.md`、図 `results/figures/gated_correction_{fire,ece}.png`
 
