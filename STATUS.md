@@ -1,5 +1,5 @@
 ---
-updated: 2026-10-23T10:35:00+09:00
+updated: 2026-10-28T14:00:00+09:00
 state: review
 waiting_on: me
 phase: writing
@@ -17,10 +17,10 @@ notebook 08（年齢のみモデルの較正）は Raiden で実行し、結果�
 
 - 草稿 v0.4 のレビュー `@me` — `results/manuscript_draft.md`（3.2 節に 08 の較正の表と図8 を追加。データ・目的・実験・較正補正の比較・ポータル定義案）
 - 非専門家向け要約版のレビュー `@me` — `results/manuscript_summary_lay.md`（2026-10-21、Discord 依頼。草稿 v0.4 からの転記のみ。数式・専門用語なし、末尾に用語表）
-- **Marp スライド（16:9）のレビュー** `@me` — 詳しい版 `results/slides/openidh_detailed.md`（22 枚）、要約版 `results/slides/openidh_lay.md`（13 枚）。2026-10-21、Discord 依頼。この環境では Chromium が起動せず、PNG/PDF での見た目は未確認（HTML 変換は通る）。文字のはみ出しを手元で確認してほしい
+- **Marp スライド（16:9）のレビュー** `@me` — 詳しい版 `results/slides/openidh_detailed.md`（22 枚）、要約版 `results/slides/openidh_lay.md`（13 枚）。2026-10-21、Discord 依頼。この環境では Chromium が起動しない。ユーザが手元で PPTX（10-21）と PDF（10-23）に書き出し済み（`results/slides/*.{pptx,pdf}`、未追跡）。文字のはみ出しの確認結果と、書き出し物を commit するかは未回答
 - **EGD の外部評価（推論のみ）・一時停止** `@me` — 破損 44 例をユーザが再ダウンロード中（2026-10-23 決定。時間がかかる）。再取得分は残り 730 例と同じ手順（RAS のまま処理 → 後で LPS に反転）で処理してもらう。データ管理側の報告が `DataRepoReport/egd_openidh/` に届いた（2026-10-23、未追跡。**EGD のラベルを含み、利用条件が再配布を禁じ、GitHub は公開なので commit しない**）。QC 通過 730 例、IDH 既知 441 例（Mut 145 / WT 296、32.9%）。向き（RAS→LPS）と生データ破損 44 例は修正済み。残る要判断：Raiden に置くことの可否、データ管理側の commit 先、`.gitignore` に EGD 関連を足すか。決まれば `@ai` が site 追加と推論・評価を書く（年齢欠損 38 例は tabular を外して推論）
-- **NCC の外部評価の準備** `@me` — ローカル LLM で整形する方針（画像は前処理済み、メタデータは独自形式の CSV）。スキル `ncc-openidh-prep`（SKILL.md、mapping_template.yaml、scripts/{inspect_csv,build_metadata,check_images,summarize}.py）を Discord で渡した（2026-10-23）。LLM は対応表と報告書だけを書き、変換・検査はスクリプトが行う。架空データでは全スクリプトが通ったが、本物の NCC では未実行。リポジトリには入れていない。ユーザがローカル LLM を選定中（2026-10-23）：求める能力（ツール呼び出しの安定、禁止事項の保持、日本語の医療用語、推測しない、完全オフライン）と、架空データの試験キット `ncc-llm-trial`（採点表 10 項目、必須 4）を渡した。成果物（NCC_metadata_openidh.csv・検査結果・報告書）が届いたら `@ai` が site 追加と推論・評価を書く
-- **push** `@me` — STATUS・草稿 v0.4・要約版・スライドの commit がローカルにある。この環境には GitHub の認証が無く、push できなかった。Mac で `git push`
+- **NCC の外部評価の準備** `@me` — ローカル LLM で整形する方針（画像は前処理済み、メタデータは独自形式の CSV）。スキル `ncc-openidh-prep`（SKILL.md、mapping_template.yaml、scripts/{inspect_csv,build_metadata,check_images,summarize}.py）を Discord で渡した（2026-10-23）。LLM は対応表と報告書だけを書き、変換・検査はスクリプトが行う。架空データでは全スクリプトが通ったが、本物の NCC では未実行。リポジトリには入れていない。ユーザがローカル LLM を選定・インストール中（2026-10-23〜。10-28 時点で試験結果の連絡なし）：求める能力（ツール呼び出しの安定、禁止事項の保持、日本語の医療用語、推測しない、完全オフライン）と、架空データの試験キット `ncc-llm-trial`（採点表 10 項目、必須 4）を渡した。成果物（NCC_metadata_openidh.csv・検査結果・報告書）が届いたら `@ai` が site 追加と推論・評価を書く
+- **push** `@me` — STATUS・草稿 v0.4・要約版・スライドの commit がローカルにある。この環境には GitHub の認証が無く、push できない。2026-10-28 に fetch して確認：まだ origin/main より 9 commit 先行（未 push）。Mac で `git push`
 - 07 の結果の判定 `@me` — `results/gated_correction.md`、図 `results/figures/gated_correction_{fire,ece}.png`
 
 ## ブロッカー・要判断
