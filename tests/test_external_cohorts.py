@@ -51,16 +51,17 @@ def test_select_japan_drops_flags_but_not_2021_only():
         ["1001", "60", "M", "Mut", 1, 1, 1, 1, 1, "true", "clinical_from_2021_only"],  # kept
         ["1002", "60", "M", "WT", 1, 1, 1, 0, 1, "true", ""],                          # kept, not all4
         ["1003", "60", "M", "WT", 1, 1, 1, 1, 1, "true", "dup_id_in_master2021"],
+        ["1007", "60", "M", "WT", 1, 1, 1, 1, 1, "true", "patho_FALSE_2019"],         # kept
         ["1004", "17", "F", "WT", 1, 1, 1, 1, 1, "true", "clinical_from_2021_only;age_under18"],
         ["1005", "60", "M", "NA", 1, 1, 1, 1, 1, "true", ""],
         ["1006", "60", "M", "WT", 1, 1, 1, 1, 0, "false", ""],
     ], extra=["label_flag"])
     kept, drop = bes.select(df, "Japan")
-    assert list(kept.subject_id) == ["1001", "1002"]
+    assert list(kept.subject_id) == ["1001", "1002", "1007"]
     assert drop == {"qc_passed is not true": 1, "IDH not Mut/WT": 1, "no primary seg": 0,
                     "label_flag needs checking": 2}
     split = bes.to_split(kept, "Japan")
-    assert list(split.all4) == [1, 0]
+    assert list(split.all4) == [1, 0, 1]
     assert set(split.split_role) == {"test"} and set(split.site) == {"Japan"}
 
 

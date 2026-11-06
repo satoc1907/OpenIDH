@@ -35,9 +35,12 @@ from openidh_model.utils.paths import load_paths  # noqa: E402
 
 SEQS = ["T1", "T2", "FLAIR", "T1c"]
 # label_flag values that mean "check this case before using its label"
-# (Japan report §3-2). clinical_from_2021_only is NOT one: 77 of the 620 are 2021-only.
+# (Japan report §3-2; JAPAN_ISSUES.md §4 lists age_under18 as still to confirm).
+# Not among them: clinical_from_2021_only (77 of the 620 are 2021-only) and
+# patho_FALSE_2019 (the FALSE histology was filled from the 2021 file — resolved).
+# Checked on Raiden 2026-11-06: with this set the count is the report's 620.
 JAPAN_CHECK_FLAGS = {
-    "no_clinical", "dup_id_in_master2021", "patho_FALSE_2019", "age_under18",
+    "no_clinical", "dup_id_in_master2021", "age_under18",
     "excluded_in_master2021", "on_hold_in_master2021", "idh_uncertain",
 }
 EXPECTED = {"EGD": (467, 155, 312), "Japan": (620, 175, 445)}
