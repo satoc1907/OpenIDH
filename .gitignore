@@ -73,3 +73,14 @@ Thumbs.db
 .vscode/
 *.swp
 .env
+
+# ─────────────────────────────────────────────────────────────
+# External-validation cohorts (EGD, Japan) — NOT tracked
+#   Labels + per-case clinical values; EGD terms forbid redistribution and
+#   Japan is confidential. The repo is public, so these never enter git.
+#   Stage them on the HPC by hand (scp), not via git clone.
+# ─────────────────────────────────────────────────────────────
+data/metadata/EGD_*
+data/metadata/Japan_*
+data/report/
+DataRepoReport/
