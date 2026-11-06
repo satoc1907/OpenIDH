@@ -1,26 +1,28 @@
 ---
-updated: 2026-10-28T14:00:00+09:00
+updated: 2026-11-06T13:35:00+09:00
 state: review
 waiting_on: me
-phase: writing
+phase: dev
 ---
 
 # OpenIDH — 現況
 
 ## 現状サマリ
 
-論文形式の草稿 v0.4（`results/manuscript_draft.md`）まで commit 済み。最有望は「出力整合（年齢+疑い）＋有意性ゲート k=2.5, N_min=20」。
-notebook 08（年齢のみモデルの較正）は Raiden で実行し、結果は取り込み済み（e0efc92）。OOD の平均 ECE は 年齢のみ 0.068 < 画像 + 年齢 0.073 < 画像 0.104。画像 + 年齢はスロープ 0.60〜0.84 で過信。
-草稿のレビューと k・N_min の採否が人の判断待ち。
+外部評価（EGD・Japan）のコードを commit した（8e17f76、未 push）。LOSO-A/B の 6 モデルを Raiden で推論・評価する。
+EGD は 774 例すべて QC 通過（IDH 既知 467）、Japan（旧 NCC）は 620 例が評価候補。どちらも Raiden に配置済み。
+人の番：push → Raiden でのジョブ実行。あわせて草稿 v0.4 のレビューと、k・N_min の採否が判断待ち。
 
 ## 進行中
 
 - 草稿 v0.4 のレビュー `@me` — `results/manuscript_draft.md`（3.2 節に 08 の較正の表と図8 を追加。データ・目的・実験・較正補正の比較・ポータル定義案）
 - 非専門家向け要約版のレビュー `@me` — `results/manuscript_summary_lay.md`（2026-10-21、Discord 依頼。草稿 v0.4 からの転記のみ。数式・専門用語なし、末尾に用語表）
 - **Marp スライド（16:9）のレビュー** `@me` — 詳しい版 `results/slides/openidh_detailed.md`（22 枚）、要約版 `results/slides/openidh_lay.md`（13 枚）。2026-10-21、Discord 依頼。この環境では Chromium が起動しない。ユーザが手元で PPTX（10-21）と PDF（10-23）に書き出し済み（`results/slides/*.{pptx,pdf}`、未追跡）。文字のはみ出しの確認結果と、書き出し物を commit するかは未回答
-- **EGD の外部評価（推論のみ）・一時停止** `@me` — 破損 44 例をユーザが再ダウンロード中（2026-10-23 決定。時間がかかる）。再取得分は残り 730 例と同じ手順（RAS のまま処理 → 後で LPS に反転）で処理してもらう。データ管理側の報告が `DataRepoReport/egd_openidh/` に届いた（2026-10-23、未追跡。**EGD のラベルを含み、利用条件が再配布を禁じ、GitHub は公開なので commit しない**）。QC 通過 730 例、IDH 既知 441 例（Mut 145 / WT 296、32.9%）。向き（RAS→LPS）と生データ破損 44 例は修正済み。残る要判断：Raiden に置くことの可否、データ管理側の commit 先、`.gitignore` に EGD 関連を足すか。決まれば `@ai` が site 追加と推論・評価を書く（年齢欠損 38 例は tabular を外して推論）
-- **NCC の外部評価の準備** `@me` — ローカル LLM で整形する方針（画像は前処理済み、メタデータは独自形式の CSV）。スキル `ncc-openidh-prep`（SKILL.md、mapping_template.yaml、scripts/{inspect_csv,build_metadata,check_images,summarize}.py）を Discord で渡した（2026-10-23）。LLM は対応表と報告書だけを書き、変換・検査はスクリプトが行う。架空データでは全スクリプトが通ったが、本物の NCC では未実行。リポジトリには入れていない。ユーザがローカル LLM を選定・インストール中（2026-10-23〜。10-28 時点で試験結果の連絡なし）：求める能力（ツール呼び出しの安定、禁止事項の保持、日本語の医療用語、推測しない、完全オフライン）と、架空データの試験キット `ncc-llm-trial`（採点表 10 項目、必須 4）を渡した。成果物（NCC_metadata_openidh.csv・検査結果・報告書）が届いたら `@ai` が site 追加と推論・評価を書く
-- **push** `@me` — STATUS・草稿 v0.4・要約版・スライドの commit がローカルにある。この環境には GitHub の認証が無く、push できない。2026-10-28 に fetch して確認：まだ origin/main より 9 commit 先行（未 push）。Mac で `git push`
+- **外部評価（EGD・Japan、推論のみ）の実行** `@me` — 2026-11-06、Discord 依頼。対象は LOSO-A/B の 6 モデル（`foldA_s0-2`, `foldB_s0-2`）。コードは 8e17f76：`scripts/build_external_splits.py`（評価リスト。報告書の症例数と違えば止まる）、`scripts/eval_external.py`、`qsub/eval_external.sh`。年齢・性別が欠けた症例は tabular ヘッドを外して推論する（学習 3 施設は欠損 0 なので既存の結果は不変）。手順：Mac で push と `scp data/metadata/EGD_metadata_openidh.csv raiden:/home/satoc/data/OpenIDH/metadata/` → Raiden で `git pull` → `build_external_splits.py` で症例数を確認 → 試しに `qsub -v RUNS=foldA_s0,COHORTS=EGD qsub/eval_external.sh` → 本番 `qsub qsub/eval_external.sh`。出力は `/home/satoc/data/OpenIDH/external_eval/`。`summary.md` を貼ってもらえば `@ai` が読む。`predictions.csv` はラベルを含むので Raiden から出さない
+  - EGD：データ管理側の報告（`data/report/EGD_openidh_report.md`、11-05 版）によれば、破損 44 例は 10-23 に再取得・再処理済みで、**774 例すべて QC 通過**（IDH 既知 467：Mut 155 / WT 312）。LPS 入力での再処理は不要と 11-05 に確定。手元の CSV で選定を試し、467 例（Mut 155 / WT 312、年齢欠損 42）で報告書と一致した
+  - Japan（旧 NCC）：報告書 `data/report/Japan_openidh_report.md`・`JAPAN_ISSUES.md`（11-05）が届いた。665 例を LPS に修正済み。評価候補は 620 例（Mut 175 / WT 445）、うち 4 シーケンスそろいは 547 例。6 mm 厚の 2D 臨床画像なので、推論のみに使う。メタデータを Raiden に置くことはユーザが許可した（11-06）。**620 例の選定に使う「確認が必要なフラグ」の範囲は報告書からの推定**なので、Raiden で数が合うか確認する
+  - 残る要判断 `@me`：EGD の利用条件の解釈、データ管理側の commit 先、ID 形式、Japan の目視確認、WHO 2021 再分類の確認、H3 K27M 症例の扱い
+- **push** `@me` — origin/main より 13 commit 先行（未 push、2026-11-06 の STATUS commit 時点）。STATUS・草稿 v0.4・要約版・スライド・`.gitignore`・外部評価のコードを含む。この環境には GitHub の認証が無いので、Mac で `git push`
 - 07 の結果の判定 `@me` — `results/gated_correction.md`、図 `results/figures/gated_correction_{fire,ece}.png`
 
 ## ブロッカー・要判断
@@ -35,6 +37,7 @@ notebook 08（年齢のみモデルの較正）は Raiden で実行し、結果�
 
 ## 完了
 
+- **EGD・Japan のファイルを git の追跡対象外にした**（2026-11-06、8063efb）：`data/metadata/EGD_*`、`data/metadata/Japan_*`、`data/report/`、`DataRepoReport/`
 - Stage 0 / A / B（設計・実装・27 ラン学習）。報告書 `results/stageb-report.{html,md}`
 - 較正まわり：温度スケーリング、prior オラクル、EM（失敗と判明）、年齢事前確率、grade 事前確率、CBTRUS 外部事前確率
 - 学習率分割実験、evidence 重みスイープ
@@ -62,6 +65,8 @@ notebook 08（年齢のみモデルの較正）は Raiden で実行し、結果�
 ## 次にやるべきこと（AI 提案）
 
 次のセッションの人が最初に読む前提で書く。全体像はまず `results/manuscript_draft.md`、詳細は `results/gated_correction.md`、`results/output_matching.md`。
+
+0'. **外部評価の結果を読む**。`summary.md` が届いたら、LOSO の元の test と比べて AUC と ECE の落ち方を整理する。Japan は 6 mm 厚の 2D 画像なので、4 シーケンスそろいの 547 例と全 620 例を分けて読む。施設別（`cohort_site`）や、5-fold 15 本での評価が必要かを相談する
 
 0. **草稿 v0.4 へのコメントを受けて改稿する**。要約版（`results/manuscript_summary_lay.md`）とスライド 2 本（`results/slides/`）も、草稿を直したら合わせて直す。k・N_min が確定したら 3.5 節・6 章の `【要判断】` を外す。疑いの代用（確定 grade の 2 値化）と vendor の書き方を確認してもらう
 
