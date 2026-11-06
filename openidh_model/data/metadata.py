@@ -12,9 +12,21 @@ from pathlib import Path
 import pandas as pd
 
 
+# External-validation cohorts (inference only, never trained on): site ->
+# (image folder under data_dir, metadata table). Both tables use the OpenIDH
+# column format (subject_id, age, sex, idh, ...), are not in git, and are read
+# from Paths.external_metadata_dir. Their subject_id is the image folder name.
+EXTERNAL_COHORTS = {
+    "EGD": ("egd", "EGD_metadata_openidh.csv"),
+    "Japan": ("japan_lps", "Japan_metadata_openidh_who2021.csv"),
+}
+
+
 def resolve_subject_dir(data_dir, site: str, subject_id: str) -> Path:
     """Map a split subject_id to its preprocessed volume directory."""
     data_dir = Path(data_dir)
+    if site in EXTERNAL_COHORTS:
+        return data_dir / EXTERNAL_COHORTS[site][0] / str(subject_id)  # MR_EGD-0001 / 2007
     if site == "UTSW":
         return data_dir / "utsw-glioma" / subject_id            # BT0001
     if site == "UPenn":
@@ -61,8 +73,24 @@ def _load_clinical(metadata_dir: str) -> dict:
     return out
 
 
+@lru_cache(maxsize=8)
+def _load_external(metadata_dir: str, site: str) -> dict:
+    """{subject_id: (age, sex)} from an external cohort's OpenIDH-format table."""
+    t = pd.read_csv(Path(metadata_dir) / EXTERNAL_COHORTS[site][1],
+                    dtype={"subject_id": str}, keep_default_na=False)
+    return {r["subject_id"]: (float(pd.to_numeric(r["age"], errors="coerce")),
+                              _sex_to_int(r["sex"]))
+            for _, r in t.iterrows()}
+
+
 def lookup_age_sex(metadata_dir, site: str, subject_id: str):
-    """(age_years, sex_int) for a subject, or (nan, nan) if not found."""
+    """(age_years, sex_int) for a subject, or (nan, nan) if not found.
+
+    For an external cohort, `metadata_dir` is Paths.external_metadata_dir.
+    """
+    if site in EXTERNAL_COHORTS:
+        return _load_external(str(metadata_dir), site).get(
+            str(subject_id), (float("nan"), float("nan")))
     table = _load_clinical(str(metadata_dir))
     if site == "UCSF":
         key = int(re.search(r"(\d+)", subject_id).group(1))

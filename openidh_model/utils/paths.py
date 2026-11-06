@@ -50,9 +50,12 @@ class Paths:
     splits_dir: Path
     weights_dir: Path
     output_dir: Path
+    # Tables of the external-validation cohorts (EGD, Japan). They are not in git
+    # (labels; redistribution not allowed), so they are staged outside the repo.
+    external_metadata_dir: Path | None = None
 
     def as_dict(self) -> dict:
-        return {k: str(v) for k, v in self.__dict__.items()}
+        return {k: str(v) for k, v in self.__dict__.items() if v is not None}
 
 
 def load_paths(paths_file: str | os.PathLike | None = None) -> Paths:
@@ -72,4 +75,6 @@ def load_paths(paths_file: str | os.PathLike | None = None) -> Paths:
         splits_dir=Path(r["splits_dir"]),
         weights_dir=Path(r["weights_dir"]),
         output_dir=Path(r["output_dir"]),
+        external_metadata_dir=(Path(r["external_metadata_dir"])
+                               if r.get("external_metadata_dir") else None),
     )

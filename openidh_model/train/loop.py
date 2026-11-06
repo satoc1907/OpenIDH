@@ -57,6 +57,12 @@ def _forward(model, batch, cfg, training, device, gen, drop=None):
     avail = {m: batch["mask"][m] for m in MODALITIES}
     volume = batch["volume"].to(device)
     tabular = batch["tabular"].to(device)
+    # A missing age or sex takes the tabular head out of the fusion, the way a
+    # missing sequence takes its image head out. Only the external cohorts have
+    # gaps (EGD: age missing in some cases); the training cohorts have none, so
+    # this changes nothing for the training runs.
+    tab_ok = ~torch.isnan(tabular).any(dim=1)
+    tabular = torch.nan_to_num(tabular, nan=0.0)
     y = batch["label"].to(device)
 
     kept = _sample_kept(avail, cfg["train"]["modality_dropout_p"], training, device, gen)
@@ -68,7 +74,7 @@ def _forward(model, batch, cfg, training, device, gen, drop=None):
     ev = model.raw_evidence(images, tabular)
     active = {m: kept[m] for m in MODALITIES}
     active["unified"] = torch.stack([kept[m] for m in MODALITIES], 0).any(0)
-    active["tabular"] = torch.ones_like(y, dtype=torch.bool)
+    active["tabular"] = tab_ok
 
     alpha, beta, scaled = fuse(ev, active, volume,
                                cfg["fusion"]["v_ref"], cfg["fusion"]["gamma"])

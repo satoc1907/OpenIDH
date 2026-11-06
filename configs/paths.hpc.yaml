@@ -20,3 +20,6 @@ splits_dir: ${root}/data/preprocessed/v1.0.0/_global/splits
 # weights/ is gitignored — stage the .safetensors here (see scripts/download_weights.py).
 weights_dir: ${root}/weights
 output_dir: ${root}/runs
+# External-validation cohorts (EGD, Japan): their metadata tables are not in git
+# (.gitignore), so they are staged by hand next to the image tree (2026-11-06).
+external_metadata_dir: ${data_root}/metadata

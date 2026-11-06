@@ -14,7 +14,7 @@ import pandas as pd
 import torch
 from torch.utils.data import Dataset
 
-from .metadata import lookup_age_sex, resolve_subject_dir
+from .metadata import EXTERNAL_COHORTS, lookup_age_sex, resolve_subject_dir
 from .transforms import IMAGE_SIZE, select_slices, slices_to_tensor
 
 MODALITIES = ["T1", "T2", "FLAIR", "T1c"]
@@ -32,7 +32,7 @@ class GliomaDataset(Dataset):
         age_std: float | None = None,
         skip_missing_dirs: bool = True,
     ):
-        df = pd.read_csv(split_csv)
+        df = pd.read_csv(split_csv, dtype={"subject_id": str})
         # random_5fold.csv holds 5 folds in one file; filter to one before role.
         if fold_id is not None:
             df = df[df["fold_id"].astype(str) == str(fold_id)]
@@ -78,7 +78,9 @@ class GliomaDataset(Dataset):
                 images[m] = torch.zeros(3, self.image_size, self.image_size)
                 mask[m] = False
 
-        age, sex = lookup_age_sex(self.paths.metadata_dir, r["site"], r["subject_id"])
+        md = (self.paths.external_metadata_dir if r["site"] in EXTERNAL_COHORTS
+              else self.paths.metadata_dir)
+        age, sex = lookup_age_sex(md, r["site"], r["subject_id"])
         if self.age_mean is not None and self.age_std:
             age = (age - self.age_mean) / self.age_std
         tabular = torch.tensor([age, sex], dtype=torch.float32)
