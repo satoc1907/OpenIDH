@@ -77,7 +77,8 @@ Thumbs.db
 # ─────────────────────────────────────────────────────────────
 # External-validation cohorts (EGD, Japan) — NOT tracked
 #   Labels + per-case clinical values; EGD terms forbid redistribution and
-#   Japan is confidential. The repo is public, so these never enter git.
+#   Japan is confidential. Even in this private repo, per-case data never enters git;
+#   aggregate results and figures may (user, 2026-11-09).
 #   Stage them on the HPC by hand (scp), not via git clone.
 # ─────────────────────────────────────────────────────────────
 data/metadata/EGD_*
