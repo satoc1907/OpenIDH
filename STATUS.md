@@ -1,5 +1,5 @@
 ---
-updated: 2026-11-10T05:15:00+09:00
+updated: 2026-11-10T05:35:00+09:00
 state: review
 waiting_on: me
 phase: dev
@@ -11,7 +11,7 @@ phase: dev
 
 外部評価（LOSO-A/B の 6 モデル × EGD 467 例・Japan 620 例）を Raiden で実行した（ログは 88ee106）。判別は保たれた（AUC：EGD 0.86、Japan 0.81〜0.84）。
 較正は全条件で過小評価（予測の平均 5〜25% に対し、実際の変異率は 28〜33%）。ECE は B で 0.21〜0.22。温度スケーリングでは直らない。
-人の番：次に何をするか（出力整合を外部データに当てる、など）と、性能の数値を公開リポジトリに置いてよいかの判断。
+次は出力整合を外部データに当てる（ユーザが選択）。`scripts/external_followup.py` を commit した（未 push）。人の番：push して Raiden で実行。
 
 ## 進行中
 
@@ -66,7 +66,7 @@ phase: dev
 
 次のセッションの人が最初に読む前提で書く。全体像はまず `results/manuscript_draft.md`、詳細は `results/gated_correction.md`、`results/output_matching.md`。
 
-0'. **外部評価の次の手**：ユーザの選択を待つ。おすすめは出力整合を EGD・Japan に当てること。そのためには、Raiden で `predictions.csv` に grade・年齢を結合し、`openidh_model/eval/output_matching.py` の推定を回すスクリプトが要る（症例ごとのデータは Raiden から出さず、集計だけ持ち帰る）。疑いの代用（確定 grade の 2 値化）は、Japan では WHO 2016 の grade を使うか WHO 2021 の grade を使うかを決める必要がある
+0'. **`followup.md` が届いたら読む**（11-09 依頼：出力整合と、「不正解のとき分布の裾が広がるか」）。実行：Raiden で `git pull` → `OPENIDH_PATHS=configs/paths.hpc.yaml uv run --frozen python scripts/external_followup.py`（CPU のみ、数分）。疑いは WHO 2016 の grade を使い、Japan の WHO 2021 は感度分析に回す（2021 の grade は IDH 野生型のマーカーで決まる部分があり、ラベルが混ざる）。年齢がない EGD の 42 例は出力整合から除く。読むときの注意：S が小さいと予測が 0.5 に近づきやすく、正解/不正解の S の差の一部はその見かけ上の関係による。比較の基準は元の LOSO test（S の中央値：A は正解 46.6 / 不正解 35.7、B は 55.1 / 44.1）
 
 0. **草稿 v0.4 へのコメントを受けて改稿する**。要約版（`results/manuscript_summary_lay.md`）とスライド 2 本（`results/slides/`）も、草稿を直したら合わせて直す。k・N_min が確定したら 3.5 節・6 章の `【要判断】` を外す。疑いの代用（確定 grade の 2 値化）と vendor の書き方を確認してもらう
 
