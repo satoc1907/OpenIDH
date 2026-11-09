@@ -1,5 +1,5 @@
 ---
-updated: 2026-11-10T05:35:00+09:00
+updated: 2026-11-10T06:00:00+09:00
 state: review
 waiting_on: me
 phase: dev
@@ -11,14 +11,14 @@ phase: dev
 
 外部評価（LOSO-A/B の 6 モデル × EGD 467 例・Japan 620 例）を Raiden で実行した（ログは 88ee106）。判別は保たれた（AUC：EGD 0.86、Japan 0.81〜0.84）。
 較正は全条件で過小評価（予測の平均 5〜25% に対し、実際の変異率は 28〜33%）。ECE は B で 0.21〜0.22。温度スケーリングでは直らない。
-次は出力整合を外部データに当てる（ユーザが選択）。`scripts/external_followup.py` を commit した（未 push）。人の番：push して Raiden で実行。
+出力整合と不確かさの確認を notebook 09（`notebooks/09_external_validation.ipynb`）にした（未 push）。人の番：push し、Raiden で papermill を実行して結果を push する。
 
 ## 進行中
 
 - 草稿 v0.4 のレビュー `@me` — `results/manuscript_draft.md`（3.2 節に 08 の較正の表と図8 を追加。データ・目的・実験・較正補正の比較・ポータル定義案）
 - 非専門家向け要約版のレビュー `@me` — `results/manuscript_summary_lay.md`（2026-10-21、Discord 依頼。草稿 v0.4 からの転記のみ。数式・専門用語なし、末尾に用語表）
 - **Marp スライド（16:9）のレビュー** `@me` — 詳しい版 `results/slides/openidh_detailed.md`（22 枚）、要約版 `results/slides/openidh_lay.md`（13 枚）。2026-10-21、Discord 依頼。この環境では Chromium が起動しない。ユーザが手元で PPTX（10-21）と PDF（10-23）に書き出し済み（`results/slides/*.{pptx,pdf}`、未追跡）。文字のはみ出しの確認結果と、書き出し物を commit するかは未回答
-- **外部評価（EGD・Japan、推論のみ）の結果を受けて、次の手を決める** `@me` — 2026-11-09 に結果が届いた（ジョブログ `openidh_ext.o18514483`（試し）と `o18514484`（本番）、88ee106。出力は Raiden の `/home/satoc/data/OpenIDH/external_eval/`）。AUC（seed 3 本の平均）：A は EGD 0.862 / Japan 0.808、B は EGD 0.861 / Japan 0.839（元の LOSO test は 0.856 / 0.854）。予測の平均：A は EGD 18〜25%・Japan 15〜18%、B は EGD 11〜15%・Japan 5〜9%（実際の変異率は EGD 33.2%、Japan 28.2%）。温度補正の後も ECE は変わらない。次の候補（Discord で提示済み）：①出力整合（ラベルなしの切片補正）を外部データに当てる（AI のおすすめ。`predictions.csv` を使えば GPU は不要）、②`results/external_validation.md` にまとめて草稿に節を追加、③5-fold の 15 本でも評価、④Japan の施設別解析。要確認：ログが公開リポジトリに push されている（集計値のみ）。Japan の性能を論文化の前に公開してよいか
+- **外部評価（EGD・Japan、推論のみ）の結果を受けて、次の手を決める** `@me` — 2026-11-09 に結果が届いた（ジョブログ `openidh_ext.o18514483`（試し）と `o18514484`（本番）、88ee106。出力は Raiden の `/home/satoc/data/OpenIDH/external_eval/`）。AUC（seed 3 本の平均）：A は EGD 0.862 / Japan 0.808、B は EGD 0.861 / Japan 0.839（元の LOSO test は 0.856 / 0.854）。予測の平均：A は EGD 18〜25%・Japan 15〜18%、B は EGD 11〜15%・Japan 5〜9%（実際の変異率は EGD 33.2%、Japan 28.2%）。温度補正の後も ECE は変わらない。次の候補（Discord で提示済み）：①出力整合（ラベルなしの切片補正）を外部データに当てる（AI のおすすめ。`predictions.csv` を使えば GPU は不要）、②`results/external_validation.md` にまとめて草稿に節を追加、③5-fold の 15 本でも評価、④Japan の施設別解析。リポジトリは非公開（11-09 にユーザが確認）。集計値と図は commit してよい。症例ごとのデータは入れない
   - EGD：データ管理側の報告（`data/report/EGD_openidh_report.md`、11-05 版）によれば、破損 44 例は 10-23 に再取得・再処理済みで、**774 例すべて QC 通過**（IDH 既知 467：Mut 155 / WT 312）。LPS 入力での再処理は不要と 11-05 に確定。手元の CSV で選定を試し、467 例（Mut 155 / WT 312、年齢欠損 42）で報告書と一致した
   - Japan（旧 NCC）：報告書 `data/report/Japan_openidh_report.md`・`JAPAN_ISSUES.md`（11-05）が届いた。665 例を LPS に修正済み。評価候補は 620 例（Mut 175 / WT 445）、うち 4 シーケンスそろいは 547 例。6 mm 厚の 2D 臨床画像なので、推論のみに使う。メタデータを Raiden に置くことはユーザが許可した（11-06）。620 例の選定は、Raiden で報告書と一致することを確認した（11-06。`patho_FALSE_2019` は解決済みとして残し、`age_under18` の 1 例は確認待ちとして除く）
   - 残る要判断 `@me`：EGD の利用条件の解釈、データ管理側の commit 先、ID 形式、Japan の目視確認、WHO 2021 再分類の確認、H3 K27M 症例の扱い
@@ -66,7 +66,7 @@ phase: dev
 
 次のセッションの人が最初に読む前提で書く。全体像はまず `results/manuscript_draft.md`、詳細は `results/gated_correction.md`、`results/output_matching.md`。
 
-0'. **`followup.md` が届いたら読む**（11-09 依頼：出力整合と、「不正解のとき分布の裾が広がるか」）。実行：Raiden で `git pull` → `OPENIDH_PATHS=configs/paths.hpc.yaml uv run --frozen python scripts/external_followup.py`（CPU のみ、数分）。疑いは WHO 2016 の grade を使い、Japan の WHO 2021 は感度分析に回す（2021 の grade は IDH 野生型のマーカーで決まる部分があり、ラベルが混ざる）。年齢がない EGD の 42 例は出力整合から除く。読むときの注意：S が小さいと予測が 0.5 に近づきやすく、正解/不正解の S の差の一部はその見かけ上の関係による。比較の基準は元の LOSO test（S の中央値：A は正解 46.6 / 不正解 35.7、B は 55.1 / 44.1）
+0'. **notebook 09 の実行結果が push されたら読む**（11-09 依頼：出力整合と、「不正解のとき分布の裾が広がるか」）。実行：Raiden で `git pull` → `OPENIDH_PATHS=configs/paths.hpc.yaml uv run --frozen papermill --log-output notebooks/09_external_validation.ipynb notebooks/09_external_validation.ipynb` → `results/external_validation.*` と図 3 枚を commit・push（CPU のみ、数分）。読んだら草稿に外部検証の節を足す。疑いは WHO 2016 の grade を使い、Japan の WHO 2021 は感度分析に回す（2021 の grade は IDH 野生型のマーカーで決まる部分があり、ラベルが混ざる）。年齢がない EGD の 42 例は出力整合から除く。読むときの注意：S が小さいと予測が 0.5 に近づきやすく、正解/不正解の S の差の一部はその見かけ上の関係による。比較の基準は元の LOSO test（S の中央値：A は正解 46.6 / 不正解 35.7、B は 55.1 / 44.1）
 
 0. **草稿 v0.4 へのコメントを受けて改稿する**。要約版（`results/manuscript_summary_lay.md`）とスライド 2 本（`results/slides/`）も、草稿を直したら合わせて直す。k・N_min が確定したら 3.5 節・6 章の `【要判断】` を外す。疑いの代用（確定 grade の 2 値化）と vendor の書き方を確認してもらう
 
