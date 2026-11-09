@@ -89,3 +89,19 @@ def test_missing_age_drops_only_the_tabular_head():
     assert active["tabular"].tolist() == [True, False]
     assert alpha.tolist() == [1 + 5 + 3, 1 + 5]     # 5 image heads x 1, + tabular 3 when present
     assert not torch.isnan(beta).any()
+
+
+def test_uncertainty_reads_smaller_S_on_wrong_cases():
+    import external_followup as ef
+    import numpy as np
+    rng = np.random.default_rng(0)
+    y = rng.integers(0, 2, 400).astype(float)
+    right = rng.random(400) < 0.8
+    p = np.where(right == (y == 1), 0.8, 0.2)          # right -> on the correct side of 0.5
+    S = np.where(right, 60.0, 30.0) + rng.normal(0, 1, 400)
+    u = ef.uncertainty(p, S, y)
+    assert u["acc"] == right.mean()
+    assert u["S_wrong"] < u["S_right"] and u["auroc_S_right"] > 0.95
+    assert u["spearman_S_err"] < 0
+    shifted = ef.uncertainty(p, S, y, b=+5.0)          # everything above 0.5 -> only mutants right
+    assert shifted["acc"] == (y == 1).mean()
