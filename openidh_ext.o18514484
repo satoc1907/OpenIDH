@@ -1,0 +1,91 @@
+/uge_mnt/var/spool/uge/dl-gtn15/job_scripts/18514484: line 21: /usr/local/bin/nvidia_entrypoint.sh: No such file or directory
+[ext] host=8c8fa278d9ee job=18514484 device=cuda runs=<6 LOSO> cohorts=EGD Japan
+GPU 0: NVIDIA A100-SXM4-40GB (UUID: GPU-762838ee-683a-6610-d920-aa33c93d7dc0)
+== EGD: EGD_metadata_openidh.csv 774 rows -> 467 cases (Mut 155 / WT 312, all 4 sequences 467)
+   dropped    0  qc_passed is not true
+   dropped  307  IDH not Mut/WT
+   dropped    0  no primary seg
+   dropped    0  no volumes/tumor_seg.nii.gz on disk
+   -> /home/satoc/data/OpenIDH/metadata/splits/splits_ext_egd.csv
+== Japan: Japan_metadata_openidh_who2021.csv 666 rows -> 620 cases (Mut 175 / WT 445, all 4 sequences 547)
+   dropped   38  qc_passed is not true
+   dropped    7  IDH not Mut/WT
+   dropped    0  no primary seg
+   dropped    1  label_flag needs checking
+   dropped    0  no volumes/tumor_seg.nii.gz on disk
+   -> /home/satoc/data/OpenIDH/metadata/splits/splits_ext_japan.csv
+
+counts match the reports.
+== foldA_s0
+  EGD    n= 467  (34s)
+  Japan  n= 620  (64s)
+== foldA_s1
+  EGD    n= 467  (32s)
+  Japan  n= 620  (38s)
+== foldA_s2
+  EGD    n= 467  (33s)
+  Japan  n= 620  (39s)
+== foldB_s0
+  EGD    n= 467  (33s)
+  Japan  n= 620  (40s)
+== foldB_s1
+  EGD    n= 467  (33s)
+  Japan  n= 620  (39s)
+== foldB_s2
+  EGD    n= 467  (33s)
+  Japan  n= 620  (38s)
+# External validation — LOSO checkpoints on EGD / Japan
+
+Mean ± SD over 3 seeds. ECE (T) = after each run's inner-val temperature. `own test` = the run's own LOSO test set, for reference.
+
+## LOSO-A (foldA_s0, foldA_s1, foldA_s2)
+
+| cohort | subset | n (Mut) | rate | no age/sex | AUC | AUPRC | ECE | ECE (T) | NLL | Brier |
+|---|---|---|---|---|---|---|---|---|---|---|
+| own test | — | — | — | — | 0.856 ± 0.021 | 0.657 ± 0.023 | 0.082 ± 0.025 | — | 0.400 ± 0.041 | 0.122 ± 0.011 |
+| EGD | all | 467 (155) | 33.2% | 42 | 0.862 ± 0.016 | 0.772 ± 0.028 | 0.120 ± 0.028 | 0.124 ± 0.030 | 0.508 ± 0.063 | 0.160 ± 0.018 |
+| EGD | all4 | 467 (155) | 33.2% | 42 | 0.862 ± 0.016 | 0.772 ± 0.028 | 0.120 ± 0.028 | 0.124 ± 0.030 | 0.508 ± 0.063 | 0.160 ± 0.018 |
+| Japan | all | 620 (175) | 28.2% | 0 | 0.808 ± 0.037 | 0.646 ± 0.029 | 0.128 ± 0.010 | 0.135 ± 0.009 | 0.541 ± 0.007 | 0.169 ± 0.002 |
+| Japan | all4 | 547 (157) | 28.7% | 0 | 0.811 ± 0.043 | 0.654 ± 0.036 | 0.140 ± 0.009 | 0.147 ± 0.009 | 0.553 ± 0.008 | 0.173 ± 0.003 |
+
+## LOSO-B (foldB_s0, foldB_s1, foldB_s2)
+
+| cohort | subset | n (Mut) | rate | no age/sex | AUC | AUPRC | ECE | ECE (T) | NLL | Brier |
+|---|---|---|---|---|---|---|---|---|---|---|
+| own test | — | — | — | — | 0.854 ± 0.019 | 0.694 ± 0.034 | 0.162 ± 0.018 | — | 0.559 ± 0.037 | 0.177 ± 0.007 |
+| EGD | all | 467 (155) | 33.2% | 42 | 0.861 ± 0.013 | 0.766 ± 0.013 | 0.206 ± 0.020 | 0.204 ± 0.012 | 0.647 ± 0.063 | 0.206 ± 0.015 |
+| EGD | all4 | 467 (155) | 33.2% | 42 | 0.861 ± 0.013 | 0.766 ± 0.013 | 0.206 ± 0.020 | 0.204 ± 0.012 | 0.647 ± 0.063 | 0.206 ± 0.015 |
+| Japan | all | 620 (175) | 28.2% | 0 | 0.839 ± 0.042 | 0.661 ± 0.076 | 0.217 ± 0.022 | 0.215 ± 0.014 | 0.748 ± 0.122 | 0.221 ± 0.021 |
+| Japan | all4 | 547 (157) | 28.7% | 0 | 0.851 ± 0.037 | 0.683 ± 0.070 | 0.221 ± 0.024 | 0.219 ± 0.016 | 0.755 ± 0.134 | 0.223 ± 0.023 |
+
+## Per run
+
+| run | cohort | subset | n | AUC | ECE | ECE (T) | mean p̂ | rate |
+|---|---|---|---|---|---|---|---|---|
+| foldA_s0 | EGD | all | 467 | 0.849 | 0.148 | 0.153 | 0.185 | 0.332 |
+| foldA_s0 | EGD | all4 | 467 | 0.849 | 0.148 | 0.153 | 0.185 | 0.332 |
+| foldA_s0 | Japan | all | 620 | 0.812 | 0.137 | 0.145 | 0.154 | 0.282 |
+| foldA_s0 | Japan | all4 | 547 | 0.812 | 0.146 | 0.155 | 0.154 | 0.287 |
+| foldA_s1 | EGD | all | 467 | 0.858 | 0.122 | 0.125 | 0.215 | 0.332 |
+| foldA_s1 | EGD | all4 | 467 | 0.858 | 0.122 | 0.125 | 0.215 | 0.332 |
+| foldA_s1 | Japan | all | 620 | 0.843 | 0.131 | 0.134 | 0.159 | 0.282 |
+| foldA_s1 | Japan | all4 | 547 | 0.855 | 0.144 | 0.147 | 0.152 | 0.287 |
+| foldA_s2 | EGD | all | 467 | 0.880 | 0.091 | 0.094 | 0.246 | 0.332 |
+| foldA_s2 | EGD | all4 | 467 | 0.880 | 0.091 | 0.094 | 0.246 | 0.332 |
+| foldA_s2 | Japan | all | 620 | 0.770 | 0.118 | 0.126 | 0.176 | 0.282 |
+| foldA_s2 | Japan | all4 | 547 | 0.768 | 0.129 | 0.138 | 0.171 | 0.287 |
+| foldB_s0 | EGD | all | 467 | 0.872 | 0.184 | 0.190 | 0.148 | 0.332 |
+| foldB_s0 | EGD | all4 | 467 | 0.872 | 0.184 | 0.190 | 0.148 | 0.332 |
+| foldB_s0 | Japan | all | 620 | 0.852 | 0.192 | 0.199 | 0.090 | 0.282 |
+| foldB_s0 | Japan | all4 | 547 | 0.860 | 0.194 | 0.201 | 0.093 | 0.287 |
+| foldB_s1 | EGD | all | 467 | 0.864 | 0.211 | 0.213 | 0.121 | 0.332 |
+| foldB_s1 | EGD | all4 | 467 | 0.864 | 0.211 | 0.213 | 0.121 | 0.332 |
+| foldB_s1 | Japan | all | 620 | 0.872 | 0.221 | 0.223 | 0.061 | 0.282 |
+| foldB_s1 | Japan | all4 | 547 | 0.882 | 0.226 | 0.228 | 0.061 | 0.287 |
+| foldB_s2 | EGD | all | 467 | 0.846 | 0.223 | 0.209 | 0.109 | 0.332 |
+| foldB_s2 | EGD | all4 | 467 | 0.846 | 0.223 | 0.209 | 0.109 | 0.332 |
+| foldB_s2 | Japan | all | 620 | 0.792 | 0.236 | 0.223 | 0.048 | 0.282 |
+| foldB_s2 | Japan | all4 | 547 | 0.809 | 0.242 | 0.229 | 0.048 | 0.287 |
+
+-> /home/satoc/data/OpenIDH/external_eval/{predictions.csv,summary.json,summary.md}
+[ext] done — summary.md is aggregate only; predictions.csv has labels, keep it off git

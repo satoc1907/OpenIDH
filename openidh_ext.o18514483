@@ -1,0 +1,34 @@
+/uge_mnt/var/spool/uge/dl-gtn15/job_scripts/18514483: line 21: /usr/local/bin/nvidia_entrypoint.sh: No such file or directory
+[ext] host=7b2d2a913f4c job=18514483 device=cuda runs=foldA_s0 cohorts=EGD
+GPU 0: NVIDIA A100-SXM4-40GB (UUID: GPU-762838ee-683a-6610-d920-aa33c93d7dc0)
+== EGD: EGD_metadata_openidh.csv 774 rows -> 467 cases (Mut 155 / WT 312, all 4 sequences 467)
+   dropped    0  qc_passed is not true
+   dropped  307  IDH not Mut/WT
+   dropped    0  no primary seg
+   dropped    0  no volumes/tumor_seg.nii.gz on disk
+   -> /home/satoc/data/OpenIDH/metadata/splits/splits_ext_egd.csv
+
+counts match the reports.
+== foldA_s0
+  EGD    n= 467  (74s)
+# External validation — LOSO checkpoints on EGD / Japan
+
+Mean ± SD over 3 seeds. ECE (T) = after each run's inner-val temperature. `own test` = the run's own LOSO test set, for reference.
+
+## LOSO-A (foldA_s0)
+
+| cohort | subset | n (Mut) | rate | no age/sex | AUC | AUPRC | ECE | ECE (T) | NLL | Brier |
+|---|---|---|---|---|---|---|---|---|---|---|
+| own test | — | — | — | — | 0.853 ± 0.000 | 0.656 ± 0.000 | 0.108 ± 0.000 | — | 0.438 ± 0.000 | 0.132 ± 0.000 |
+| EGD | all | 467 (155) | 33.2% | 42 | 0.849 ± 0.000 | 0.758 ± 0.000 | 0.148 ± 0.000 | 0.153 ± 0.000 | 0.572 ± 0.000 | 0.176 ± 0.000 |
+| EGD | all4 | 467 (155) | 33.2% | 42 | 0.849 ± 0.000 | 0.758 ± 0.000 | 0.148 ± 0.000 | 0.153 ± 0.000 | 0.572 ± 0.000 | 0.176 ± 0.000 |
+
+## Per run
+
+| run | cohort | subset | n | AUC | ECE | ECE (T) | mean p̂ | rate |
+|---|---|---|---|---|---|---|---|---|
+| foldA_s0 | EGD | all | 467 | 0.849 | 0.148 | 0.153 | 0.185 | 0.332 |
+| foldA_s0 | EGD | all4 | 467 | 0.849 | 0.148 | 0.153 | 0.185 | 0.332 |
+
+-> /home/satoc/data/OpenIDH/external_eval/{predictions.csv,summary.json,summary.md}
+[ext] done — summary.md is aggregate only; predictions.csv has labels, keep it off git
